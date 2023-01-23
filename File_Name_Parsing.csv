@@ -1,0 +1,17 @@
+Keys,Number of Characters,Name
+D,8,Date
+Gen,1,Generic INP File
+AVWL,3,AVW Length
+AVWW,3,AVW Width
+CLSS,3,CL Stretch Strain
+PARA,3,PARA Stretch Strain
+HL,2,Hiatus Length
+PARA,3,PARA Material Strength
+PCM,3,PCM Material Strength
+AVW,3,AVW Material Strength
+CL,3,CL Material Strength
+AS,2,Apical Shift
+FLP,,First Levator Plate
+SLP,,Second Levator Plate
+FICM,,First ICM
+SICM,,Second ICM
