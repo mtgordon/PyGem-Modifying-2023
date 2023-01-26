@@ -24,6 +24,11 @@ import csv
 #import sys
 
 
+# Function: analysis_was_successful
+#
+# Parameters:
+# file_name - Name of the given file
+#
 # This function checks the INP file to see if the run was completed
 # successfully or not
 def analysis_was_successful(file_name):
