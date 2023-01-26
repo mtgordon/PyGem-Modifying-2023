@@ -30,6 +30,8 @@ def try_int(n):
         return False
 
 #===============
+# Function: get_connections_for_tissues
+#
 # Gets the points that link the AVW to CL
 # Assumes data comes after "Weld,\n*Element, type=CONN3D2"
 # The lines look like this "3, OPAL325_AVW_v6-1.14, OPAL325_Para_v6-1.15"
@@ -72,6 +74,8 @@ def get_connections_for_tissues(tis1, tis2, file_name):
     return con_nodes
 
 
+# Function: CurveFibersInINP
+#
 # This function takes the apical supports (or other fibers), finds the attachemnt points,
 # and tries to make them a certain length
 def CurveFibersInINP(Part_Name1, Part_Name2, scale, inputFile, outputFile, dirVector):
