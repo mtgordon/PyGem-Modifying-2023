@@ -151,6 +151,8 @@ class ConnectingTissue(GeneratedDataSet):
         return DataSet3d(xs, ys, zs)
         
     """
+    Function: _init_start_end_graph
+    
     This Method fixes the direction the nodes are in because the connections given are not all in the same direction
         meaning sometime the starting node will be on surface one and the fiber goes to surface two.
         and vice versa
@@ -202,7 +204,9 @@ class ConnectingTissue(GeneratedDataSet):
         
         return starting_nodes, ending_nodes, graph
         
-    
+    '''
+    Function: _init_start_end_graph_for_para
+    '''
     def _init_start_end_graph_for_para(self, connections, ext_connections):
         
         
