@@ -76,7 +76,7 @@ def get_connections_for_tissues(tis1, tis2, file_name):
 
 # Function: CurveFibersInINP
 #
-# This function takes the apical supports (or other fibers), finds the attachemnt points,
+# This function takes the apical supports (or other fibers), finds the attachment points,
 # and tries to make them a certain length
 def CurveFibersInINP(Part_Name1, Part_Name2, scale, inputFile, outputFile, dirVector):
     #Part_Name1 = AVW, Part_Name2 = the fiber tissue
