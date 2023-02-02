@@ -16,6 +16,9 @@ from lib.FiberFunctions import getFiberLengths
 from scipy.optimize import fsolve
 from scipy import sqrt, sin, pi, interpolate, cos, integrate
 
+'''
+Function: widen_part
+'''
 def widen_part(part_name, file_name, scale):
     print("Widen Part: " + part_name)
 
@@ -37,7 +40,9 @@ def widen_part(part_name, file_name, scale):
        
         io.write_part_to_inp_file(file_name, part_name, generated_surface)
     
-    
+'''
+Function: lengthen_and_shift_part
+'''
 def lengthen_and_shift_part(part_name, file_name, scale, shift):
     print("Lengthen and Shift Part: " + part_name)
 #    Don't do anything if there's no scale or shift
@@ -66,7 +71,9 @@ def lengthen_and_shift_part(part_name, file_name, scale, shift):
         io.write_part_to_inp_file(file_name, part_name, generated_surface)
 
 
-
+'''
+Function: curve_avw
+'''
 def curve_avw(part_name, file_name, original_file_name, hiatus, z_cutoff, rotate_angle, rot_point, HiatusLength):
     print("Curve and Rotate AVW")
 
@@ -86,7 +93,9 @@ def curve_avw(part_name, file_name, original_file_name, hiatus, z_cutoff, rotate
     return generated_surface
 
 
-
+'''
+Function: rotate_part
+'''
 def rotate_part(part_name, file_name, rotate_angle, rot_point):
     #print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!", part_name)
     generated_surface = io.get_dataset_from_file(file_name, part_name).generatedCopy()
@@ -153,6 +162,9 @@ def rotate_part(part_name, file_name, rotate_angle, rot_point):
     return generated_surface
     
 
+'''
+Function: adjust_fibers
+'''
 def adjust_fibers(generated_surface, file_name, surface_name, connection_name):
     #Read the nodal coordinates defined part name out of defined file name
     nodes, connections = io.extractPointsForPartFrom(file_name, connection_name,get_connections=True)
@@ -188,9 +200,15 @@ def adjust_fibers(generated_surface, file_name, surface_name, connection_name):
             
     return ct
 
+'''
+Function: average
+'''
 def average(array):
     return sum(array)/len(array)
 
+'''
+Function: takeMeasurements
+'''
 def takeMeasurements(output, AVW, Fibers, GenericINPFile, OutputINPfile):
 
     tempOrigList = io.extractPointsForPartFrom(GenericINPFile, AVW)
@@ -251,7 +269,11 @@ def takeMeasurements(output, AVW, Fibers, GenericINPFile, OutputINPfile):
 
 ################# Functions that are no longer used #################
 
-#Replaced by lengthen_and_shift_part
+'''
+Function: lengthen_part
+
+Replaced by <lengthen_and_shift_part>
+'''
 def lengthen_part(part_name, file_name, scale):
     if (scale != 1):
         generated_surface = io.get_dataset_from_file(file_name, part_name)
@@ -270,7 +292,9 @@ def lengthen_part(part_name, file_name, scale):
         
         io.write_part_to_inp_file(file_name, part_name, generated_surface)
         
-
+'''
+Function: narrow_distal_avw
+'''
 def narrow_distal_avw(part_name, file_name, original_file_name):
     print("Narrow Distal End of AVW")
 

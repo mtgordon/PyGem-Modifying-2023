@@ -1,0 +1,1 @@
+﻿NDSearch.OnPrefixDataLoaded("err",["Function"],[["err1",,[[,,,,0,"File:lib/workingWithCatenarys.py:err1"]]],["err2",,[[,,,,0,"File:lib/workingWithCatenarys.py:err2"]]]]);

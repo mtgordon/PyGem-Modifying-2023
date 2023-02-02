@@ -1,0 +1,1 @@
+﻿NDSearch.OnPrefixDataLoaded("rem",["Function"],[["remove_connections",,[[,,,,0,"File:lib/RemovePart.py:remove_connections"]]],["remove_part",,[[,,,,0,"File:lib/RemovePart.py:remove_part"]]],["RemoveMaterialInsertion",,[[,,,,0,"File:lib/INP_Material_Properties.py:RemoveMaterialInsertion"]]]]);

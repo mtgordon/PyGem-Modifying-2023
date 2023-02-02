@@ -11,7 +11,9 @@ from numpy import genfromtxt
 import csv
 #import math
 
-
+'''
+Function: get_odb_data
+'''
 def get_odb_data(material_names, nodes, node_property, frames, AbaqusBatLocation, odb_filename):
 
     print(material_names)

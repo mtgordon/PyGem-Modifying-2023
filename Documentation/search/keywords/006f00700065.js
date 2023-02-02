@@ -1,0 +1,1 @@
+﻿NDSearch.OnPrefixDataLoaded("ope",["Function"],[["openFile",,[[,,,,0,"File:lib/IOfunctions.py:openFile"]]]]);

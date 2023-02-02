@@ -1,0 +1,1 @@
+﻿NDFramePage.OnPageTitleLoaded("File:lib/Testing_Dictionary_Reading.py","Testing_Dictionary_Reading.py");NDSummary.OnSummaryLoaded("File:lib/Testing_Dictionary_Reading.py",[["Python","Python"]],[["Files","File"]],[[44,0,0,"Testing_Dictionary_Reading.py","Testing_Dictionary_Reading.py"]]);

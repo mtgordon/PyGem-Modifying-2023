@@ -8,7 +8,9 @@ Created on Fri May 15 11:48:18 2020
 
 import csv
 
-
+'''
+Function: level1_level3_combinations
+'''
 def level1_level3_combinations(Shift, CLStrain, USStrain, ParaStrain, CLUSValues, GenericINPFile, LAValues, MRIHiatusLength):
     #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
     ### Constructing CSV file @@@@@@

@@ -1,0 +1,1 @@
+﻿NDSummary.OnToolTipsLoaded("File:lib/Get_Data_From_ODB.py",{});

@@ -1,0 +1,1 @@
+﻿NDFramePage.OnPageTitleLoaded("PythonClass:GeneratedDataSet","GeneratedDataSet");NDSummary.OnSummaryLoaded("PythonClass:GeneratedDataSet",[["Python","Python"]],[["Classes","Class"],["Functions","Function"],["Groups","Group"]],[[55,0,0,"GeneratedDataSet"],[56,0,2,"Functions","Functions"],[57,0,1,"modify_point","modify_point"],[58,0,1,"trim","trim"]]);

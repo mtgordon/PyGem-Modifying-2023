@@ -1,0 +1,1 @@
+﻿NDSearch.OnPrefixDataLoaded("arc",["Function"],[["arc_length",,[["CatenaryCurve",,,,0,"File:lib/workingWithCatenarys.py:CatenaryCurve.arc_length","PythonClass:CatenaryCurve:arc_length"]]],["ArcDistance",,[[,,,,0,"File:lib/FiberFunctions.py:ArcDistance"]]]]);

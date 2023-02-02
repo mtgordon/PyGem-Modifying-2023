@@ -13,7 +13,9 @@ from lib.workingWith3dDataSets import Point
 from lib.Node_Distances import getXClosestNodes
 import shutil
 
-
+'''
+Function: CalculateHiatus
+'''
 def CalculateHiatus(AbaqusBatLocation, ODBFilename, HiatusNode1,HiatusMaterial1,HiatusNode2,HiatusMaterial2,OutputFileName):
     OutputFileName = ntpath.basename(OutputFileName)
 
@@ -38,7 +40,10 @@ def CalculateHiatus(AbaqusBatLocation, ODBFilename, HiatusNode1,HiatusMaterial1,
         HiatusOutputFile.write('%10.9E, ' % (HiatusDistance))
         HiatusOutputFile.write('\n')
         print(i,HiatusDistance)
-        
+
+'''
+Function: CalculateHiatus_v2
+'''
 def CalculateHiatus_v2(AbaqusBatLocation, ODBFile, GenericINPFile, HiatusPoint1_Array, HiatusPoint2_Array, HiatusMaterial2, Results_Folder_Location):
 #    try:      
 #        os.remove(DataFileName+'.csv')

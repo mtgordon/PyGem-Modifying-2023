@@ -1,0 +1,1 @@
+﻿NDSearch.OnPrefixDataLoaded("len",["Function"],[["lengthen_and_shift_part",,[[,,,,0,"File:lib/Scaling_-_20201_01_27.py:lengthen_and_shift_part"]]],["lengthen_part",,[[,,,,0,"File:lib/Scaling_-_20201_01_27.py:lengthen_part"]]]]);

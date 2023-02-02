@@ -1,0 +1,1 @@
+﻿NDSearch.OnPrefixDataLoaded("__h",["Function"],[["__hash__",,[["Point",,,,0,"File:lib/workingWith3dDataSets.py:Point.__hash__","PythonClass:Point:__hash__"]]]]);

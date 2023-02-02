@@ -18,7 +18,9 @@ number_of_runs = 1000
 hist_data = 0
 norm_data = 1
 
-
+'''
+Function: rand_correlated_uniform
+'''
 def rand_correlated_uniform(num_samples, r):
     method = 'eigenvectors'
     
@@ -93,7 +95,9 @@ def rand_correlated_uniform(num_samples, r):
     
     return(np.transpose(y))
     
-
+'''
+Function: rand_correlated
+'''
 def rand_correlated(r):
     method = 'eigenvectors'
 
@@ -126,7 +130,9 @@ def rand_correlated(r):
     return(np.transpose(y)[0])
 
 
-
+'''
+Function: get_hist_values
+'''
 def get_hist_values(hist_props, random_values):
     prop_values = []
     

@@ -42,7 +42,9 @@ from lib.clParse2 import clParse
 
 #def main():
 
-
+'''
+Script: Testing_Get_Data_From_ODB.py
+'''
 
 
 OdbFilename = clParse(sys.argv, "-odbfilename")

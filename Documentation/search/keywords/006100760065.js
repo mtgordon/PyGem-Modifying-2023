@@ -1,0 +1,1 @@
+﻿NDSearch.OnPrefixDataLoaded("ave",["Function"],[["average",,[[,,,,0,"File:lib/Scaling_-_20201_01_27.py:average"]]]]);

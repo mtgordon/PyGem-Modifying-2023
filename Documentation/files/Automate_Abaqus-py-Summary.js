@@ -1,0 +1,1 @@
+﻿NDFramePage.OnPageTitleLoaded("File:Automate_Abaqus.py","Automate_Abaqus.py");NDSummary.OnSummaryLoaded("File:Automate_Abaqus.py",[["Python","Python"]],[["Functions","Function"],["Groups","Group"]],[[223,0,1,"Functions","Functions"],[224,0,0,"analysis_was_successful","analysis_was_successful"]]);

@@ -1,0 +1,1 @@
+﻿NDSearch.OnPrefixDataLoaded("poi",["Class"],[["Point",,[[,,,,0,"File:lib/workingWith3dDataSets.py:Point","PythonClass:Point"]]]]);

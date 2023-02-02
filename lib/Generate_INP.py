@@ -27,6 +27,9 @@ from pygem import RBF, IDW
 import matplotlib.pyplot as plt
 import pandas
 
+'''
+Function: same_geometry_file
+'''
 def same_geometry_file(OutputINPFile, Results_Folder_Location):
 
     current_file_name = OutputINPFile
@@ -74,6 +77,9 @@ def same_geometry_file(OutputINPFile, Results_Folder_Location):
     return(same_geometry_file)
 start = time.process_time()
 
+'''
+Function: AnalogGenerateINP
+'''
 def AnalogGenerateINP(TissueParameters, MaterialStartLine, LoadLine, LoadLineNo, SlackStrain, DensityFactor, GenericINPFile, OutputINPFile, WidthScale, LengthScale, ZSHIFT, RotationPoint, HiatusPoint, GIFillerPoint, HiatusLength, levator_plate_PC1, levator_plate_PC2, ICM_PC1, ICM_PC2, Results_Folder_Location):
 
     config = configparser.ConfigParser()

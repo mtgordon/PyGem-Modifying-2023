@@ -12,12 +12,15 @@ import lib.ScalingFEM_Simplified as ss
 from lib.workingWith3dDataSets import DataSet3d, Point
 from lib.AVW_Measurements import getInitialPositions, pythag, getFEAData
 
+'''
+Script: MeasuringExposedVaginalLength.py
+'''
 
 #def measureExposedVaginalLength(AVW, GI_Filler)
 def main():
 
-    # This is hard coded becasue it is should be known 
-    # It should be passed if yu want to make this resuable
+    # This is hard coded because it is should be known
+    # It should be passed if you want to make this reusable
 
     # Location of apical midline point on AVW (y,z)
     #start = (-11.91986417, 9.2637553) 

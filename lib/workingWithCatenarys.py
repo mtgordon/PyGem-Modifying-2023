@@ -10,29 +10,34 @@ from scipy.optimize import minimize_scalar
 from scipy import integrate
 
 
-
+'''
+Function: dist
+'''
 def dist(x0, y0, x1, y1):
     # 2d Cartesian distance
     return ((x1 - x0) ** 2 + (y1 - y0) ** 2) ** 0.5
 
-def solve_catenary(x0, y0, x1, y1, length):
-    """
-    Given a catenary curve hanging between (x0, y0)
+'''
+Function: solve_catenary
+
+Given a catenary curve hanging between (x0, y0)
       and (x1, y1) with specified length,
 
-    Return the curve parameters xm, ym, a
-      such that (xm, ym) is the lowest point of the curve
-      (not necessarily in the solution interval)
-      and `a` is the scaling parameter.
+Return the curve parameters xm, ym, a
+such that (xm, ym) is the lowest point of the curve
+(not necessarily in the solution interval)
+and `a` is the scaling parameter.
 
-    The curve equation is then
-      y(x) = ym + a * (cosh((x - xm) / a) - 1.)
+The curve equation is then
+y(x) = ym + a * (cosh((x - xm) / a) - 1.)
 
-    Note: the `cosh() - 1.` means that whole subclause
-      cancels out at x == xm, so the curve intersects (xm, ym)
-    """
-    # Solution method based on
-    # https://en.wikipedia.org/wiki/Catenary#Determining_parameters
+Note: the `cosh()-1.` means that whole subclause
+cancels out at x == xm, so the curve intersects (xm, ym)
+      
+Solution method based on
+https://en.wikipedia.org/wiki/Catenary#Determining_parameters
+'''
+def solve_catenary(x0, y0, x1, y1, length):
 
     # ensure a solution is possible
     if length < dist(x0, y0, x1, y1):
@@ -51,6 +56,13 @@ def solve_catenary(x0, y0, x1, y1, length):
     # rhs = 2 * a * sinh(h / (2 * a))
     # This is a transcendental function;
     #   we must solve numerically to find `a` such that lhs == rhs
+
+
+    '''
+    Function: err1
+    
+    Within <solve_catenary>
+    '''
     def err1(a):
         two_a = 2 * a
         rhs = two_a * sinh(h / two_a)
@@ -69,6 +81,11 @@ def solve_catenary(x0, y0, x1, y1, length):
     #   substitute back to find values for xm, ym:
     # ym = y0 - a * (cosh((x0 - xm) / a) - 1.)
     #    = y1 - a * (cosh((x1 - xm) / a) - 1.)
+    '''
+    Function: err2
+    
+    Within <solve_catenary>
+    '''
     def err2(xm):
         try:
             lhs = y0 - a * (cosh((x0 - xm) / a) - 1.)
@@ -90,25 +107,37 @@ def solve_catenary(x0, y0, x1, y1, length):
 #    print("Inside Cat Y value 2: ", x1)
     return xm, ym, a
 
+'''
+Function: cat_func
+'''
 def cat_func(x, xm, ym, a):
     
     return ym + a * (cosh((x - xm) / a) - 1.)
 
-
+'''
+Function: catenary_length
+'''
 def catenary_length(x0, x1, a, xm):
     return abs(a * (sinh((x1 - xm) / a) - sinh((x0 - xm) / a)))
 #print(solve_catenary(-3, -8, -2, -38, 50))
 
-
+'''
+Class: CatenaryCurve
+'''
 class CatenaryCurve(object):
-    
+
+    """
+    Constructor: __init__
+    """
     def __init__(self,p1, p2, length):
         self.p1 = p1
         self.p2 = p2
         
         self.i, self.j, self.a = solve_catenary(p1.y, p1.z, p2.y, p2.z, length)
         
-        
+    '''
+    Function: arc_length
+    '''
     def arc_length(self,to_point=None):
         
         if self.a == float("+inf"):
@@ -119,7 +148,11 @@ class CatenaryCurve(object):
             
             return catenary_length(self.p1.y, to_point.y, self.a, self.i)
     
-    #Function takes in a y and outputs a z. Should get a more descriptive name.
+    '''
+    Function: f
+     
+    Takes in a y and outputs a z. Should get a more descriptive name.
+    '''
     def f(self, y, nothing=0):
         zcal = cat_func(y,self.i, self.j, self.a)
         return zcal

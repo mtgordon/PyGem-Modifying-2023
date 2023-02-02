@@ -8,7 +8,9 @@ Created on Thu Dec 14 12:30:04 2017
 
 import numpy as np
 
-
+'''
+Function: getFEAData
+'''
 def getFEAData(FileName,nodes):
     csv = np.genfromtxt (FileName, delimiter=",")
 #    print(csv)
@@ -24,6 +26,9 @@ def getFEAData(FileName,nodes):
         z[i]=csv[i*3+2]
     return [x,y,z]
 
+'''
+Function: getInitialPositions
+'''
 def getInitialPositions(FileName,nodes):
     csv = np.genfromtxt (FileName, delimiter=",")
     x = np.array(csv[:,1])
@@ -31,7 +36,12 @@ def getInitialPositions(FileName,nodes):
     z = np.array(csv[:,3])
     return [x,y,z]
 
-# takes any number of parameters and pythags them
+'''
+Function: pythag
+
+Takes any number of parameters and pythags them
+'''
+
 def pythag(*args):
     squareSum = 0
     for arg in args:
@@ -41,6 +51,9 @@ def pythag(*args):
 
 ##############################################
 
+'''
+Function: lowBoundIndex
+'''
 def lowBoundIndex(array, item):
     closestIndex = 0
     for i, num in enumerate(array):
@@ -50,12 +63,21 @@ def lowBoundIndex(array, item):
             break
     return closestIndex
 
+'''
+Function: yzDist
+'''
 def yzDist(origin, target):
     return ((origin.y-target.y)**2 + (origin.z-target.z)**2)**0.5
 
+'''
+Function: xyDist
+'''
 def xyDist(origin, target):
     return((origin.x-target.x)**2 + (origin.y-target.y)**2)**0.5
 
+'''
+Function: getCenterNodes
+'''
 def getCenterNodes(AVW, thresh):
     centerNodes = []
     for i, node in enumerate(AVW):
@@ -63,6 +85,9 @@ def getCenterNodes(AVW, thresh):
             centerNodes.append(node)
     return centerNodes
 
+'''
+Function: findBottomMostIndex
+'''
 def findBottomMostIndex(centerNodes):
     largestZ = -999999 #"bottom" of the avw is in the positive z direction
     for i, node in enumerate(centerNodes):
@@ -72,6 +97,9 @@ def findBottomMostIndex(centerNodes):
 
     return index
 
+'''
+Function: findClosestNodeIndex
+'''
 def findClosestNodeIndex(origin, centerNodes): #checks in the y and z coordinate only!
     MinDist = 999999
     for i, target in enumerate(centerNodes):
@@ -82,6 +110,9 @@ def findClosestNodeIndex(origin, centerNodes): #checks in the y and z coordinate
 
     return index
 
+'''
+Function: findClosestNodeIndex_Width
+'''
 def findClosestNodeIndex_Width(origin, sliceNodes): #checks in the x and y coordinate only!
     MinDist = 999999
     for i, target in enumerate(sliceNodes):
@@ -92,6 +123,9 @@ def findClosestNodeIndex_Width(origin, sliceNodes): #checks in the x and y coord
 
     return index
 
+'''
+Function: findRightMostIndex
+'''
 def findRightMostIndex(centerNodes):
     largestX = -999999
     for i, node in enumerate(centerNodes):
@@ -101,6 +135,9 @@ def findRightMostIndex(centerNodes):
 
     return index
 
+'''
+Function: getWidthSlice
+'''
 def getWidthSlice(AVW, thresh, zPos):
     sliceNodes = []
     
@@ -115,7 +152,9 @@ def getWidthSlice(AVW, thresh, zPos):
 
     return sliceNodes
 
-
+'''
+Function: getAVWLength
+'''
 def getAVWLength(AVW):
     thresh = 2 #from the center, thresh*2 total strip
     centerNodes = getCenterNodes(AVW, thresh) #will be returned as an array of points
@@ -141,6 +180,9 @@ def getAVWLength(AVW):
 
     return distance
 
+'''
+Function: getAVWWidth
+'''
 def getAVWWidth(AVW):
     thresh = 2
     zPos = 0.2 #high z positions will not work
@@ -173,7 +215,9 @@ def getAVWWidth(AVW):
 
     return xyz
 
-
+'''
+Function: getAVW_z_from_percent
+'''
 def getAVW_z_from_percent(AVW, zPos):
     thresh = 2 #from the center, thresh*2 total strip
     centerNodes = getCenterNodes(AVW, thresh) #will be returned as an array of points

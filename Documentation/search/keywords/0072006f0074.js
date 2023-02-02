@@ -1,0 +1,1 @@
+﻿NDSearch.OnPrefixDataLoaded("rot",["Function"],[["rotate_part",,[[,,,,0,"File:lib/Scaling_-_20201_01_27.py:rotate_part"]]]]);

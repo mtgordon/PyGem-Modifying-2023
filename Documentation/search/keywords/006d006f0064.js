@@ -1,0 +1,1 @@
+﻿NDSearch.OnPrefixDataLoaded("mod",["Function"],[["modify_point",,[["GeneratedDataSet",,,,0,"File:lib/workingWith3dDataSets.py:GeneratedDataSet.modify_point","PythonClass:GeneratedDataSet:modify_point"]]]]);

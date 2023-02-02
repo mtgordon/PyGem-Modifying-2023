@@ -1,0 +1,1 @@
+﻿NDFramePage.OnPageTitleLoaded("File:lib/Test_Curving.py","Test_Curving.py");NDSummary.OnSummaryLoaded("File:lib/Test_Curving.py",[["Python","Python"]],[["Functions","Function"],["Groups","Group"]],[[41,0,1,"Functions","Functions"],[42,0,0,"same_geometry_file","same_geometry_file"],[43,0,0,"AnalogGenerateINP","AnalogGenerateINP"]]);

@@ -1,0 +1,1 @@
+﻿NDFramePage.OnPageTitleLoaded("File:lib/RunINPinAbaqus.py","RunINPinAbaqus.py");NDSummary.OnSummaryLoaded("File:lib/RunINPinAbaqus.py",[["Python","Python"]],[["Functions","Function"],["Groups","Group"]],[[131,0,1,"Functions","Functions"],[132,0,0,"RunINPinAbaqus","RunINPinAbaqus"]]);

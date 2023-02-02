@@ -1,0 +1,1 @@
+﻿NDSearch.OnPrefixDataLoaded("clp",["Function"],[["clParse",,[[,,,,0,"File:lib/clParse2.py:clParse"]]]]);

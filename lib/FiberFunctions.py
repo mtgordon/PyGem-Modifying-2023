@@ -14,7 +14,9 @@ from scipy.optimize import fsolve
 import numpy as np
 import sympy
 
-
+'''
+Function: find_index_of_element_connectons
+'''
 def find_index_of_element_connectons(content):
     possible_starts = []
     for i, line in enumerate(content):
@@ -22,7 +24,10 @@ def find_index_of_element_connectons(content):
             possible_starts.append(i)    
         
     return possible_starts
-    
+
+'''
+Function: try_int
+'''
 def try_int(n):
     try:
         return int(n)
@@ -204,7 +209,9 @@ def CurveFibersInINP(Part_Name1, Part_Name2, scale, inputFile, outputFile, dirVe
     write_part_to_inp(inputFile, outputFile, Part_Name2, ct)
     return     
 
-
+'''
+Function: write_part_to_inp
+'''
 def write_part_to_inp(file_name, outputfile_name, part_name, data_set):
 
     # writes part to file
@@ -215,7 +222,9 @@ def write_part_to_inp(file_name, outputfile_name, part_name, data_set):
     open(outputfile_name, 'w').close()
     io.write_new_inp_file(file_name, part_name, outputfile_name, data_set)
 
-
+'''
+Function: ArcDistance
+'''
 def ArcDistance(a, *sending): # second function
    #(IdealFiberLength, fiber, starting_node_index, ending_node_index, ct, dirVector,NumberOfCycles,avw_node)
     IdealFiberLength, fiber, starting_node_index, ending_node_index, ct, dirVector, NumberOfCycles, avw_node = sending
@@ -267,11 +276,18 @@ def ArcDistance(a, *sending): # second function
 #    print(NewFiberLength-IdealFiberLength)
     return NewFiberLength - IdealFiberLength
 
+'''
+Function: dist
+'''
 def dist(x1, x2, y1, y2, z1, z2):
     return ((x1-x2)**2+(y1-y2)**2+(z1-z2)**2)**0.5
 
 
-#returns average length of a fiber (since it may have multiple "lines")
+'''
+Function: getFiberLength
+
+returns: average length of a fiber (since it may have multiple "lines")
+'''
 def getFiberLength(fiber, inputfile):
     nodes, connections = io.extractPointsForPartFrom2(inputfile, fiber, get_connections=True)
     lines = []
@@ -305,6 +321,9 @@ def getFiberLength(fiber, inputfile):
     #return sum(distances)/len(distances)
     return distances
 
+'''
+Function: getFiberLengths
+'''
 def getFiberLengths(inputfile, fibers):
     fiberLengths = []
     for fiber in fibers:
@@ -314,8 +333,12 @@ def getFiberLengths(inputfile, fibers):
 
 
 
-# This function takes the apical supports (or other fibers), finds the attachemnt points,
-# and tries to make them a certain length
+'''
+Function: CurvePARAFibersInINP
+
+This function takes the apical supports (or other fibers), finds the attachemnt points,
+and tries to make them a certain length
+'''
 def CurvePARAFibersInINP(Part_Name1, Part_Name2, scale, inputFile, outputFile, dirVector,  PM_Mid, connections):
 #    g = 0
 #    PM_Mid_new = PM_Mid.generatedCopy()

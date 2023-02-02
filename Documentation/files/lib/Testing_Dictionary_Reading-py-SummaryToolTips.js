@@ -1,0 +1,1 @@
+﻿NDSummary.OnToolTipsLoaded("File:lib/Testing_Dictionary_Reading.py",{});

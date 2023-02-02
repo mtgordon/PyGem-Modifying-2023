@@ -3,6 +3,9 @@
 from lib.workingWith3dDataSets import Point, DataSet3d, GeneratedDataSet
 from lib.IOfunctions import extractPointsForPartFrom, write_part_to_inp_file
 
+'''
+Function: getSomeDistance
+'''
 def getSomeDistance(referencePoint, desiredPoint, material, filename, HiatusLength):
 	#Load Material from filename (find that function)
 	#materialPoints
@@ -44,6 +47,9 @@ def getSomeDistance(referencePoint, desiredPoint, material, filename, HiatusLeng
 	#+1 is for node number, not index
 	return [closest.distance(referencePoint), closestIndex + 1]
 
+'''
+Function: getXClosestNodes
+'''
 def getXClosestNodes(desiredPoint, X, material, filename):
 	#Load Material from filename (find that function)
 	#materialPoints
@@ -85,7 +91,10 @@ def getXClosestNodes(desiredPoint, X, material, filename):
 
 	return index, closestPoints
 #	return closestPoints
- 
+
+'''
+Function: setPBodyClosest
+'''
 def setPBodyClosest(PBody, GIPoint, input_file_name, output_file_name):
 
     points = []

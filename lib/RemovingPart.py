@@ -7,6 +7,9 @@ Created on Thu Dec  5 13:55:21 2019
 
 #import shutil
 
+'''
+Function: remove_connections
+'''
 def remove_connections(part, INP_file):
 
     with open(INP_file) as f:
