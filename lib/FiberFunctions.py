@@ -85,7 +85,7 @@ def get_connections_for_tissues(tis1, tis2, file_name):
 # and tries to make them a certain length
 def CurveFibersInINP(Part_Name1, Part_Name2, scale, inputFile, outputFile, dirVector):
     #Part_Name1 = AVW, Part_Name2 = the fiber tissue
-    # Getting the coodinates for the AVW in the correct form fromt the file being worked on
+    # Getting the coordinates for the AVW in the correct form from the file being worked on
     FILE_NAME = inputFile
     AVWpoints = np.array(io.extractPointsForPartFrom(FILE_NAME, "OPAL325_AVW_v6"))
     AVW_surface = DataSet3d(list(AVWpoints[:, 0]), list(AVWpoints[:, 1]), list(AVWpoints[:, 2]))
@@ -96,18 +96,23 @@ def CurveFibersInINP(Part_Name1, Part_Name2, scale, inputFile, outputFile, dirVe
     # Result is something like {7: 10, 1: 11, 14: 13, 16: 15, 5: 17, 3: 19, 4: 25, 8: 12, 9: 14, 10: 16, 11: 18, 12: 20}
     # With the first number being the Fiber node and the second being the AVW node
     con_from_1_to_2 = get_connections_for_tissues(Part_Name2, Part_Name1, FILE_NAME) # connections to the surface 
-#    print("Testing this = ", con_from_1_to_2 )
+    # print("Testing this = ", con_from_1_to_2 )
     ct = ConnectingTissue(nodes, connections, con_from_1_to_2)
 #    print(ct)
 #    if(Part_Name2 == "OPAL325_Para_v6"):
 #        
-#       plot_Dataset(ct2.get_starts_of_fibers(), ct2.get_ends_of_fibers())
-
+#       plot_Dataset(c
+    #TODO: This area seems promising, might have to integrate the update_node in ConnectingTissue
 #   The keys might be the node numbers
     fibers = ct.fibers_keys
 #    print("Fibers = ", fibers)
+
+    #TODO: I am going to try to change the first node with a random point(3, 6, 5)
+    ct.update_node(100, Point(3, 6, 5))
+
     for i, fiber in enumerate(fibers): #loop through each fiber
 #        print(fiber)
+        #TODO: These can maybe be manipulated to have the later parts changed
         starting_node_index = ct.starting_nodes[i] # getting indexes of nodes from the i fiber
         ending_node_index = ct.ending_nodes[i]
         
@@ -323,6 +328,8 @@ def getFiberLength(fiber, inputfile):
 
 '''
 Function: getFiberLengths
+
+Calls <getFiberLength> n number of times, when n is the number of elements in the given fibers array
 '''
 def getFiberLengths(inputfile, fibers):
     fiberLengths = []

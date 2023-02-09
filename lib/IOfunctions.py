@@ -137,7 +137,7 @@ def extractPointsForPartFrom2(file_name, part, get_connections=False):
 
     xyz_vals = []
     for data_point in line_vals:
-        # the node values are strings and need to be conerted to floats
+        # the node values are strings and need to be converted to floats
         xyz_vals.append([float(data_point[1]), float(data_point[2]), float(data_point[3])])
       
 

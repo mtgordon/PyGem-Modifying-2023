@@ -115,7 +115,7 @@ class ConnectingTissue(GeneratedDataSet):
             y = value[0][0][1]
             z = value[0][0][2]
          a 3d array of the fibers with coordinate values 
-         as opposed to fiber_keys which is a 2d array that contians lists of indexes
+         as opposed to fiber_keys which is a 2d array that contains lists of indexes
          
     """
     def fibers(self):

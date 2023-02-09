@@ -23,7 +23,6 @@ import time
 import csv
 #import sys
 
-
 # Function: analysis_was_successful
 #
 # Parameters:
@@ -475,3 +474,10 @@ if vary_loading:
                                 pass
 
 run_file.close()
+
+'''
+Section: Notes
+
+About: Command Center of program, run this file to generate INP files
+which will use the functions in <generateINP.py> 
+'''
