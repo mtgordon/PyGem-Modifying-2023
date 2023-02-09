@@ -108,6 +108,7 @@ def CurveFibersInINP(Part_Name1, Part_Name2, scale, inputFile, outputFile, dirVe
 #    print("Fibers = ", fibers)
 
     #TODO: I am going to try to change the first node with a random point(3, 6, 5)
+    #TODO: Update - successfully made a change, and different parameters make different changes
     ct.update_node(100, Point(3, 6, 5))
 
     for i, fiber in enumerate(fibers): #loop through each fiber
