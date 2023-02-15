@@ -358,6 +358,7 @@ def AnalogGenerateINP(TissueParameters, MaterialStartLine, LoadLine, LoadLineNo,
         # Begin Levator Plate Shape Analysis Control Points #
 #############################################################
 
+        #TODO: Try to find way to condense, understand, and create function
         filename = 'LP_shape_analysis_FEA_input.csv'
 
         # # scale and angle for OPALX

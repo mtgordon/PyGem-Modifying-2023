@@ -102,37 +102,45 @@ def CurveFibersInINP(Part_Name1, Part_Name2, scale, inputFile, outputFile, dirVe
 #    if(Part_Name2 == "OPAL325_Para_v6"):
 #        
 #       plot_Dataset(c
-    #TODO: This area seems promising, might have to integrate the update_node in ConnectingTissue
 #   The keys might be the node numbers
     fibers = ct.fibers_keys
 #    print("Fibers = ", fibers)
 
     #TODO: I am going to try to change the first node with a random point(3, 6, 5)
     #TODO: Update - successfully made a change, and different parameters make different changes
-    ct.update_node(100, Point(3, 6, 5))
+    #ct.update_node(555, Point(3, 6, 5))
 
     for i, fiber in enumerate(fibers): #loop through each fiber
 #        print(fiber)
         #TODO: These can maybe be manipulated to have the later parts changed
+        #TODO: Might want to check which is for AVW and which is for body
+        #TODO: This is the point where i can grab the starting index
         starting_node_index = ct.starting_nodes[i] # getting indexes of nodes from the i fiber
         ending_node_index = ct.ending_nodes[i]
-        
+
+        print('Original Staring node index at iter: ' + str(i) + ", index: " + str(starting_node_index))
+        print('Ending node index at iter: ' + str(i) + ", index: " + str(ending_node_index))
+
+        #TODO: this is the point i could grab the starting point
         starting_p = ct.node(starting_node_index) # getting nodes from the index number
         ending_p = ct.node(ending_node_index)
-                    
+
+        starting_p
+
         # I believe the AVW node number that corresponds to where the fiber connects to the AVW
         avw_node_number = ct.avw_connections[ending_node_index]
-        # node (coordiantes) where the fiber connects to the AVW
+        print()
+        # node (coordinates) where the fiber connects to the AVW
         avw_node = AVW_surface.node(avw_node_number)
 
 
-        #Find the length of the origianl fiber
+        #Find the length of the original fiber
         OriginalFiberLength = 0
 
 
 #        Get the original fiber length
         for j, NodeNumber in enumerate(fiber[:-1]): #loop through each node in the fiber except the last
-    
+            #TODO: insert the ct original here to maintain original fiber length
             p = ct.node(NodeNumber)
             q = ct.node(fiber[j+1]) ### Error when it gets to last element of fiber
     
@@ -162,6 +170,7 @@ def CurveFibersInINP(Part_Name1, Part_Name2, scale, inputFile, outputFile, dirVe
 #avw_node
 #        print("NumberOfCycles = ",NumberOfCycles)
 #        print("Dist = ", _dist)
+        #TODO: MOST PROBABLE PLACE TO UPDATE STARTING NODES
         if IdealFiberLength > _dist:
             sending = (IdealFiberLength, fiber, starting_node_index, ending_node_index, ct, dirVector,NumberOfCycles,avw_node)
             [CorrectAmp] = fsolve(ArcDistance, StartingAmplitude, args=sending)
@@ -171,7 +180,9 @@ def CurveFibersInINP(Part_Name1, Part_Name2, scale, inputFile, outputFile, dirVe
 #        print("Correct Amp is = ", CorrectAmp)
         starting_p = ct.node(starting_node_index) # getting nodes from the index number
         ending_p = ct.node(ending_node_index)
-                
+
+        #TODO: This is to change the value of the starting point for the remainder of the function, so everything before is still the original
+        starting_p = Point(3, 6, 5)
         
         minY = starting_p.y # min and max y values from start and end nodes
         maxY = ending_p.y
@@ -185,6 +196,7 @@ def CurveFibersInINP(Part_Name1, Part_Name2, scale, inputFile, outputFile, dirVe
         
         ########################## Set the ending node to the correct location
         
+        #TODO: have these use the new point
         NewXRange = avw_node.x - starting_p.x
         NewYRange = avw_node.y - starting_p.y
         NewZRange = avw_node.z - starting_p.z
@@ -197,6 +209,7 @@ def CurveFibersInINP(Part_Name1, Part_Name2, scale, inputFile, outputFile, dirVe
             
             RangedpY = NumberOfCycles*(p.y - minY) / (maxY - minY) * math.pi # Set a y range betweeen 0 and PI    
             
+            #TODO: have the newRange have the new point and the starting_p at the end (with oldrange) be the new point
             NewX = np.sign(p.x) * dirVector[0]* CorrectAmp * math.sin(RangedpY) + (p.x - starting_p.x) * NewXRange / OldXRange + starting_p.x # different so that it can be done to curve inwards from both sides of the AVW
             NewY = dirVector[1]* CorrectAmp * math.sin(RangedpY) +  (p.y - starting_p.y) * NewYRange / OldYRange + starting_p.y
             NewZ = dirVector[2]* CorrectAmp * math.sin(RangedpY) +  (p.z - starting_p.z) * NewZRange / OldZRange + starting_p.z
