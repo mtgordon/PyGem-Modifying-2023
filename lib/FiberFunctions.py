@@ -83,13 +83,16 @@ def get_connections_for_tissues(tis1, tis2, file_name):
 #
 # This function takes the apical supports (or other fibers), finds the attachment points,
 # and tries to make them a certain length
-def CurveFibersInINP(Part_Name1, Part_Name2, scale, inputFile, outputFile, dirVector):
+def CurveFibersInINP(Part_Name1, Part_Name2, scale, inputFile, outputFile, dirVector, updatedP=None):
     #Part_Name1 = AVW, Part_Name2 = the fiber tissue
     # Getting the coordinates for the AVW in the correct form from the file being worked on
     FILE_NAME = inputFile
     AVWpoints = np.array(io.extractPointsForPartFrom(FILE_NAME, "OPAL325_AVW_v6"))
     AVW_surface = DataSet3d(list(AVWpoints[:, 0]), list(AVWpoints[:, 1]), list(AVWpoints[:, 2]))
 
+    #TODO: To streamline the possible updated node, the new node would be in the csv file here
+    #TODO: from here i would need to understand how the csv works, and create a way to extract them
+    #TODO: and later use them down below
     nodes, connections = io.extractPointsForPartFrom2(FILE_NAME, Part_Name2, get_connections=True) #nodes and their connections to each other
     
     # what gets returned? Are the AVW node or Fiber nodes?
@@ -124,8 +127,6 @@ def CurveFibersInINP(Part_Name1, Part_Name2, scale, inputFile, outputFile, dirVe
         #TODO: this is the point i could grab the starting point
         starting_p = ct.node(starting_node_index) # getting nodes from the index number
         ending_p = ct.node(ending_node_index)
-
-        starting_p
 
         # I believe the AVW node number that corresponds to where the fiber connects to the AVW
         avw_node_number = ct.avw_connections[ending_node_index]
@@ -182,8 +183,8 @@ def CurveFibersInINP(Part_Name1, Part_Name2, scale, inputFile, outputFile, dirVe
         ending_p = ct.node(ending_node_index)
 
         #TODO: This is to change the value of the starting point for the remainder of the function, so everything before is still the original
-        starting_p = Point(3, 6, 5)
-        
+        #starting_p = Point(3, 6, 5)
+
         minY = starting_p.y # min and max y values from start and end nodes
         maxY = ending_p.y
 
@@ -195,11 +196,16 @@ def CurveFibersInINP(Part_Name1, Part_Name2, scale, inputFile, outputFile, dirVe
         OldZRange = ending_p.z-starting_p.z
         
         ########################## Set the ending node to the correct location
-        
+
+        if updatedP is not None:
+            starting_p_alterable = updatedP
+        else:
+            starting_p_alterable = starting_p
+
         #TODO: have these use the new point
-        NewXRange = avw_node.x - starting_p.x
-        NewYRange = avw_node.y - starting_p.y
-        NewZRange = avw_node.z - starting_p.z
+        NewXRange = avw_node.x - starting_p_alterable.x
+        NewYRange = avw_node.y - starting_p_alterable.y
+        NewZRange = avw_node.z - starting_p_alterable.z
 
 
         FinalFiberLength = 0
@@ -210,9 +216,9 @@ def CurveFibersInINP(Part_Name1, Part_Name2, scale, inputFile, outputFile, dirVe
             RangedpY = NumberOfCycles*(p.y - minY) / (maxY - minY) * math.pi # Set a y range betweeen 0 and PI    
             
             #TODO: have the newRange have the new point and the starting_p at the end (with oldrange) be the new point
-            NewX = np.sign(p.x) * dirVector[0]* CorrectAmp * math.sin(RangedpY) + (p.x - starting_p.x) * NewXRange / OldXRange + starting_p.x # different so that it can be done to curve inwards from both sides of the AVW
-            NewY = dirVector[1]* CorrectAmp * math.sin(RangedpY) +  (p.y - starting_p.y) * NewYRange / OldYRange + starting_p.y
-            NewZ = dirVector[2]* CorrectAmp * math.sin(RangedpY) +  (p.z - starting_p.z) * NewZRange / OldZRange + starting_p.z
+            NewX = np.sign(p.x) * dirVector[0]* CorrectAmp * math.sin(RangedpY) + (p.x - starting_p.x) * NewXRange / OldXRange + starting_p_alterable.x # different so that it can be done to curve inwards from both sides of the AVW
+            NewY = dirVector[1]* CorrectAmp * math.sin(RangedpY) +  (p.y - starting_p.y) * NewYRange / OldYRange + starting_p_alterable.y
+            NewZ = dirVector[2]* CorrectAmp * math.sin(RangedpY) +  (p.z - starting_p.z) * NewZRange / OldZRange + starting_p_alterable.z
            
             new_p = Point(NewX, NewY, NewZ)
             p = new_p
