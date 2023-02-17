@@ -359,7 +359,7 @@ def AnalogGenerateINP(TissueParameters, MaterialStartLine, LoadLine, LoadLineNo,
 #############################################################
 
         #TODO: Try to find way to condense, understand, and create function
-        filename = 'LP_shape_analysis_FEA_input.csv'
+        filename = 'LP_shape_analysis_FEA_input.csv' '''PARAMETER'''
 
         # # scale and angle for OPALX
         # scale = 1.0075
@@ -368,7 +368,7 @@ def AnalogGenerateINP(TissueParameters, MaterialStartLine, LoadLine, LoadLineNo,
         # scale and angle for Aging
         scale = 0.91
         angle = -0.088
-
+        '''PARAMETERS'''
 
 
         # PCA_1_SD = 17.89743185504574

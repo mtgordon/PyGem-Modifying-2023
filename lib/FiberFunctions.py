@@ -213,7 +213,7 @@ def CurveFibersInINP(Part_Name1, Part_Name2, scale, inputFile, outputFile, dirVe
     
             p = ct.node(NodeNumber)
             
-            RangedpY = NumberOfCycles*(p.y - minY) / (maxY - minY) * math.pi # Set a y range betweeen 0 and PI    
+            RangedpY = NumberOfCycles*(p.y - minY) / (maxY - minY) * math.pi # Set a y range between 0 and PI
             
             #TODO: have the newRange have the new point and the starting_p at the end (with oldrange) be the new point
             NewX = np.sign(p.x) * dirVector[0]* CorrectAmp * math.sin(RangedpY) + (p.x - starting_p.x) * NewXRange / OldXRange + starting_p_alterable.x # different so that it can be done to curve inwards from both sides of the AVW
