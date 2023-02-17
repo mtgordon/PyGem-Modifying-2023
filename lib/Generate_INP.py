@@ -374,6 +374,7 @@ def AnalogGenerateINP(TissueParameters, MaterialStartLine, LoadLine, LoadLineNo,
         # PCA_1_SD = 17.89743185504574
         # PCA_1_coefficient = 1
         # PCA_1_score = PCA_1_SD*PCA_1_coefficient
+        #TODO: These are given via parameters of the overall analog generate function
         PCA_1_score = levator_plate_PC1
 
         # PCA_2_SD = 15.963434817775179
@@ -381,6 +382,7 @@ def AnalogGenerateINP(TissueParameters, MaterialStartLine, LoadLine, LoadLineNo,
         # PCA_2_score = PCA_2_SD * PCA_2_coefficient
         PCA_2_score = levator_plate_PC2
 
+        #TODO: fileName could be a candidate parameter for final function
         df = pandas.read_csv(filename)
         print(df)
 
