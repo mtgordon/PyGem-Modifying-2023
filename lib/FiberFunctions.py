@@ -90,9 +90,6 @@ def CurveFibersInINP(Part_Name1, Part_Name2, scale, inputFile, outputFile, dirVe
     AVWpoints = np.array(io.extractPointsForPartFrom(FILE_NAME, "OPAL325_AVW_v6"))
     AVW_surface = DataSet3d(list(AVWpoints[:, 0]), list(AVWpoints[:, 1]), list(AVWpoints[:, 2]))
 
-    #TODO: To streamline the possible updated node, the new node would be in the csv file here
-    #TODO: from here i would need to understand how the csv works, and create a way to extract them
-    #TODO: and later use them down below
     nodes, connections = io.extractPointsForPartFrom2(FILE_NAME, Part_Name2, get_connections=True) #nodes and their connections to each other
     
     # what gets returned? Are the AVW node or Fiber nodes?
@@ -141,7 +138,6 @@ def CurveFibersInINP(Part_Name1, Part_Name2, scale, inputFile, outputFile, dirVe
 
 #        Get the original fiber length
         for j, NodeNumber in enumerate(fiber[:-1]): #loop through each node in the fiber except the last
-            #TODO: insert the ct original here to maintain original fiber length
             p = ct.node(NodeNumber)
             q = ct.node(fiber[j+1]) ### Error when it gets to last element of fiber
     
@@ -182,9 +178,6 @@ def CurveFibersInINP(Part_Name1, Part_Name2, scale, inputFile, outputFile, dirVe
         starting_p = ct.node(starting_node_index) # getting nodes from the index number
         ending_p = ct.node(ending_node_index)
 
-        #TODO: This is to change the value of the starting point for the remainder of the function, so everything before is still the original
-        #starting_p = Point(3, 6, 5)
-
         minY = starting_p.y # min and max y values from start and end nodes
         maxY = ending_p.y
 
@@ -197,6 +190,7 @@ def CurveFibersInINP(Part_Name1, Part_Name2, scale, inputFile, outputFile, dirVe
         
         ########################## Set the ending node to the correct location
 
+        #TODO: If else for the updated point located here
         if updatedP is not None:
             starting_p_alterable = updatedP
         else:
@@ -216,9 +210,9 @@ def CurveFibersInINP(Part_Name1, Part_Name2, scale, inputFile, outputFile, dirVe
             RangedpY = NumberOfCycles*(p.y - minY) / (maxY - minY) * math.pi # Set a y range between 0 and PI
             
             #TODO: have the newRange have the new point and the starting_p at the end (with oldrange) be the new point
-            NewX = np.sign(p.x) * dirVector[0]* CorrectAmp * math.sin(RangedpY) + (p.x - starting_p.x) * NewXRange / OldXRange + starting_p_alterable.x # different so that it can be done to curve inwards from both sides of the AVW
-            NewY = dirVector[1]* CorrectAmp * math.sin(RangedpY) +  (p.y - starting_p.y) * NewYRange / OldYRange + starting_p_alterable.y
-            NewZ = dirVector[2]* CorrectAmp * math.sin(RangedpY) +  (p.z - starting_p.z) * NewZRange / OldZRange + starting_p_alterable.z
+            NewX = np.sign(p.x) * dirVector[0] * CorrectAmp * math.sin(RangedpY) + (p.x - starting_p.x) * NewXRange / OldXRange + starting_p_alterable.x # different so that it can be done to curve inwards from both sides of the AVW
+            NewY = dirVector[1] * CorrectAmp * math.sin(RangedpY) + (p.y - starting_p.y) * NewYRange / OldYRange + starting_p_alterable.y
+            NewZ = dirVector[2] * CorrectAmp * math.sin(RangedpY) + (p.z - starting_p.z) * NewZRange / OldZRange + starting_p_alterable.z
            
             new_p = Point(NewX, NewY, NewZ)
             p = new_p
@@ -233,6 +227,7 @@ def CurveFibersInINP(Part_Name1, Part_Name2, scale, inputFile, outputFile, dirVe
 #    print(ct)
     write_part_to_inp(inputFile, outputFile, Part_Name2, ct)
     return     
+
 
 '''
 Function: write_part_to_inp

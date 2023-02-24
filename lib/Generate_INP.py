@@ -359,7 +359,8 @@ def AnalogGenerateINP(TissueParameters, MaterialStartLine, LoadLine, LoadLineNo,
 #############################################################
 
         #TODO: Try to find way to condense, understand, and create function
-        filename = 'LP_shape_analysis_FEA_input.csv' '''PARAMETER'''
+        filename = 'LP_shape_analysis_FEA_input.csv'
+        '''PARAMETER'''
 
         # # scale and angle for OPALX
         # scale = 1.0075
@@ -696,7 +697,7 @@ def AnalogGenerateINP(TissueParameters, MaterialStartLine, LoadLine, LoadLineNo,
         # print("ICM %%%%%%%%%%%%%%%%%%", LP_CPs_mod)
 
 ##################################################################
-        # End Levator Plate Shape Analysis Control Points #
+        # End ICM Plate Shape Analysis Control Points #
 ##################################################################
 
 
