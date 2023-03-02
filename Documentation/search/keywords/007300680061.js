@@ -1,0 +1,1 @@
+﻿NDSearch.OnPrefixDataLoaded("sha",["Information"],[["Shape",,[[,"Decomposition of Shape Analysis Code Section",,,0,"File:lib/Shape_Analysis.py:Decomposition_of_Shape_Analysis_Code_Section"]]]]);

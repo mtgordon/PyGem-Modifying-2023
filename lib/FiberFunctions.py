@@ -83,7 +83,7 @@ def get_connections_for_tissues(tis1, tis2, file_name):
 #
 # This function takes the apical supports (or other fibers), finds the attachment points,
 # and tries to make them a certain length
-def CurveFibersInINP(Part_Name1, Part_Name2, scale, inputFile, outputFile, dirVector, updatedP=None):
+def CurveFibersInINP(Part_Name1, Part_Name2, scale, inputFile, outputFile, dirVector, updatedPositiveP=None, updatedNegativeP=None):
     #Part_Name1 = AVW, Part_Name2 = the fiber tissue
     # Getting the coordinates for the AVW in the correct form from the file being worked on
     FILE_NAME = inputFile
@@ -106,22 +106,14 @@ def CurveFibersInINP(Part_Name1, Part_Name2, scale, inputFile, outputFile, dirVe
     fibers = ct.fibers_keys
 #    print("Fibers = ", fibers)
 
-    #TODO: I am going to try to change the first node with a random point(3, 6, 5)
-    #TODO: Update - successfully made a change, and different parameters make different changes
-    #ct.update_node(555, Point(3, 6, 5))
-
     for i, fiber in enumerate(fibers): #loop through each fiber
 #        print(fiber)
-        #TODO: These can maybe be manipulated to have the later parts changed
-        #TODO: Might want to check which is for AVW and which is for body
-        #TODO: This is the point where i can grab the starting index
         starting_node_index = ct.starting_nodes[i] # getting indexes of nodes from the i fiber
         ending_node_index = ct.ending_nodes[i]
 
-        print('Original Staring node index at iter: ' + str(i) + ", index: " + str(starting_node_index))
-        print('Ending node index at iter: ' + str(i) + ", index: " + str(ending_node_index))
+        # print('Original Staring node index at iter: ' + str(i) + ", index: " + str(starting_node_index))
+        # print('Ending node index at iter: ' + str(i) + ", index: " + str(ending_node_index))
 
-        #TODO: this is the point i could grab the starting point
         starting_p = ct.node(starting_node_index) # getting nodes from the index number
         ending_p = ct.node(ending_node_index)
 
@@ -191,10 +183,19 @@ def CurveFibersInINP(Part_Name1, Part_Name2, scale, inputFile, outputFile, dirVe
         ########################## Set the ending node to the correct location
 
         #TODO: If else for the updated point located here
-        if updatedP is not None:
-            starting_p_alterable = updatedP
-        else:
-            starting_p_alterable = starting_p
+        # if updatedPositiveP is not None and Part_Name2 == "OPAL325_CL_v6":
+        #     starting_p_alterable = updatedPositiveP
+        # else:
+        #     starting_p_alterable = starting_p
+
+        #TODO: New if branch to implement +/-
+        if Part_Name2 == "OPAL325_CL_v6":
+            if np.sign(starting_p.x) < 0 and updatedNegativeP is not None:
+                starting_p_alterable = updatedNegativeP
+            elif np.sign(starting_p.x) > 0 and updatedPositiveP is not None:
+                starting_p_alterable = updatedPositiveP
+            else:
+                starting_p_alterable = starting_p
 
         #TODO: have these use the new point
         NewXRange = avw_node.x - starting_p_alterable.x
@@ -210,6 +211,9 @@ def CurveFibersInINP(Part_Name1, Part_Name2, scale, inputFile, outputFile, dirVe
             RangedpY = NumberOfCycles*(p.y - minY) / (maxY - minY) * math.pi # Set a y range between 0 and PI
             
             #TODO: have the newRange have the new point and the starting_p at the end (with oldrange) be the new point
+
+
+
             NewX = np.sign(p.x) * dirVector[0] * CorrectAmp * math.sin(RangedpY) + (p.x - starting_p.x) * NewXRange / OldXRange + starting_p_alterable.x # different so that it can be done to curve inwards from both sides of the AVW
             NewY = dirVector[1] * CorrectAmp * math.sin(RangedpY) + (p.y - starting_p.y) * NewYRange / OldYRange + starting_p_alterable.y
             NewZ = dirVector[2] * CorrectAmp * math.sin(RangedpY) + (p.z - starting_p.z) * NewZRange / OldZRange + starting_p_alterable.z
