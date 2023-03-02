@@ -360,8 +360,7 @@ def AnalogGenerateINP(TissueParameters, MaterialStartLine, LoadLine, LoadLineNo,
             = lib.Shape_Analysis.levator_shape_analysis(levator_plate_PC1, levator_plate_PC2)
 
         #Call ICM shape analysis
-        \
-        = lib.Shape_Analysis.ICM_shape_analysis(ICM_PC1, ICM_PC2, ys, zs)
+        lib.Shape_Analysis.ICM_shape_analysis(ICM_PC1, ICM_PC2, ys, zs)
 
 
 
