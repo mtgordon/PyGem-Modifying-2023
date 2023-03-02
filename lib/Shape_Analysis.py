@@ -39,8 +39,9 @@ def generate_data_points(part, PCA_1, PCA_2, filename, n):
     center_xs = []
 
     # Generate the data points in the MRI coordinate system
-    for i in range(1, n):
-        condition = df["point_number"] == str(i)
+    for i in range(1, len(df)):
+        #TODO: Remove the str cast after getting rid of string line in csv
+        condition = df["point_number"] == i
         row_num = index[condition]
         col_num = df.columns.get_loc(part + '_PC1_x_coefficient')
         PC1_m_x = float(df.iloc[row_num, col_num])
@@ -110,7 +111,8 @@ def levator_shape_analysis(PCA_1, PCA_2):
     print(ys)
 
     index = df.index
-    condition = df["point_number"] == str(8)
+    #TODO: remove str cast
+    condition = df["point_number"] == 8
     row_num = index[condition]
     col_num = df.columns.get_loc('LP_FEA_z')
     FEA_z = float(df.iloc[row_num,col_num])

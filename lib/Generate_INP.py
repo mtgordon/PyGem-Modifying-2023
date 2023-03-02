@@ -360,7 +360,8 @@ def AnalogGenerateINP(TissueParameters, MaterialStartLine, LoadLine, LoadLineNo,
             = lib.Shape_Analysis.levator_shape_analysis(levator_plate_PC1, levator_plate_PC2)
 
         #Call ICM shape analysis
-        lib.Shape_Analysis.ICM_shape_analysis(ICM_PC1, ICM_PC2, ys, zs)
+        \
+        = lib.Shape_Analysis.ICM_shape_analysis(ICM_PC1, ICM_PC2, ys, zs)
 
 
 
@@ -368,7 +369,7 @@ def AnalogGenerateINP(TissueParameters, MaterialStartLine, LoadLine, LoadLineNo,
         # initial_CPs = np.concatenate((PM_boundary_CPs, LA_boundary_CPs, hiatus_original_CP, inner_PM_CPs, AVW_CPs_initial), axis = 0)
         # cust_CPs = np.concatenate((PM_boundary_CPs, LA_boundary_CPs, hiatus_deformed_CP, inner_PM_deformed_CPs, AVW_CPs_mod), axis = 0)
         initial_CPs = np.concatenate((PM_boundary_CPs, LA_boundary_CPs, hiatus_original_CP, inner_PM_CPs, AVW_CPs_initial, LP_CPs_initial), axis = 0)
-        cust_CPs = np.concatenate((PM_boundary_CPs, LA_boundary_CPs, hiatus_deformed_CP, inner_PM_deformed_CPs, AVW_CPs_mod, LP_CPs_initial), axis = 0)
+        cust_CPs = np.concatenate((PM_boundary_CPs, LA_boundary_CPs, hiatus_deformed_CP, inner_PM_deformed_CPs, AVW_CPs_mod, LP_CPs_mod), axis = 0)
 
 
         fig = plt.figure(2)

@@ -183,11 +183,6 @@ def CurveFibersInINP(Part_Name1, Part_Name2, scale, inputFile, outputFile, dirVe
         ########################## Set the ending node to the correct location
 
         #TODO: If else for the updated point located here
-        # if updatedPositiveP is not None and Part_Name2 == "OPAL325_CL_v6":
-        #     starting_p_alterable = updatedPositiveP
-        # else:
-        #     starting_p_alterable = starting_p
-
         #TODO: New if branch to implement +/-
         if Part_Name2 == "OPAL325_CL_v6":
             if np.sign(starting_p.x) < 0 and updatedNegativeP is not None:
@@ -196,6 +191,8 @@ def CurveFibersInINP(Part_Name1, Part_Name2, scale, inputFile, outputFile, dirVe
                 starting_p_alterable = updatedPositiveP
             else:
                 starting_p_alterable = starting_p
+        else:
+            starting_p_alterable = starting_p
 
         #TODO: have these use the new point
         NewXRange = avw_node.x - starting_p_alterable.x
