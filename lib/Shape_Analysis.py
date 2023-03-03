@@ -174,7 +174,7 @@ def ICM_shape_analysis(PCA_1, PCA_2, ys, zs):
     angle = -0.040693832
 
     #Call helper function
-    df, index, xs, ys, initial_lp_CP_ys, initial_lp_CP_xs, center_xs \
+    df, index, xs, ys, initial_lp_CP_ys, initial_lp_CP_zs, center_xs \
         = generate_data_points('ICM', PCA_1, PCA_2, filename, 10)
 
     xs = np.array(xs)
@@ -311,12 +311,14 @@ def ICM_shape_analysis(PCA_1, PCA_2, ys, zs):
     # print(zs)
     # print(ys)
 
-    # ICM_CPs_initial = np.c_[center_xs,initial_lp_CP_ys,initial_lp_CP_zs]
+    ICM_CPs_initial = np.c_[center_xs,initial_lp_CP_ys,initial_lp_CP_zs]
     ICM_CPs_mod = np.c_[xs,ys,zs]
 
     ICM_CPs_mod_x = xs
     ICM_CPs_mod_y = ys
     ICM_CPs_mod_z = zs
 
+    #TODO: Returning the x, y, z separately rn, but could just do array instead and changes uses in Generate_INP
+    return ICM_CPs_initial, ICM_CPs_mod, ICM_CPs_mod_x, ICM_CPs_mod_y, ICM_CPs_mod_z
 
     # print("ICM %%%%%%%%%%%%%%%%%%", LP_CPs_mod)

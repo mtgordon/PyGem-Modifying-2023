@@ -360,7 +360,8 @@ def AnalogGenerateINP(TissueParameters, MaterialStartLine, LoadLine, LoadLineNo,
             = lib.Shape_Analysis.levator_shape_analysis(levator_plate_PC1, levator_plate_PC2)
 
         #Call ICM shape analysis
-        lib.Shape_Analysis.ICM_shape_analysis(ICM_PC1, ICM_PC2, ys, zs)
+        ICM_CPs_initial, ICM_CPs_mod, ICM_CPs_mod_x, ICM_CPs_mod_y, ICM_CPs_mod_z \
+            = lib.Shape_Analysis.ICM_shape_analysis(ICM_PC1, ICM_PC2, ys, zs)
 
 
 
@@ -664,7 +665,7 @@ def AnalogGenerateINP(TissueParameters, MaterialStartLine, LoadLine, LoadLineNo,
 #         init_new_curve_x = interp1d(init_percent_dist_arr, new_xs)
 
 #         #### Same thing using the modified CPs instead of FEA coordinates
-
+            #TODO: Here is where the separate x, y, z is used from ICM shape analysis
 #         # go through and find the distance between each point,
 #         # keeping track of the distance where x is closest to the center
 #         ordered_ICM_xs = ICM_CPs_mod_x
