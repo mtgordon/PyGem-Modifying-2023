@@ -360,7 +360,7 @@ def AnalogGenerateINP(TissueParameters, MaterialStartLine, LoadLine, LoadLineNo,
             = lib.Shape_Analysis.levator_shape_analysis(levator_plate_PC1, levator_plate_PC2)
 
         #Call ICM shape analysis
-        ICM_CPs_initial, ICM_CPs_mod, ICM_CPs_mod_x, ICM_CPs_mod_y, ICM_CPs_mod_z \
+        ICM_CPs_initial, ICM_CPs_mod, ICM_CPs_mod_x, ICM_CPs_mod_y, ICM_CPs_mod_z, perp_slope, mid_plate_y, mid_plate_z \
             = lib.Shape_Analysis.ICM_shape_analysis(ICM_PC1, ICM_PC2, ys, zs)
 
 
@@ -555,165 +555,166 @@ def AnalogGenerateINP(TissueParameters, MaterialStartLine, LoadLine, LoadLineNo,
 # #### Do ICM Transformation
 # #### Do ICM Transformation
 # #### Do ICM Transformation
+#TODO: From here to "droop" is the commented out stuff
 
-#         # First I need to create Control Points for the current levator ICM
-
-
-#         # find the "y" intercept for that line
-#         perp_intercept = mid_plate_y - perp_slope*mid_plate_z
-
-#         # setting up p1 and p2 to find the distance between that line and
-#         # p1 = np.array([mid_plate_z,interp_init(center, mid_plate_z)])
-#         p1 = np.array([mid_plate_z,mid_plate_y])
-#         p2_z = -20
-#         p2 = np.array([p2_z,perp_slope*p2_z + perp_intercept])
+        # First I need to create Control Points for the current levator ICM
 
 
-#         # getting the nodes for original levator from Generic file
-#         levator = 'OPAL325_LA'
-#         generic_LA = io.get_dataset_from_file(temp_file, levator)
+        # find the "y" intercept for that line
+        perp_intercept = mid_plate_y - perp_slope*mid_plate_z
 
-#         # # getting the nodes for the modified levator
-#         # customized_LA = io.get_dataset_from_file(customized_INP, levator)
-
-#         # get the initial levator nodes into an numpy array and do an intrepolation surface
-#         xs = np.asarray(generic_LA.xAxis)
-#         ys = np.asarray(generic_LA.yAxis)
-#         zs = np.asarray(generic_LA.zAxis)
-#         initial_LA = np.c_[xs,ys,zs]
-
-#         # how many mm a point can be off of the ICM line and still be part of the ICM
-#         ICM_threshold = 1
-
-#         # creating the ICM Control points
-#         ICM_Nodes = np.array([[0,0,0]])
-#         for node in initial_LA:
-#             # z,y
-#             p3 = np.array([node[2],node[1]])
-#             if abs((np.abs(np.cross(p2-p1, p1-p3))) / np.linalg.norm(p2-p1)) < ICM_threshold:
-#                 ICM_Nodes = np.concatenate((ICM_Nodes, [node]), axis = 0)
-
-#         # remove the dummy first element
-#         ICM_Nodes = ICM_Nodes[1:]
+        # setting up p1 and p2 to find the distance between that line and
+        # p1 = np.array([mid_plate_z,interp_init(center, mid_plate_z)])
+        p1 = np.array([mid_plate_z,mid_plate_y])
+        p2_z = -20
+        p2 = np.array([p2_z,perp_slope*p2_z + perp_intercept])
 
 
-#         # reformatting the control points
-#         ICM_xs = []
-#         ICM_ys = []
-#         ICM_zs = []
-#         for coordinates in ICM_Nodes:
-#             ICM_zs.append(coordinates[2])
-#             ICM_ys.append(coordinates[1])
-#             ICM_xs.append(coordinates[0])
+        # getting the nodes for original levator from Generic file
+        levator = 'OPAL325_LA'
+        generic_LA = io.get_dataset_from_file(temp_file, levator)
+
+        # # getting the nodes for the modified levator
+        # customized_LA = io.get_dataset_from_file(customized_INP, levator)
+
+        # get the initial levator nodes into an numpy array and do an intrepolation surface
+        xs = np.asarray(generic_LA.xAxis)
+        ys = np.asarray(generic_LA.yAxis)
+        zs = np.asarray(generic_LA.zAxis)
+        initial_LA = np.c_[xs,ys,zs]
+
+        # how many mm a point can be off of the ICM line and still be part of the ICM
+        ICM_threshold = 1
+
+        # creating the ICM Control points
+        ICM_Nodes = np.array([[0,0,0]])
+        for node in initial_LA:
+            # z,y
+            p3 = np.array([node[2],node[1]])
+            if abs((np.abs(np.cross(p2-p1, p1-p3))) / np.linalg.norm(p2-p1)) < ICM_threshold:
+                ICM_Nodes = np.concatenate((ICM_Nodes, [node]), axis = 0)
+
+        # remove the dummy first element
+        ICM_Nodes = ICM_Nodes[1:]
 
 
-#         ordered_ICM_zs = [x for _, x in sorted(zip(ICM_xs, ICM_zs))]
-#         ordered_ICM_xs = sorted(ICM_xs)
-#         ordered_ICM_ys = [x for _, x in sorted(zip(ICM_xs, ICM_ys))]
-
-#         # go through and find the distance between each point,
-#         # keeping track of the distance where x is closest to the center
-#         tot_dist = 0
-#         tot_dist_arr = []
-#         last_z = ordered_ICM_zs[0]
-#         last_y = ordered_ICM_ys[0]
-#         last_x = ordered_ICM_xs[0]
-#         for index, z in enumerate(ordered_ICM_zs):
-#             dist = ((last_z - z)**2+(last_y - ordered_ICM_ys[index])**2 + ((last_x - ordered_ICM_xs[index])**2))**.5
-#             last_z = ordered_ICM_zs[index]
-#             last_y = ordered_ICM_ys[index]
-#             last_x = ordered_ICM_xs[index]
-#             tot_dist += dist
-#             tot_dist_arr.append(tot_dist)
+        # reformatting the control points
+        ICM_xs = []
+        ICM_ys = []
+        ICM_zs = []
+        for coordinates in ICM_Nodes:
+            ICM_zs.append(coordinates[2])
+            ICM_ys.append(coordinates[1])
+            ICM_xs.append(coordinates[0])
 
 
+        ordered_ICM_zs = [x for _, x in sorted(zip(ICM_xs, ICM_zs))]
+        ordered_ICM_xs = sorted(ICM_xs)
+        ordered_ICM_ys = [x for _, x in sorted(zip(ICM_xs, ICM_ys))]
 
-#         curve_x = interp1d(tot_dist_arr, ordered_ICM_xs)
-#         # curve_y = UnivariateSpline(tot_dist_arr, y_sorted, k = 5)
-#         curve_y = interp1d(tot_dist_arr, ordered_ICM_ys)
-#         # curve_z = UnivariateSpline(tot_dist_arr, z_sorted, k = 5)
-#         curve_z = interp1d(tot_dist_arr, ordered_ICM_zs)
-#         # curve_x = interp1d(tot_dist_arr, x_sorted)
-
-#         # the points are then createdto make the spacing for the points equal
-#         spaced_distance_array = np.linspace(0,tot_dist_arr[-1],100)
-
-#         new_distance_array  = [0]
-#         # previous_z = curve_z(0)
-#         # previous_y = curve_y(0)
-#         # previous_x = curve_x(0)
-#         new_zs = [curve_z(0)]
-#         new_ys = [curve_y(0)]
-#         new_xs = [curve_x(0)]
-#         center_x_check = 99999999
-#         for i in range (0,len(spaced_distance_array)):
-#             new_ys.append(float(curve_y(spaced_distance_array[i])))
-#             new_zs.append(float(curve_z(spaced_distance_array[i])))
-#             new_xs.append(float(curve_x(spaced_distance_array[i])))
-#             new_distance_array.append(((new_ys[-1] - new_ys[-2])**2 + (new_zs[-1]-new_zs[-2])**2 + (new_xs[-1] - new_xs[-2])**2)**0.5 + new_distance_array[-1])
-#             if abs(new_xs[-1] - (-2)) < center_x_check:
-#                 center_x_check = abs(new_xs[-1] - (-2))
-#                 init_center_dist = new_distance_array[-1]
-#             # print('x,y,z,dist:', new_xs[-1], new_ys[-1], new_zs[-1], new_distance_array[-1])
+        # go through and find the distance between each point,
+        # keeping track of the distance where x is closest to the center
+        tot_dist = 0
+        tot_dist_arr = []
+        last_z = ordered_ICM_zs[0]
+        last_y = ordered_ICM_ys[0]
+        last_x = ordered_ICM_xs[0]
+        for index, z in enumerate(ordered_ICM_zs):
+            dist = ((last_z - z)**2+(last_y - ordered_ICM_ys[index])**2 + ((last_x - ordered_ICM_xs[index])**2))**.5
+            last_z = ordered_ICM_zs[index]
+            last_y = ordered_ICM_ys[index]
+            last_x = ordered_ICM_xs[index]
+            tot_dist += dist
+            tot_dist_arr.append(tot_dist)
 
 
-#         init_percent_dist_arr = new_distance_array/new_distance_array[-1]
-#         init_center_percent_dist = init_center_dist/new_distance_array[-1]
 
-#         init_new_curve_y = interp1d(init_percent_dist_arr, new_ys)
-#         init_new_curve_z = interp1d(init_percent_dist_arr, new_zs)
-#         init_new_curve_x = interp1d(init_percent_dist_arr, new_xs)
+        curve_x = interp1d(tot_dist_arr, ordered_ICM_xs)
+        # curve_y = UnivariateSpline(tot_dist_arr, y_sorted, k = 5)
+        curve_y = interp1d(tot_dist_arr, ordered_ICM_ys)
+        # curve_z = UnivariateSpline(tot_dist_arr, z_sorted, k = 5)
+        curve_z = interp1d(tot_dist_arr, ordered_ICM_zs)
+        # curve_x = interp1d(tot_dist_arr, x_sorted)
 
-#         #### Same thing using the modified CPs instead of FEA coordinates
+        # the points are then createdto make the spacing for the points equal
+        spaced_distance_array = np.linspace(0,tot_dist_arr[-1],100)
+
+        new_distance_array  = [0]
+        # previous_z = curve_z(0)
+        # previous_y = curve_y(0)
+        # previous_x = curve_x(0)
+        new_zs = [curve_z(0)]
+        new_ys = [curve_y(0)]
+        new_xs = [curve_x(0)]
+        center_x_check = 99999999
+        for i in range (0,len(spaced_distance_array)):
+            new_ys.append(float(curve_y(spaced_distance_array[i])))
+            new_zs.append(float(curve_z(spaced_distance_array[i])))
+            new_xs.append(float(curve_x(spaced_distance_array[i])))
+            new_distance_array.append(((new_ys[-1] - new_ys[-2])**2 + (new_zs[-1]-new_zs[-2])**2 + (new_xs[-1] - new_xs[-2])**2)**0.5 + new_distance_array[-1])
+            if abs(new_xs[-1] - (-2)) < center_x_check:
+                center_x_check = abs(new_xs[-1] - (-2))
+                init_center_dist = new_distance_array[-1]
+            # print('x,y,z,dist:', new_xs[-1], new_ys[-1], new_zs[-1], new_distance_array[-1])
+
+
+        init_percent_dist_arr = new_distance_array/new_distance_array[-1]
+        init_center_percent_dist = init_center_dist/new_distance_array[-1]
+
+        init_new_curve_y = interp1d(init_percent_dist_arr, new_ys)
+        init_new_curve_z = interp1d(init_percent_dist_arr, new_zs)
+        init_new_curve_x = interp1d(init_percent_dist_arr, new_xs)
+
+        #### Same thing using the modified CPs instead of FEA coordinates
             #TODO: Here is where the separate x, y, z is used from ICM shape analysis
-#         # go through and find the distance between each point,
-#         # keeping track of the distance where x is closest to the center
-#         ordered_ICM_xs = ICM_CPs_mod_x
-#         ordered_ICM_ys = ICM_CPs_mod_y
-#         ordered_ICM_zs = ICM_CPs_mod_z
+        # go through and find the distance between each point,
+        # keeping track of the distance where x is closest to the center
+        ordered_ICM_xs = ICM_CPs_mod_x
+        ordered_ICM_ys = ICM_CPs_mod_y
+        ordered_ICM_zs = ICM_CPs_mod_z
 
-#         tot_dist = 0
-#         tot_dist_arr = []
-#         last_z = ordered_ICM_zs[0]
-#         last_y = ordered_ICM_ys[0]
-#         last_x = ordered_ICM_xs[0]
-#         for index, z in enumerate(ordered_ICM_zs):
-#             dist = ((last_z - z)**2+(last_y - ordered_ICM_ys[index])**2 + ((last_x - ordered_ICM_xs[index])**2))**.5
-#             last_z = ordered_ICM_zs[index]
-#             last_y = ordered_ICM_ys[index]
-#             last_x = ordered_ICM_xs[index]
-#             tot_dist += dist
-#             tot_dist_arr.append(tot_dist)
+        tot_dist = 0
+        tot_dist_arr = []
+        last_z = ordered_ICM_zs[0]
+        last_y = ordered_ICM_ys[0]
+        last_x = ordered_ICM_xs[0]
+        for index, z in enumerate(ordered_ICM_zs):
+            dist = ((last_z - z)**2+(last_y - ordered_ICM_ys[index])**2 + ((last_x - ordered_ICM_xs[index])**2))**.5
+            last_z = ordered_ICM_zs[index]
+            last_y = ordered_ICM_ys[index]
+            last_x = ordered_ICM_xs[index]
+            tot_dist += dist
+            tot_dist_arr.append(tot_dist)
 
-#         mod_point_distance_percentages = tot_dist_arr/tot_dist_arr[-1]
+        mod_point_distance_percentages = tot_dist_arr/tot_dist_arr[-1]
 
-#         curve_x = interp1d(tot_dist_arr, ordered_ICM_xs)
-#         # curve_y = UnivariateSpline(tot_dist_arr, y_sorted, k = 5)
-#         curve_y = interp1d(tot_dist_arr, ordered_ICM_ys)
-#         # curve_z = UnivariateSpline(tot_dist_arr, z_sorted, k = 5)
-#         curve_z = interp1d(tot_dist_arr, ordered_ICM_zs)
-#         # curve_x = interp1d(tot_dist_arr, x_sorted)
+        curve_x = interp1d(tot_dist_arr, ordered_ICM_xs)
+        # curve_y = UnivariateSpline(tot_dist_arr, y_sorted, k = 5)
+        curve_y = interp1d(tot_dist_arr, ordered_ICM_ys)
+        # curve_z = UnivariateSpline(tot_dist_arr, z_sorted, k = 5)
+        curve_z = interp1d(tot_dist_arr, ordered_ICM_zs)
+        # curve_x = interp1d(tot_dist_arr, x_sorted)
 
-#         # the points are then createdto make the spacing for the points equal
-#         spaced_distance_array = np.linspace(0,tot_dist_arr[-1],100)
+        # the points are then createdto make the spacing for the points equal
+        spaced_distance_array = np.linspace(0,tot_dist_arr[-1],100)
 
-#         new_distance_array  = [0]
-#         # previous_z = curve_z(0)
-#         # previous_y = curve_y(0)
-#         # previous_x = curve_x(0)
-#         new_zs = [curve_z(0)]
-#         new_ys = [curve_y(0)]
-#         new_xs = [curve_x(0)]
-#         center_x_check = 999999
-#         for i in range (0,len(spaced_distance_array)):
-#             new_ys.append(float(curve_y(spaced_distance_array[i])))
-#             new_zs.append(float(curve_z(spaced_distance_array[i])))
-#             new_xs.append(float(curve_x(spaced_distance_array[i])))
-#             new_distance_array.append(((new_ys[-1] - new_ys[-2])**2 + (new_zs[-1]-new_zs[-2])**2 + (new_xs[-1] - new_xs[-2])**2)**0.5 + new_distance_array[-1])
-#             if abs(new_xs[-1] - (-2)) < center_x_check:
-#                 center_x_check = abs(new_xs[-1] - (-2))
-#                 mod_center_dist = new_distance_array[-1]
-#             # print('x,y,z,dist:', new_xs[-1], new_ys[-1], new_zs[-1], new_distance_array[-1])
+        new_distance_array  = [0]
+        # previous_z = curve_z(0)
+        # previous_y = curve_y(0)
+        # previous_x = curve_x(0)
+        new_zs = [curve_z(0)]
+        new_ys = [curve_y(0)]
+        new_xs = [curve_x(0)]
+        center_x_check = 999999
+        for i in range (0,len(spaced_distance_array)):
+            new_ys.append(float(curve_y(spaced_distance_array[i])))
+            new_zs.append(float(curve_z(spaced_distance_array[i])))
+            new_xs.append(float(curve_x(spaced_distance_array[i])))
+            new_distance_array.append(((new_ys[-1] - new_ys[-2])**2 + (new_zs[-1]-new_zs[-2])**2 + (new_xs[-1] - new_xs[-2])**2)**0.5 + new_distance_array[-1])
+            if abs(new_xs[-1] - (-2)) < center_x_check:
+                center_x_check = abs(new_xs[-1] - (-2))
+                mod_center_dist = new_distance_array[-1]
+            # print('x,y,z,dist:', new_xs[-1], new_ys[-1], new_zs[-1], new_distance_array[-1])
 
 
 
@@ -728,89 +729,89 @@ def AnalogGenerateINP(TissueParameters, MaterialStartLine, LoadLine, LoadLineNo,
 
 
 
-#         mod_percent_dist_arr = new_distance_array/new_distance_array[-1]
-#         mod_center_percent_dist = mod_center_dist/new_distance_array[-1]
+        mod_percent_dist_arr = new_distance_array/new_distance_array[-1]
+        mod_center_percent_dist = mod_center_dist/new_distance_array[-1]
 
-#         mod_new_curve_y = interp1d(mod_percent_dist_arr, new_ys)
-#         mod_new_curve_z = interp1d(mod_percent_dist_arr, new_zs)
-#         mod_new_curve_x = interp1d(mod_percent_dist_arr, new_xs)
+        mod_new_curve_y = interp1d(mod_percent_dist_arr, new_ys)
+        mod_new_curve_z = interp1d(mod_percent_dist_arr, new_zs)
+        mod_new_curve_x = interp1d(mod_percent_dist_arr, new_xs)
 
 
 
 
 
 
-#         init_CP_xs = init_new_curve_x(mod_point_distance_percentages)
-#         init_CP_ys = init_new_curve_y(mod_point_distance_percentages)
-#         init_CP_zs = init_new_curve_z(mod_point_distance_percentages)
+        init_CP_xs = init_new_curve_x(mod_point_distance_percentages)
+        init_CP_ys = init_new_curve_y(mod_point_distance_percentages)
+        init_CP_zs = init_new_curve_z(mod_point_distance_percentages)
 
-#         # initial_CPs = LP_CPs_initial
-#         # cust_CPs = LP_CPs_mod
+        # initial_CPs = LP_CPs_initial
+        # cust_CPs = LP_CPs_mod
 
-#         ICM_CPs_initial = np.c_[init_CP_xs,init_CP_ys,init_CP_zs]
+        ICM_CPs_initial = np.c_[init_CP_xs,init_CP_ys,init_CP_zs]
 
-#         fig = plt.figure(1)
-#         ax = fig.add_subplot(111)
-#         ax.scatter(ICM_CPs_mod[:,0], ICM_CPs_mod[:,1], c = 'b', marker = '+')
-#         ax.scatter(ICM_CPs_initial[:,0],ICM_CPs_initial[:,1], c = 'r', marker = '+')
+        fig = plt.figure(1)
+        ax = fig.add_subplot(111)
+        ax.scatter(ICM_CPs_mod[:,0], ICM_CPs_mod[:,1], c = 'b', marker = '+')
+        ax.scatter(ICM_CPs_initial[:,0],ICM_CPs_initial[:,1], c = 'r', marker = '+')
 
-#         plt.show()
+        plt.show()
 
-#         fig = plt.figure(1)
-#         ax = fig.add_subplot(111)
-#         ax.scatter(ICM_CPs_mod[:,2], ICM_CPs_mod[:,1], c = 'b', marker = '+')
-#         ax.scatter(ICM_CPs_initial[:,2],ICM_CPs_initial[:,1], c = 'r', marker = '+')
+        fig = plt.figure(1)
+        ax = fig.add_subplot(111)
+        ax.scatter(ICM_CPs_mod[:,2], ICM_CPs_mod[:,1], c = 'b', marker = '+')
+        ax.scatter(ICM_CPs_initial[:,2],ICM_CPs_initial[:,1], c = 'r', marker = '+')
 
-#         plt.show()
+        plt.show()
 
-# #################### I might need to do the levator transformation without
-#         ### the AVW points and then tranform the GI Filler and AVW with the AVW points
-#         ### Otherwise the AVW might not line up with the GI Filler
+#################### I might need to do the levator transformation without
+        ### the AVW points and then tranform the GI Filler and AVW with the AVW points
+        ### Otherwise the AVW might not line up with the GI Filler
 
-#         initial_CPs = np.concatenate((PM_boundary_CPs, AVW_CPs_mod, LP_CPs_mod, ICM_CPs_initial), axis = 0)
-#         cust_CPs = np.concatenate((PM_boundary_CPs, AVW_CPs_mod, LP_CPs_mod, ICM_CPs_mod), axis = 0)
+        initial_CPs = np.concatenate((PM_boundary_CPs, AVW_CPs_mod, LP_CPs_mod, ICM_CPs_initial), axis = 0)
+        cust_CPs = np.concatenate((PM_boundary_CPs, AVW_CPs_mod, LP_CPs_mod, ICM_CPs_mod), axis = 0)
 
 
-#         rbf = RBF(original_control_points = initial_CPs, deformed_control_points = cust_CPs, func='thin_plate_spline', radius = 10)
+        rbf = RBF(original_control_points = initial_CPs, deformed_control_points = cust_CPs, func='thin_plate_spline', radius = 10)
 
 
-#         tissue_list = ['OPAL325_GIfiller', 'OPAL325_LA', 'OPAL325_PBody', 'OPAL325_PM_mid', 'OPAL325_AVW_v6']
-#         temp_file = 'morphing_temp.inp'
+        tissue_list = ['OPAL325_GIfiller', 'OPAL325_LA', 'OPAL325_PBody', 'OPAL325_PM_mid', 'OPAL325_AVW_v6']
+        temp_file = 'morphing_temp.inp'
 
-#         for tissue in tissue_list:
-#             print('hiatus morphing.........', tissue)
-#             # getting the nodes for original levator from Generic file
-#             generic_tissue = io.get_dataset_from_file(OutputINPFile, tissue)
+        for tissue in tissue_list:
+            print('hiatus morphing.........', tissue)
+            # getting the nodes for original levator from Generic file
+            generic_tissue = io.get_dataset_from_file(OutputINPFile, tissue)
 
 
-#             # get the initial tissue nodes into an numpy array and do an intrepolation surface
-#             xs = np.asarray(generic_tissue.xAxis)
-#             ys = np.asarray(generic_tissue.yAxis)
-#             zs = np.asarray(generic_tissue.zAxis)
-#             initial_tissue = np.c_[xs,ys,zs]
+            # get the initial tissue nodes into an numpy array and do an intrepolation surface
+            xs = np.asarray(generic_tissue.xAxis)
+            ys = np.asarray(generic_tissue.yAxis)
+            zs = np.asarray(generic_tissue.zAxis)
+            initial_tissue = np.c_[xs,ys,zs]
 
-#             new_tissue = rbf(initial_tissue)
+            new_tissue = rbf(initial_tissue)
 
-#             shutil.copy(OutputINPFile, temp_file)
+            shutil.copy(OutputINPFile, temp_file)
 
-#             for i in range(len(new_tissue)):
-#                 generic_tissue.xAxis[i] = new_tissue[i][0]
-#                 generic_tissue.yAxis[i] = new_tissue[i][1]
-#                 generic_tissue.zAxis[i] = new_tissue[i][2]
+            for i in range(len(new_tissue)):
+                generic_tissue.xAxis[i] = new_tissue[i][0]
+                generic_tissue.yAxis[i] = new_tissue[i][1]
+                generic_tissue.zAxis[i] = new_tissue[i][2]
 
-#             io.write_part_to_inp_file(temp_file, tissue, generic_tissue)
-#             # write_part_to_inp_file(file_name, part, data_set):
+            io.write_part_to_inp_file(temp_file, tissue, generic_tissue)
+            # write_part_to_inp_file(file_name, part, data_set):
 
-#             shutil.copy(temp_file,OutputINPFile)
-#             if tissue == 'OPAL325_LA':
-#                 xs_storage_pre = xs
-#                 zs_storage_pre = zs
-#                 ys_storage_pre = ys
-#                 print(new_tissue)
-#                 print(type(new_tissue))
-#                 xs_storage = new_tissue[:,0]
-#                 zs_storage = new_tissue[:,2]
-#                 ys_storage = new_tissue[:,1]
+            shutil.copy(temp_file,OutputINPFile)
+            if tissue == 'OPAL325_LA':
+                xs_storage_pre = xs
+                zs_storage_pre = zs
+                ys_storage_pre = ys
+                print(new_tissue)
+                print(type(new_tissue))
+                xs_storage = new_tissue[:,0]
+                zs_storage = new_tissue[:,2]
+                ys_storage = new_tissue[:,1]
 
 
 
@@ -820,240 +821,243 @@ def AnalogGenerateINP(TissueParameters, MaterialStartLine, LoadLine, LoadLineNo,
 
 
 
-#         # General things
-#         # x coordinate of the center
-#         center = -2
+        # General things
+        # x coordinate of the center
+        center = -2
 
-#         # how many mm a point can be off of the ICM line and still be part of the ICM
-#         ICM_threshold = 1
+        # how many mm a point can be off of the ICM line and still be part of the ICM
+        ICM_threshold = 1
 
-#         # Generic file to use for morphing
-#         Generic_INP = GenericINPFile
+        # Generic file to use for morphing
+        Generic_INP = GenericINPFile
 
-#         # Levator Plate
-#         # name of the tissue that we are morphing
-#         levator = LA
+        # Levator Plate
+        # name of the tissue that we are morphing
+        levator = LA
 
-#         # getting the nodes for original levator from Generic file
-#         generic_LA = io.get_dataset_from_file(Generic_INP, levator)
+        # getting the nodes for original levator from Generic file
+        generic_LA = io.get_dataset_from_file(Generic_INP, levator)
 
-#         # get the initial levator nodes into an numpy array and do an intrepolation surface
-#         xs = np.asarray(generic_LA.xAxis)
-#         ys = np.asarray(generic_LA.yAxis)
-#         zs = np.asarray(generic_LA.zAxis)
-#         initial_LA = np.c_[xs,ys,zs]
-#         interp_init = Rbf(xs, zs, ys, function = 'thin_plate')  # radial basis function interpolator instance
+        # get the initial levator nodes into an numpy array and do an intrepolation surface
+        xs = np.asarray(generic_LA.xAxis)
+        ys = np.asarray(generic_LA.yAxis)
+        zs = np.asarray(generic_LA.zAxis)
+        initial_LA = np.c_[xs,ys,zs]
+        interp_init = Rbf(xs, zs, ys, function = 'thin_plate')  # radial basis function interpolator instance
 
-#         # number of points for the levator plate line
-#         midline_points = 5
+        # number of points for the levator plate line
+        midline_points = 5
 
-#         # get midline isocurve by choosing z and x data and interpolating the ys
-#         z = np.linspace(min(zs),max(zs)-10,midline_points)
-#         x = np.linspace(center,center,len(z))
+        # get midline isocurve by choosing z and x data and interpolating the ys
+        z = np.linspace(min(zs),max(zs)-10,midline_points)
+        x = np.linspace(center,center,len(z))
 
-#         # add in a point in the middle of the levator plate to correspond with the
-#         # ICM band
-#         # find the middle of the levator plate
-#         mid_plate_z = (max(zs) + min(zs))/2
-#         z = np.append(z,mid_plate_z)
-#         x = np.append(x,center)
-#         interp_ys = interp_init(x,z)
+        # add in a point in the middle of the levator plate to correspond with the
+        # ICM band
+        # find the middle of the levator plate
+        mid_plate_z = (max(zs) + min(zs))/2
+        z = np.append(z,mid_plate_z)
+        x = np.append(x,center)
+        interp_ys = interp_init(x,z)
 
-#         # put the levator plate CP coordinates into np arrays
-#         midline_initial_CPs = np.c_[x,interp_ys,z]
+        # put the levator plate CP coordinates into np arrays
+        midline_initial_CPs = np.c_[x,interp_ys,z]
 
 
-#         # Levator Iso
-#         # number of points for the ICM line
-#         iso_points = 10
-
-#         # (everything here is looking from the side and ignorning the xcoordinates)
-#         mid_plate_y = interp_init(center,mid_plate_z)
-#         z_diff_min = float('inf')
-#         z_diff_min_2 = float('inf')
-#         z_1 = float('inf')
-#         z_2 = float('inf')
-#         y_1 = float('inf')
-#         y_2 = float('inf')
-#         for index, node_z in enumerate(z):
-#             # print('***',z_diff_min_2)
-#             if index < len(z) - 1:
-#                 if abs(node_z - mid_plate_z) < z_diff_min_2:
-#                     if abs(node_z-mid_plate_z) < z_diff_min:
-#                         z_diff_min_2 = z_diff_min
-#                         z_2 = z_1
-#                         y_2 = y_1
-#                         z_diff_min = abs(node_z-mid_plate_z)
-#                         z_1 = node_z
-#                         y_1 = interp_ys[index]
-#                     else:
-#                         z_diff_min_2 = abs(node_z-mid_plate_z)
-#                         z_2 = node_z
-#                         y_2 = interp_ys[index]
+        # Levator Iso
+        # number of points for the ICM line
+        iso_points = 10
+
+        # (everything here is looking from the side and ignorning the xcoordinates)
+        mid_plate_y = interp_init(center,mid_plate_z)
+        z_diff_min = float('inf')
+        z_diff_min_2 = float('inf')
+        z_1 = float('inf')
+        z_2 = float('inf')
+        y_1 = float('inf')
+        y_2 = float('inf')
+        for index, node_z in enumerate(z):
+            # print('***',z_diff_min_2)
+            if index < len(z) - 1:
+                if abs(node_z - mid_plate_z) < z_diff_min_2:
+                    if abs(node_z-mid_plate_z) < z_diff_min:
+                        z_diff_min_2 = z_diff_min
+                        z_2 = z_1
+                        y_2 = y_1
+                        z_diff_min = abs(node_z-mid_plate_z)
+                        z_1 = node_z
+                        y_1 = interp_ys[index]
+                    else:
+                        z_diff_min_2 = abs(node_z-mid_plate_z)
+                        z_2 = node_z
+                        y_2 = interp_ys[index]
 
-#         # find the slope at the middle of the levator plate (where the ICM is)
-#         slope = (y_2-y_1)/(z_2-z_1)
+        # find the slope at the middle of the levator plate (where the ICM is)
+        slope = (y_2-y_1)/(z_2-z_1)
 
-#         ####### Equation #########################
-#         # The equation is in the z-y plane       #
-#         # give it a z and it will predict the y  #
-#         ##########################################
+        ####### Equation #########################
+        # The equation is in the z-y plane       #
+        # give it a z and it will predict the y  #
+        ##########################################
 
-#         # find perpendicular slope which is the slope of the ICM line
-#         perp_slope = -1/slope
-#         # find the "y" intercept for that line
-#         perp_intercept = mid_plate_y - perp_slope*mid_plate_z
+        # find perpendicular slope which is the slope of the ICM line
+        perp_slope = -1/slope
+        # find the "y" intercept for that line
+        perp_intercept = mid_plate_y - perp_slope*mid_plate_z
 
-#         # setting up p1 and p2 to find the distance between that line and
-#         # p1 = np.array([mid_plate_z,interp_init(center, mid_plate_z)])
-#         p1 = np.array([mid_plate_z,mid_plate_y])
-#         p2_z = -20
-#         p2 = np.array([p2_z,perp_slope*p2_z + perp_intercept])
+        # setting up p1 and p2 to find the distance between that line and
+        # p1 = np.array([mid_plate_z,interp_init(center, mid_plate_z)])
+        p1 = np.array([mid_plate_z,mid_plate_y])
+        p2_z = -20
+        p2 = np.array([p2_z,perp_slope*p2_z + perp_intercept])
 
 
-#         # creating the ICM Control points
-#         ICM_Nodes = np.array([[0,0,0]])
-#         for node in initial_LA:
-#             # z,y
-#             p3 = np.array([node[2],node[1]])
-#             if abs((np.abs(np.cross(p2-p1, p1-p3))) / np.linalg.norm(p2-p1)) < ICM_threshold:
-#                 ICM_Nodes = np.concatenate((ICM_Nodes, [node]), axis = 0)
+        # creating the ICM Control points
+        ICM_Nodes = np.array([[0,0,0]])
+        for node in initial_LA:
+            # z,y
+            p3 = np.array([node[2],node[1]])
+            if abs((np.abs(np.cross(p2-p1, p1-p3))) / np.linalg.norm(p2-p1)) < ICM_threshold:
+                ICM_Nodes = np.concatenate((ICM_Nodes, [node]), axis = 0)
 
-#         # remove the dummy first element
-#         ICM_Nodes = ICM_Nodes[1:]
+        # remove the dummy first element
+        ICM_Nodes = ICM_Nodes[1:]
 
-#         ICM_Nodes_old = ICM_Nodes
-#         # print(ICM_Nodes)
+        ICM_Nodes_old = ICM_Nodes
+        # print(ICM_Nodes)
 
-#         # reformatting the control points
-#         ICM_xs = []
-#         ICM_ys = []
-#         ICM_zs = []
-#         for coordinates in ICM_Nodes:
-#             ICM_zs.append(coordinates[2])
-#             ICM_ys.append(coordinates[1])
-#             ICM_xs.append(coordinates[0])
+        # reformatting the control points
+        ICM_xs = []
+        ICM_ys = []
+        ICM_zs = []
+        for coordinates in ICM_Nodes:
+            ICM_zs.append(coordinates[2])
+            ICM_ys.append(coordinates[1])
+            ICM_xs.append(coordinates[0])
 
 
-#         ordered_ICM_zs = [x for _, x in sorted(zip(ICM_xs, ICM_zs))]
-#         ordered_ICM_xs = sorted(ICM_xs)
+        ordered_ICM_zs = [x for _, x in sorted(zip(ICM_xs, ICM_zs))]
+        ordered_ICM_xs = sorted(ICM_xs)
 
-#         # create interpolation of the ICM nodes to
-#         # the interpolation takes an x and gives the z
-#         ICM_interp = interp1d(ordered_ICM_xs,ordered_ICM_zs)
-#         ICM_interp = interp1d(ICM_xs,ICM_zs)
-#         # get evenly spaced x coordiantes with the range of the ICM_xs
-#         ICM_CP_xs = np.linspace(min(ICM_xs),max(ICM_xs),iso_points)
-#         # get the zs corresponding to the xs using the interpolation
-#         ICM_CP_zs = ICM_interp(ICM_CP_xs)
+        # create interpolation of the ICM nodes to
+        # the interpolation takes an x and gives the z
+        ICM_interp = interp1d(ordered_ICM_xs,ordered_ICM_zs)
+        ICM_interp = interp1d(ICM_xs,ICM_zs)
+        # get evenly spaced x coordiantes with the range of the ICM_xs
+        ICM_CP_xs = np.linspace(min(ICM_xs),max(ICM_xs),iso_points)
+        # get the zs corresponding to the xs using the interpolation
+        ICM_CP_zs = ICM_interp(ICM_CP_xs)
 
-#         # Given the z (from the interpolation) get the y (from the line equation)
-#         ICM_CP_ys = perp_slope*ICM_CP_zs + perp_intercept
+        # Given the z (from the interpolation) get the y (from the line equation)
+        ICM_CP_ys = perp_slope*ICM_CP_zs + perp_intercept
 
-#         ICM_CP_xs_original = ICM_CP_xs
-#         ICM_CP_ys_original = ICM_CP_ys
-#         ICM_CP_zs_original = ICM_CP_zs
+        ICM_CP_xs_original = ICM_CP_xs
+        ICM_CP_ys_original = ICM_CP_ys
+        ICM_CP_zs_original = ICM_CP_zs
 
-#         # putting the ICM curve at 1/4, 1/2, and 3/4
-#         full_ICM_CP_xs = []
-#         full_ICM_CP_ys = []
-#         full_ICM_CP_zs = []
-#         mid_plate_z = (max(zs) + min(zs))/2
-#         z_list = [(max(zs) - min(zs))/4 + min(z), (max(zs) - min(zs))*2/4 + min(z), (max(zs) - min(zs))*3/4 + min(z)]
-#         for i in range(len(z_list)):
-#             # I need the z shift and the y shift
-#             z_shift = z_list[i] - mid_plate_z
-#             y_shift = interp_init(center, z_list[i]) - mid_plate_y
-#             full_ICM_CP_xs = np.concatenate((full_ICM_CP_xs,ICM_CP_xs),axis = 0)
-#             full_ICM_CP_ys = np.concatenate((full_ICM_CP_ys,ICM_CP_ys+y_shift),axis = 0)
-#             full_ICM_CP_zs = np.concatenate((full_ICM_CP_zs,ICM_CP_zs+z_shift),axis = 0)
+        # putting the ICM curve at 1/4, 1/2, and 3/4
+        full_ICM_CP_xs = []
+        full_ICM_CP_ys = []
+        full_ICM_CP_zs = []
+        mid_plate_z = (max(zs) + min(zs))/2
+        z_list = [(max(zs) - min(zs))/4 + min(z), (max(zs) - min(zs))*2/4 + min(z), (max(zs) - min(zs))*3/4 + min(z)]
+        for i in range(len(z_list)):
+            # I need the z shift and the y shift
+            z_shift = z_list[i] - mid_plate_z
+            y_shift = interp_init(center, z_list[i]) - mid_plate_y
+            full_ICM_CP_xs = np.concatenate((full_ICM_CP_xs,ICM_CP_xs),axis = 0)
+            full_ICM_CP_ys = np.concatenate((full_ICM_CP_ys,ICM_CP_ys+y_shift),axis = 0)
+            full_ICM_CP_zs = np.concatenate((full_ICM_CP_zs,ICM_CP_zs+z_shift),axis = 0)
 
-#         # put the ICM CPs in a format for PyGeM
-#         ICM_CPs = np.column_stack((full_ICM_CP_xs,full_ICM_CP_ys,full_ICM_CP_zs))
+        # put the ICM CPs in a format for PyGeM
+        ICM_CPs = np.column_stack((full_ICM_CP_xs,full_ICM_CP_ys,full_ICM_CP_zs))
 
 
-#         # PM Inner nodes
-#         PM_MID      = PM_MID
-#         connections = io.get_interconnections(OutputINPFile, PM_MID)
-#         PM_Mid = io.get_dataset_from_file(OutputINPFile, PM_MID)
-#         starting_index, ending_index = find_starting_ending_points_for_inside(PM_Mid)
-#         innerNodes = findInnerNodes(PM_Mid, connections, starting_index, ending_index)
+        # PM Inner nodes
+        PM_MID      = PM_MID
+        connections = io.get_interconnections(OutputINPFile, PM_MID)
+        PM_Mid = io.get_dataset_from_file(OutputINPFile, PM_MID)
+        starting_index, ending_index = find_starting_ending_points_for_inside(PM_Mid)
+        innerNodes = findInnerNodes(PM_Mid, connections, starting_index, ending_index)
 
-#         Xs = []
-#         Ys = []
-#         Zs = []
+        Xs = []
+        Ys = []
+        Zs = []
 
-#         for i in innerNodes:
-#             Xs.append(PM_Mid.node(i).x)
-#             Ys.append(PM_Mid.node(i).y)
-#             Zs.append(PM_Mid.node(i).z)
+        for i in innerNodes:
+            Xs.append(PM_Mid.node(i).x)
+            Ys.append(PM_Mid.node(i).y)
+            Zs.append(PM_Mid.node(i).z)
 
-#         inner_PM_CPs = np.c_[Xs,Ys,Zs]
+        inner_PM_CPs = np.c_[Xs,Ys,Zs]
 
 
 
-#         # print(hiatus_original_CP)
-#         # print(type(hiatus_original_CP))
-#         # print(hiatus_original_CP.shape)
-#         initial_CPs = np.concatenate((midline_initial_CPs, ICM_CPs, boundary_CPs, inner_PM_CPs, hiatus_original_CP), axis = 0)
-#         cust_CPs = np.concatenate((midline_initial_CPs, ICM_CPs, boundary_CPs, inner_PM_CPs, hiatus_deformed_CP ), axis = 0)
+        # print(hiatus_original_CP)
+        # print(type(hiatus_original_CP))
+        # print(hiatus_original_CP.shape)
+        #TODO: Not sure what boundary_CPs are, as only defined ones are LA and PM
+        # initial_CPs = np.concatenate((midline_initial_CPs, ICM_CPs, boundary_CPs, inner_PM_CPs, hiatus_original_CP), axis = 0)
+        # cust_CPs = np.concatenate((midline_initial_CPs, ICM_CPs, boundary_CPs, inner_PM_CPs, hiatus_deformed_CP ), axis = 0)
 
-#         rbf = RBF(original_control_points = initial_CPs, deformed_control_points = cust_CPs, func='thin_plate_spline', radius = 10)
+        rbf = RBF(original_control_points = initial_CPs, deformed_control_points = cust_CPs, func='thin_plate_spline', radius = 10)
 
 
-#         fig = plt.figure(2)
-#         ax = fig.add_subplot(111, projection='3d')
+        fig = plt.figure(2)
+        ax = fig.add_subplot(111, projection='3d')
 
-#         ax.scatter(initial_CPs[:,0],initial_CPs[:,2],initial_CPs[:,1], c = 'b', marker = '+')
-#         ax.scatter(cust_CPs[:,0],cust_CPs[:,2],cust_CPs[:,1], c = 'r', marker = '+')
+        ax.scatter(initial_CPs[:,0],initial_CPs[:,2],initial_CPs[:,1], c = 'b', marker = '+')
+        ax.scatter(cust_CPs[:,0],cust_CPs[:,2],cust_CPs[:,1], c = 'r', marker = '+')
 
-#         tissue_list = ['OPAL325_GIfiller', 'OPAL325_LA', 'OPAL325_PBody', 'OPAL325_PM_mid', 'OPAL325_AVW_v6']
-#         temp_file = 'morphing_temp.inp'
+        tissue_list = ['OPAL325_GIfiller', 'OPAL325_LA', 'OPAL325_PBody', 'OPAL325_PM_mid', 'OPAL325_AVW_v6']
+        temp_file = 'morphing_temp.inp'
 
-#         for tissue in tissue_list:
-#             print('morphing.........', tissue)
-#             # getting the nodes for original levator from Generic file
-#             generic_tissue = io.get_dataset_from_file(Generic_INP, tissue)
+        for tissue in tissue_list:
+            print('morphing.........', tissue)
+            # getting the nodes for original levator from Generic file
+            generic_tissue = io.get_dataset_from_file(Generic_INP, tissue)
 
 
-#             # get the initial levator nodes into an numpy array and do an intrepolation surface
-#             xs = np.asarray(generic_tissue.xAxis)
-#             ys = np.asarray(generic_tissue.yAxis)
-#             zs = np.asarray(generic_tissue.zAxis)
-#             initial_tissue = np.c_[xs,ys,zs]
+            # get the initial levator nodes into an numpy array and do an intrepolation surface
+            xs = np.asarray(generic_tissue.xAxis)
+            ys = np.asarray(generic_tissue.yAxis)
+            zs = np.asarray(generic_tissue.zAxis)
+            initial_tissue = np.c_[xs,ys,zs]
 
-#             new_tissue = rbf(initial_tissue)
+            new_tissue = rbf(initial_tissue)
 
-#             shutil.copy(OutputINPFile, temp_file)
+            shutil.copy(OutputINPFile, temp_file)
 
-#             for i in range(len(new_tissue)):
-#                 generic_tissue.xAxis[i] = new_tissue[i][0]
-#                 generic_tissue.yAxis[i] = new_tissue[i][1]
-#                 generic_tissue.zAxis[i] = new_tissue[i][2]
+            for i in range(len(new_tissue)):
+                generic_tissue.xAxis[i] = new_tissue[i][0]
+                generic_tissue.yAxis[i] = new_tissue[i][1]
+                generic_tissue.zAxis[i] = new_tissue[i][2]
 
-#             io.write_part_to_inp_file(temp_file, tissue, generic_tissue)
-#             # write_part_to_inp_file(file_name, part, data_set):
 
-#             shutil.copy(temp_file,OutputINPFile)
-#        Scaling.rotate_part(AVW, OutputINPFile, rotate_angle, rot_point)
-#        print('1')
-#        gi        = Scaling.rotate_part(GI_FILLER, OutputINPFile, rotate_angle, rot_point)
-#        print('2')
-#        aftp      = Scaling.rotate_part(ATFP, OutputINPFile, rotate_angle, rot_point)
-#        print('3')
-#        atla      = Scaling.rotate_part(ATLA, OutputINPFile, rotate_angle, rot_point)
-#        print('4')
-#        la        = Scaling.rotate_part(LA, OutputINPFile, rotate_angle, rot_point)
-#        print('5')
-#        pbody     = Scaling.rotate_part(PBODY, OutputINPFile, rotate_angle, rot_point)
-#        print('6')
-#        pm_mid    = Scaling.rotate_part(PM_MID, OutputINPFile, rotate_angle, rot_point)
-#        print('7')
+            io.write_part_to_inp_file(temp_file, tissue, generic_tissue)
+            # write_part_to_inp_file(file_name, part, data_set):
+            shutil.copy(temp_file,OutputINPFile)
+
+
+        Scaling.rotate_part(AVW, OutputINPFile, rotate_angle, rot_point)
+        print('1')
+        gi        = Scaling.rotate_part(GI_FILLER, OutputINPFile, rotate_angle, rot_point)
+        print('2')
+        aftp      = Scaling.rotate_part(ATFP, OutputINPFile, rotate_angle, rot_point)
+        print('3')
+        atla      = Scaling.rotate_part(ATLA, OutputINPFile, rotate_angle, rot_point)
+        print('4')
+        la        = Scaling.rotate_part(LA, OutputINPFile, rotate_angle, rot_point)
+        print('5')
+        pbody     = Scaling.rotate_part(PBODY, OutputINPFile, rotate_angle, rot_point)
+        print('6')
+        pm_mid    = Scaling.rotate_part(PM_MID, OutputINPFile, rotate_angle, rot_point)
+        print('7')
         ######################################################################################
 
     ######################################################################################
     # Droop the AVW (probably pass the generic file and obtain the end points for the droop from there)
-        if config.getint("FLAGS", "CurveAVW") != 0:
+    if config.getint("FLAGS", "CurveAVW") != 0:
             avw = Scaling.curve_avw(AVW, OutputINPFile, GenericINPFile, hiatus, z_cutoff, rotate_angle, rot_point, HiatusLength)
     ######################################################################################
 
@@ -1071,10 +1075,10 @@ def AnalogGenerateINP(TissueParameters, MaterialStartLine, LoadLine, LoadLineNo,
 ####### New Curving Code Below
 # Need to put a wave in the bottom of the AVW so that it doesn't hit the PM_mid tissue
 
-        pm_mid = io.get_dataset_from_file(OutputINPFile, PM_MID)
-        if config.getint("FLAGS", "testing") != 0:
-            AVW_connections = io.get_interconnections(GenericINPFile, AVW)
-            avw = Scaling.narrow_distal_avw_narrow(AVW, OutputINPFile, GenericINPFile, pm_mid, connections, AVW_connections)
+    pm_mid = io.get_dataset_from_file(OutputINPFile, PM_MID)
+    if config.getint("FLAGS", "testing") != 0:
+        AVW_connections = io.get_interconnections(GenericINPFile, AVW)
+        avw = Scaling.narrow_distal_avw_narrow(AVW, OutputINPFile, GenericINPFile, pm_mid, connections, AVW_connections)
 #        print(avw)
         # avw = Scaling.narrow_distal_avw_narrow_and_curve(AVW, OutputINPFile, GenericINPFile, pm_mid, connections, AVW_connections)
 ####### New Curving Code Above

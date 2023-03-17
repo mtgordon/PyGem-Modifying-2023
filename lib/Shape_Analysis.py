@@ -168,7 +168,7 @@ def ICM_shape_analysis(PCA_1, PCA_2, ys, zs):
     y_sorted = ys
     z_sorted = zs
 
-    filename = 'ICM_shape_analysis_FEA_input.csv'
+    filename = 'ICM_shape_analysis_FEA_input_updated.csv'
 
     scale = 1.0075
     angle = -0.040693832
@@ -319,6 +319,6 @@ def ICM_shape_analysis(PCA_1, PCA_2, ys, zs):
     ICM_CPs_mod_z = zs
 
     #TODO: Returning the x, y, z separately rn, but could just do array instead and changes uses in Generate_INP
-    return ICM_CPs_initial, ICM_CPs_mod, ICM_CPs_mod_x, ICM_CPs_mod_y, ICM_CPs_mod_z
+    return ICM_CPs_initial, ICM_CPs_mod, ICM_CPs_mod_x, ICM_CPs_mod_y, ICM_CPs_mod_z, perp_slope, mid_plate_y, mid_plate_z
 
     # print("ICM %%%%%%%%%%%%%%%%%%", LP_CPs_mod)
