@@ -60,7 +60,7 @@ config.read(ini_file)
 
 
 #################################################################################
-##### Default Values: They can be changed according to the Run_Variables file ###
+##### default Values: They can be changed according to the Run_Variables file ###
 #################################################################################
 
 
@@ -83,7 +83,9 @@ default_dict = {
 		'Levator_Plate_PC1' : json.loads(config["SHAPE_ANALYSIS"]["Levator_Plate_PC1"]),
         'Levator_Plate_PC2' : json.loads(config["SHAPE_ANALYSIS"]["Levator_Plate_PC2"]),
         'ICM_PC1' : json.loads(config["SHAPE_ANALYSIS"]["ICM_PC1"]),
-        'ICM_PC2' : json.loads(config["SHAPE_ANALYSIS"]["ICM_PC2"])
+        'ICM_PC2' : json.loads(config["SHAPE_ANALYSIS"]["ICM_PC2"]),
+        #TODO: The newly added key for the load value: Load_Value
+        'Load_Value' : json.loads(config["Load"]["LoadValue"])
 }
 
 
@@ -104,7 +106,8 @@ frames = config["POST_ANALYSIS"]["frames"]
 frames = list(frames.split(','))
 
 AlternateLoads = json.loads(config["Load"]["AlternateLoads"])
-LoadValue = config["Load"]["LoadValue"]
+#TODO: This was replaced by the load_value line in the default_dict
+#LoadValue = config["Load"]["LoadValue"]
 LoadLineSignal = config["Load"]["LoadLineSignal"]
 
 Results_Folder_Location = config["FILES"]["Results_Folder_Location"]
@@ -202,7 +205,8 @@ for row in DOE_dict:
     f.close()
 
     LoadLine = OldLoadLine.split(',')
-    LoadLine[2] = ' ' + str(LoadValue)
+    #TODO: This is where the local 'LoadValue' was used, and now uses the key from the default_dict
+    LoadLine[2] = ' ' + str(current_run_dict['Load_Value'])
     LoadLine = str.join(',', LoadLine)
 
     
@@ -398,9 +402,10 @@ if vary_loading:
             LoadLine = OldLoadLine.split(',')
             print(LoadLine)
     #        print(float(LoadLine[2])*LoadPercentage,round(float(LoadLine[2]) * LoadPercentage,4))
-    
+
+            #TODO: Also replaced the local value of LoadValue to dictionary key here
     #       Change the 3rd part (the load) to the original load * the Load Percentage
-            LoadLine[2] = ' ' + str(round(float(LoadValue) * LoadPercentage,4))
+            LoadLine[2] = ' ' + str(round(float(current_run_dict['Load_Value']) * LoadPercentage,4))
     #       Combine the array again as a string for writnig to the file
             LoadLine = str.join(',', LoadLine)
             print(LoadLine)

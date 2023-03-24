@@ -15,7 +15,7 @@ Function: generate_data_points
 Helper function for the <levator_shape_analysis> and <ICM_shape_analysis>
 functions, and acts as the common point between the 2 sections
 '''
-def generate_data_points(part, PCA_1, PCA_2, filename, n):
+def generate_data_points(part, PCA_1, PCA_2, filename):
     # PCA_1_SD = 17.89743185504574
     # PCA_1_coefficient = 1
     # PCA_1_score = PCA_1_SD*PCA_1_coefficient
@@ -60,13 +60,18 @@ def generate_data_points(part, PCA_1, PCA_2, filename, n):
         b_y = float(df.iloc[row_num, col_num])
         zORxs.append(PC1_m_y * PCA_1_score + PC2_m_y * PCA_2_score + b_y)
 
-        col_num = df.columns.get_loc(part + '_FEA_z')
-        initial_lp_CP_zORxs.append(float(df.iloc[row_num, col_num]))
-        col_num = df.columns.get_loc(part + '_FEA_y')
-        initial_lp_CP_ys.append(float(df.iloc[row_num, col_num]))
-        center_xs.append(-2)
+        #TODO: This uses MRI data, so if i am doing ICM just reuse the generic, do not generate new
+        if part == 'LP':
+            col_num = df.columns.get_loc(part + '_FEA_z')
+            initial_lp_CP_zORxs.append(float(df.iloc[row_num, col_num]))
+            col_num = df.columns.get_loc(part + '_FEA_y')
+            initial_lp_CP_ys.append(float(df.iloc[row_num, col_num]))
+            center_xs.append(-2)
 
-    return df, index, zORxs, ys, initial_lp_CP_ys, initial_lp_CP_zORxs, center_xs
+    if part == 'LP':
+        return df, index, zORxs, ys, initial_lp_CP_ys, initial_lp_CP_zORxs, center_xs
+    else:
+        return df, index, zORxs, ys
 
 
 '''
@@ -86,7 +91,7 @@ def levator_shape_analysis(PCA_1, PCA_2):
 
     #Call helper function
     df, index, zs, ys, initial_lp_CP_ys, initial_lp_CP_zs, center_xs \
-        = generate_data_points('LP', PCA_1, PCA_2, filename, 9)
+        = generate_data_points('LP', PCA_1, PCA_2, filename)
 
     zs = np.array(zs)
     ys = np.array(ys)
@@ -154,7 +159,7 @@ def levator_shape_analysis(PCA_1, PCA_2):
 
     print("%%%%%%%%%%%%%%%%%%", LP_CPs_mod)
 
-    return ys, zs, LP_CPs_initial, LP_CPs_mod
+    return ys, zs, LP_CPs_initial, LP_CPs_mod, initial_lp_CP_ys, initial_lp_CP_zs, center_xs
 
 
 '''
@@ -162,20 +167,20 @@ Function: ICM_shape_analysis
 This function takes in the PCA scores from the Generate_INP.py file as well as
 the ys and zs from <levator_shape_analysis>
 '''
-def ICM_shape_analysis(PCA_1, PCA_2, ys, zs):
+def ICM_shape_analysis(PCA_1, PCA_2, ys, zs, initial_lp_CP_ys, initial_lp_CP_zs, center_xs):
     #TODO: ICM START
     #TODO: Later change this to get these from LP_CPs_mod below where it is needed
     y_sorted = ys
     z_sorted = zs
 
-    filename = 'ICM_shape_analysis_FEA_input_updated.csv'
+    filename = 'ICM_PCA_shape_data.csv'
 
     scale = 1.0075
     angle = -0.040693832
 
     #Call helper function
-    df, index, xs, ys, initial_lp_CP_ys, initial_lp_CP_zs, center_xs \
-        = generate_data_points('ICM', PCA_1, PCA_2, filename, 10)
+    df, index, xs, ys \
+        = generate_data_points('ICM', PCA_1, PCA_2, filename)
 
     xs = np.array(xs)
     ys = np.array(ys)
@@ -280,7 +285,8 @@ def ICM_shape_analysis(PCA_1, PCA_2, ys, zs):
     # FEA_y = float(df.iloc[row_num,col_num])
 
     ### edit: what the middle node is for the ICM
-    bottom_node_position = 4
+    #TODO: Take number of points in file - 1 then divide by 2
+    bottom_node_position = int((len(df) - 1) / 2)
     horiz_shift = mid_plate_z - zs[bottom_node_position]
     vert_shift = mid_plate_y - ys[bottom_node_position]
 
@@ -311,6 +317,7 @@ def ICM_shape_analysis(PCA_1, PCA_2, ys, zs):
     # print(zs)
     # print(ys)
 
+    #TODO: Some confusion regarding the initial points, as they seem to just be the pure levator points
     ICM_CPs_initial = np.c_[center_xs,initial_lp_CP_ys,initial_lp_CP_zs]
     ICM_CPs_mod = np.c_[xs,ys,zs]
 

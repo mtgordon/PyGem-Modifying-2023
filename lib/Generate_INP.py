@@ -356,13 +356,68 @@ def AnalogGenerateINP(TissueParameters, MaterialStartLine, LoadLine, LoadLineNo,
 
         #TODO: call from shape_analysis
         #Call levator plate shape analysis
-        ys, zs, LP_CPs_initial, LP_CPs_mod \
+        ys, zs, LP_CPs_initial, LP_CPs_mod, initial_lp_CP_ys, initial_lp_CP_zs, center_xs \
             = lib.Shape_Analysis.levator_shape_analysis(levator_plate_PC1, levator_plate_PC2)
 
         #Call ICM shape analysis
         ICM_CPs_initial, ICM_CPs_mod, ICM_CPs_mod_x, ICM_CPs_mod_y, ICM_CPs_mod_z, perp_slope, mid_plate_y, mid_plate_z \
-            = lib.Shape_Analysis.ICM_shape_analysis(ICM_PC1, ICM_PC2, ys, zs)
+            = lib.Shape_Analysis.ICM_shape_analysis(ICM_PC1, ICM_PC2, ys, zs, initial_lp_CP_ys, initial_lp_CP_zs, center_xs)
 
+        #TODO: IMMEDIATE PLOT OF GENERATED POINTS, I WANT TO COMPARE LP AND ICM POSITION
+        fig = plt.figure(2)
+        ax = fig.add_subplot(111, projection='3d')
+        fig.suptitle('Lp initial vs Lp mod')
+
+        ax.scatter(LP_CPs_initial[:, 0], LP_CPs_initial[:, 2], LP_CPs_initial[:, 1], c='b', marker='+', label='initial')
+        ax.scatter(LP_CPs_mod[:, 0], LP_CPs_mod[:, 2], LP_CPs_mod[:, 1], c='r', marker='+', label='mod')
+
+        plt.legend()
+        plt.show()
+
+        fig = plt.figure(2)
+        ax = fig.add_subplot(111, projection='3d')
+        fig.suptitle('ICM initial vs ICM mod')
+
+        ax.scatter(ICM_CPs_initial[:, 0], ICM_CPs_initial[:, 2], ICM_CPs_initial[:, 1], c='b', marker='+', label='initial')
+        ax.scatter(ICM_CPs_mod[:, 0], ICM_CPs_mod[:, 2], ICM_CPs_mod[:, 1], c='r', marker='+', label='mod')
+
+        plt.legend()
+        plt.show()
+
+        fig = plt.figure(2)
+        ax = fig.add_subplot(111, projection='3d')
+        fig.suptitle('Combo initial')
+
+        ax.scatter(LP_CPs_initial[:, 0], LP_CPs_initial[:, 2], LP_CPs_initial[:, 1], c='b', marker='+',
+                   label='LP')
+        ax.scatter(ICM_CPs_initial[:, 0], ICM_CPs_initial[:, 2], ICM_CPs_initial[:, 1], c='r', marker='+', label='ICM')
+
+        plt.legend()
+        plt.show()
+
+        fig = plt.figure(2)
+        ax = fig.add_subplot(111, projection='3d')
+        fig.suptitle('Combo mod')
+
+        ax.scatter(LP_CPs_mod[:, 0], LP_CPs_mod[:, 2], LP_CPs_mod[:, 1], c='b', marker='+',
+                   label='LP')
+        ax.scatter(ICM_CPs_mod[:, 0], ICM_CPs_mod[:, 2], ICM_CPs_mod[:, 1], c='r', marker='+', label='ICM')
+
+        plt.legend()
+        plt.show()
+
+        initial_CPs_ref = np.concatenate((LP_CPs_initial, ICM_CPs_initial), axis=0)
+        mod_CPs_ref = np.concatenate((LP_CPs_mod, ICM_CPs_mod), axis=0)
+
+        fig = plt.figure(2)
+        ax = fig.add_subplot(111, projection='3d')
+        fig.suptitle('Combo initial vs Combo mod')
+
+        ax.scatter(initial_CPs_ref[:, 0], initial_CPs_ref[:, 2], initial_CPs_ref[:, 1], c='b', marker='+', label='initial')
+        ax.scatter(mod_CPs_ref[:, 0], mod_CPs_ref[:, 2], mod_CPs_ref[:, 1], c='r', marker='+', label='mod')
+
+        plt.legend()
+        plt.show()
 
 
 #### Do Hiatus Transformation
@@ -371,12 +426,14 @@ def AnalogGenerateINP(TissueParameters, MaterialStartLine, LoadLine, LoadLineNo,
         initial_CPs = np.concatenate((PM_boundary_CPs, LA_boundary_CPs, hiatus_original_CP, inner_PM_CPs, AVW_CPs_initial, LP_CPs_initial), axis = 0)
         cust_CPs = np.concatenate((PM_boundary_CPs, LA_boundary_CPs, hiatus_deformed_CP, inner_PM_deformed_CPs, AVW_CPs_mod, LP_CPs_mod), axis = 0)
 
-
+        #TODO: This plot does not involve ICM
         fig = plt.figure(2)
         ax = fig.add_subplot(111, projection='3d')
 
         ax.scatter(initial_CPs[:,0],initial_CPs[:,2],initial_CPs[:,1], c = 'b', marker = '+')
         ax.scatter(cust_CPs[:,0],cust_CPs[:,2],cust_CPs[:,1], c = 'r', marker = '+')
+
+        plt.show()
 
         # ax.scatter(center_xs,initial_lp_CP_zs,initial_lp_CP_ys, c = 'b', marker = '+')
         # ax.scatter(center_xs,zs,ys, c = 'r', marker = '+')
@@ -750,13 +807,18 @@ def AnalogGenerateINP(TissueParameters, MaterialStartLine, LoadLine, LoadLineNo,
 
         ICM_CPs_initial = np.c_[init_CP_xs,init_CP_ys,init_CP_zs]
 
+        #TODO: First ICM Plot
         fig = plt.figure(1)
         ax = fig.add_subplot(111)
-        ax.scatter(ICM_CPs_mod[:,0], ICM_CPs_mod[:,1], c = 'b', marker = '+')
-        ax.scatter(ICM_CPs_initial[:,0],ICM_CPs_initial[:,1], c = 'r', marker = '+')
+        # ax.scatter(ICM_CPs_mod[:,0], ICM_CPs_mod[:,1], c = 'b', marker = '+')
+        # ax.scatter(ICM_CPs_initial[:,0],ICM_CPs_initial[:,1], c = 'r', marker = '+')
+        ax.scatter(ICM_CPs_mod[:,1], ICM_CPs_mod[:,0], c = 'b', marker = '+')
+        ax.scatter(ICM_CPs_initial[:,1],ICM_CPs_initial[:,0], c = 'r', marker = '+')
+
 
         plt.show()
 
+        #TODO: Second ICM Plot
         fig = plt.figure(1)
         ax = fig.add_subplot(111)
         ax.scatter(ICM_CPs_mod[:,2], ICM_CPs_mod[:,1], c = 'b', marker = '+')
@@ -768,12 +830,21 @@ def AnalogGenerateINP(TissueParameters, MaterialStartLine, LoadLine, LoadLineNo,
         ### the AVW points and then tranform the GI Filler and AVW with the AVW points
         ### Otherwise the AVW might not line up with the GI Filler
 
+        #TODO: This is the plot i care about, there is no plot
         initial_CPs = np.concatenate((PM_boundary_CPs, AVW_CPs_mod, LP_CPs_mod, ICM_CPs_initial), axis = 0)
         cust_CPs = np.concatenate((PM_boundary_CPs, AVW_CPs_mod, LP_CPs_mod, ICM_CPs_mod), axis = 0)
 
 
         rbf = RBF(original_control_points = initial_CPs, deformed_control_points = cust_CPs, func='thin_plate_spline', radius = 10)
 
+        #TODO: aight lets add a plot then
+        fig = plt.figure(7)
+        ax = fig.add_subplot(111, projection='3d')
+
+        ax.scatter(initial_CPs[:, 0], initial_CPs[:, 2], initial_CPs[:, 1], c='b', marker='+')
+        ax.scatter(cust_CPs[:, 0], cust_CPs[:, 2], cust_CPs[:, 1], c='r', marker='+')
+
+        plt.show()
 
         tissue_list = ['OPAL325_GIfiller', 'OPAL325_LA', 'OPAL325_PBody', 'OPAL325_PM_mid', 'OPAL325_AVW_v6']
         temp_file = 'morphing_temp.inp'
@@ -997,8 +1068,10 @@ def AnalogGenerateINP(TissueParameters, MaterialStartLine, LoadLine, LoadLineNo,
         # print(type(hiatus_original_CP))
         # print(hiatus_original_CP.shape)
         #TODO: Not sure what boundary_CPs are, as only defined ones are LA and PM
-        # initial_CPs = np.concatenate((midline_initial_CPs, ICM_CPs, boundary_CPs, inner_PM_CPs, hiatus_original_CP), axis = 0)
-        # cust_CPs = np.concatenate((midline_initial_CPs, ICM_CPs, boundary_CPs, inner_PM_CPs, hiatus_deformed_CP ), axis = 0)
+        initial_CPs = np.concatenate((midline_initial_CPs, ICM_CPs, PM_boundary_CPs, inner_PM_CPs, hiatus_original_CP), axis = 0)
+        cust_CPs = np.concatenate((midline_initial_CPs, ICM_CPs, PM_boundary_CPs, inner_PM_CPs, hiatus_deformed_CP ), axis = 0)
+
+
 
         rbf = RBF(original_control_points = initial_CPs, deformed_control_points = cust_CPs, func='thin_plate_spline', radius = 10)
 
@@ -1008,6 +1081,8 @@ def AnalogGenerateINP(TissueParameters, MaterialStartLine, LoadLine, LoadLineNo,
 
         ax.scatter(initial_CPs[:,0],initial_CPs[:,2],initial_CPs[:,1], c = 'b', marker = '+')
         ax.scatter(cust_CPs[:,0],cust_CPs[:,2],cust_CPs[:,1], c = 'r', marker = '+')
+
+        plt.show()
 
         tissue_list = ['OPAL325_GIfiller', 'OPAL325_LA', 'OPAL325_PBody', 'OPAL325_PM_mid', 'OPAL325_AVW_v6']
         temp_file = 'morphing_temp.inp'
