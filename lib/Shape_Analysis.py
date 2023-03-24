@@ -159,21 +159,32 @@ def levator_shape_analysis(PCA_1, PCA_2):
 
     print("%%%%%%%%%%%%%%%%%%", LP_CPs_mod)
 
-    return ys, zs, LP_CPs_initial, LP_CPs_mod, initial_lp_CP_ys, initial_lp_CP_zs, center_xs
+    return ys, zs, LP_CPs_initial, LP_CPs_mod, initial_lp_CP_ys, initial_lp_CP_zs
 
 
 '''
 Function: ICM_shape_analysis
-This function takes in the PCA scores from the Generate_INP.py file as well as
-the ys and zs from <levator_shape_analysis>
+The control center for ICM point creation. This function will generate two sets of ICM control points, initial and mod
+The information required for each of these sets are listed as follows:
+INITIAL:
+- PC scores: These are currently hardcoded
+- LP points: utilize the initial_lp_CP_ys and initial_lp_CP_zs from <levator_shape_analysis>
+- isMod: false, so things like the x,y,z mod points and returning slope, etc will not happen
+
+MOD:
+- PC scores: These are the passed along ones that originate from the Run_Variables.csv
+- LP points: utilize the ys and zs from <levator_shape_analysis>
+- isMod: true, so the x,y,z of the mod CPs as well as info like the slope will be returned
+
 '''
-def ICM_shape_analysis(PCA_1, PCA_2, ys, zs, initial_lp_CP_ys, initial_lp_CP_zs, center_xs):
+def ICM_shape_analysis(PCA_1, PCA_2, ys, zs, isMod):
     #TODO: ICM START
+
+    filename = 'ICM_PCA_shape_data.csv'
+
     #TODO: Later change this to get these from LP_CPs_mod below where it is needed
     y_sorted = ys
     z_sorted = zs
-
-    filename = 'ICM_PCA_shape_data.csv'
 
     scale = 1.0075
     angle = -0.040693832
@@ -317,15 +328,14 @@ def ICM_shape_analysis(PCA_1, PCA_2, ys, zs, initial_lp_CP_ys, initial_lp_CP_zs,
     # print(zs)
     # print(ys)
 
-    #TODO: Some confusion regarding the initial points, as they seem to just be the pure levator points
-    ICM_CPs_initial = np.c_[center_xs,initial_lp_CP_ys,initial_lp_CP_zs]
-    ICM_CPs_mod = np.c_[xs,ys,zs]
+    ICM_CPs = np.c_[xs,ys,zs]
 
-    ICM_CPs_mod_x = xs
-    ICM_CPs_mod_y = ys
-    ICM_CPs_mod_z = zs
-
-    #TODO: Returning the x, y, z separately rn, but could just do array instead and changes uses in Generate_INP
-    return ICM_CPs_initial, ICM_CPs_mod, ICM_CPs_mod_x, ICM_CPs_mod_y, ICM_CPs_mod_z, perp_slope, mid_plate_y, mid_plate_z
+    if isMod:
+        ICM_CPs_mod_x = xs
+        ICM_CPs_mod_y = ys
+        ICM_CPs_mod_z = zs
+        return ICM_CPs, ICM_CPs_mod_x, ICM_CPs_mod_y, ICM_CPs_mod_z, perp_slope, mid_plate_y, mid_plate_z
+    else:
+        return ICM_CPs
 
     # print("ICM %%%%%%%%%%%%%%%%%%", LP_CPs_mod)

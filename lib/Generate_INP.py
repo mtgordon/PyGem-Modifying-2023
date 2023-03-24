@@ -356,12 +356,15 @@ def AnalogGenerateINP(TissueParameters, MaterialStartLine, LoadLine, LoadLineNo,
 
         #TODO: call from shape_analysis
         #Call levator plate shape analysis
-        ys, zs, LP_CPs_initial, LP_CPs_mod, initial_lp_CP_ys, initial_lp_CP_zs, center_xs \
+        ys, zs, LP_CPs_initial, LP_CPs_mod, initial_lp_CP_ys, initial_lp_CP_zs \
             = lib.Shape_Analysis.levator_shape_analysis(levator_plate_PC1, levator_plate_PC2)
 
-        #Call ICM shape analysis
-        ICM_CPs_initial, ICM_CPs_mod, ICM_CPs_mod_x, ICM_CPs_mod_y, ICM_CPs_mod_z, perp_slope, mid_plate_y, mid_plate_z \
-            = lib.Shape_Analysis.ICM_shape_analysis(ICM_PC1, ICM_PC2, ys, zs, initial_lp_CP_ys, initial_lp_CP_zs, center_xs)
+        #Call ICM shape analysis for INITIAL
+        ICM_CPs_initial = lib.Shape_Analysis.ICM_shape_analysis(22, 7.65, initial_lp_CP_ys, initial_lp_CP_zs, False)
+
+        #Call ICM shape analysis for MOD
+        ICM_CPs_mod, ICM_CPs_mod_x, ICM_CPs_mod_y, ICM_CPs_mod_z, perp_slope, mid_plate_y, mid_plate_z \
+            = lib.Shape_Analysis.ICM_shape_analysis(ICM_PC1, ICM_PC2, ys, zs, True)
 
         #TODO: IMMEDIATE PLOT OF GENERATED POINTS, I WANT TO COMPARE LP AND ICM POSITION
         fig = plt.figure(2)
