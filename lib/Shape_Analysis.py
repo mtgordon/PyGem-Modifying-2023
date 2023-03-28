@@ -9,6 +9,7 @@ functions and helper functions to streamline the codebase.
 import pandas
 import numpy as np
 from scipy.interpolate import interp1d
+import matplotlib.pyplot as plt
 
 '''
 Function: generate_data_points
@@ -50,7 +51,10 @@ def generate_data_points(part, PCA_1, PCA_2, filename):
         col_num = df.columns.get_loc(part + '_x_intercept')
         b_x = float(df.iloc[row_num, col_num])
         print(PC1_m_x, PCA_1_score, PC2_m_x, PCA_2_score)
-        ys.append(PC1_m_x * PCA_1_score + PC2_m_x * PCA_2_score + b_x)
+        if part == 'LP':
+            ys.append(PC1_m_x * PCA_1_score + PC2_m_x * PCA_2_score + b_x)
+        else:
+            zORxs.append(PC1_m_x * PCA_1_score + PC2_m_x * PCA_2_score + b_x)
 
         col_num = df.columns.get_loc(part + '_PC1_y_coefficient')
         PC1_m_y = float(df.iloc[row_num, col_num])
@@ -58,7 +62,10 @@ def generate_data_points(part, PCA_1, PCA_2, filename):
         PC2_m_y = float(df.iloc[row_num, col_num])
         col_num = df.columns.get_loc(part + '_y_intercept')
         b_y = float(df.iloc[row_num, col_num])
-        zORxs.append(PC1_m_y * PCA_1_score + PC2_m_y * PCA_2_score + b_y)
+        if part == 'LP':
+            zORxs.append(PC1_m_y * PCA_1_score + PC2_m_y * PCA_2_score + b_y)
+        else:
+            ys.append(PC1_m_y * PCA_1_score + PC2_m_y * PCA_2_score + b_y)
 
         #TODO: This uses MRI data, so if i am doing ICM just reuse the generic, do not generate new
         if part == 'LP':
@@ -195,6 +202,14 @@ def ICM_shape_analysis(PCA_1, PCA_2, ys, zs, isMod):
 
     xs = np.array(xs)
     ys = np.array(ys)
+    ys = ys * -1
+
+    #TODO: Plot directly from generate_data_points
+    fig = plt.figure(10)
+    plt.xlabel("x")
+    plt.ylabel("y")
+
+    plt.plot(xs, ys, c='b', marker='+')
 
 
     # print('ICM shape analysis points')
