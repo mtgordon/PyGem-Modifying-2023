@@ -221,6 +221,9 @@ def ICM_shape_analysis(PCA_1, PCA_2, ys, zs, isMod):
     # Working below on finding the center of LP and slope at that point
 ###########################################
 
+    #TODO: Remove the last point from the sorted arrays
+    z_sorted = z_sorted[0:-1]
+    y_sorted = y_sorted[0:-1]
     tot_dist = 0
     tot_dist_arr = []
     last_z = z_sorted[0]
@@ -230,7 +233,7 @@ def ICM_shape_analysis(PCA_1, PCA_2, ys, zs, isMod):
         tot_dist += dist
         tot_dist_arr.append(tot_dist)
 
-
+#TODO: Should these use the one less point list?
     # curve_y = UnivariateSpline(tot_dist_arr, y_sorted, k = 5)
     curve_y = interp1d(tot_dist_arr, y_sorted)
     # curve_z = UnivariateSpline(tot_dist_arr, z_sorted, k = 5)

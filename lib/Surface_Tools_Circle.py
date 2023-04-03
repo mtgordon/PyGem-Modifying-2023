@@ -180,6 +180,7 @@ def apply_curve_after_threshold(generic_surface, generated_surface, hiatus, z_cu
         # STEP 4: Check the Z coordinate of a point to determine if it is below the cutoff
         # ================================================================================
 #        print('Z CUTOFF:', z_cutoff)
+        print('{}{}{}{}{}{}{}{}{} val=', str(val), ', z_cutoff=', str(z_cutoff), ' {}{}{}{}{}{}{}{}{}{}')
         if val < z_cutoff:
             x_val = generated_surface.xAxis[index]
             y_val = generated_surface.yAxis[index]
@@ -272,7 +273,7 @@ def apply_curve_after_threshold(generic_surface, generated_surface, hiatus, z_cu
             # the arc (length_of_droop), find the center of the circle to make
             # the arc
             sl = pythag(p2.y - p1.y, p2.z - p1.z)
-            # print(sl, length_of_droop)
+            print('[][][][][][][][][][] sl=', sl, 'droop length=', length_of_droop, '[][][][][][][][][][][]')
             if sl <= length_of_droop:
 
                 point_1 = np.array([p1.y, p1.z])
@@ -343,6 +344,7 @@ def apply_curve_after_threshold(generic_surface, generated_surface, hiatus, z_cu
                 
                 
                 distance_fraction = wanted_arc_length / length_of_droop
+
                 # print('desired arc:', wanted_arc_length)
                 # print('distance_fraction',distance_fraction)
 #                print("wanted : ", wanted_arc_length)
