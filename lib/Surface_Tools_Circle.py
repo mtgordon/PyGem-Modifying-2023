@@ -209,7 +209,7 @@ def apply_curve_after_threshold(generic_surface, generated_surface, hiatus, z_cu
             # This looks to be the distance from the z cutoff to the end of the AVW
             # ========================================
             length_of_droop = abs(getSurfaceDistance(p1.z, min_generated_z, x_val, generated_interpolator_zx_y))
-            
+
             # ==================================================================================
             # STEP 9: Take the X coordinate, and find the point on the original 3D distal spline with that X coordinate
             # ==================================================================================
@@ -515,7 +515,9 @@ def optimize_cutoff_value(start_z, slope, interpolator_zx_y, max_z, z_of_filler,
     bottom_third_z = z_of_filler+(zmax-z_of_filler)/2
 
 #   Trying a change 6/10/2020
-    start_z = bottom_third_z - 3*INCREMENT
+    #TODO: another change, use raw start_z
+
+    start_z = bottom_third_z - 3*INCREMENT #WAS THE ONE IN USE BEFORE
 #    start_z = z_of_filler + 3*INCREMENT
 
 #    AVW_Angle = math.degrees(math.atan(1/slope))
@@ -601,9 +603,9 @@ def optimize_cutoff_value(start_z, slope, interpolator_zx_y, max_z, z_of_filler,
 #        print('slope_of_radius:', slope_of_radius)
         # Slope that the circle would start at (tangent to radius line)
         slope_of_tangent = -1/slope_of_radius
-#        print('slope_of_tangent:', slope_of_tangent)
+        print('slope_of_tangent:', slope_of_tangent)
         
-        tangent_angle = -1*math.degrees(math.atan2(abs(slope_of_tangent),np.sign(slope_of_tangent)))
+        tangent_angle = -1*math.degrees(math.atan2(slope_of_tangent,1))
 #        slope_of_tangent = math.degrees(slope_of_tangent)
 #        print('tangent_slope:', tangent_angle)
 #        print('tangent:', slope_of_tangent)
@@ -633,10 +635,10 @@ def optimize_cutoff_value(start_z, slope, interpolator_zx_y, max_z, z_of_filler,
 
 #        print("##################################")
 #
-#        print('looking at this z:', start_z)
-#        print('AVW Angle:', AVW_Angle)
-#        print('curve angle:', tangent_angle)
-#        print('angle difference', AVW_Angle - tangent_slope)
+        print('looking at this z:', start_z)
+        print('AVW Angle:', AVW_Angle)
+        print('curve angle:', tangent_angle)
+        print('angle difference', AVW_Angle - tangent_angle)
 # Trying a change 6/10/20
 #        if AVW_Angle - curve_angle < -5:
         if AVW_Angle - tangent_angle < 0:
@@ -646,12 +648,11 @@ def optimize_cutoff_value(start_z, slope, interpolator_zx_y, max_z, z_of_filler,
         elif AVW_Angle - tangent_angle > 5:
             start_z -= INCREMENT
             if start_z < min_z_x0:
-                # print('STOPPING DUE TO END OF AVW')
+                print('~~~~~~~~~~~~~~~~~~~~~~~~~~~STOPPING DUE TO END OF AVW~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
                 return min_z_x0 - 1
         else:
-            # print('STOPPING')
+            print('()()()()()()()()()STOPPING()()()()()()()()()()()')
             return start_z
-
 
 #        start_z -= INCREMENT*10
 
@@ -683,6 +684,8 @@ def optimize_cutoff_value(start_z, slope, interpolator_zx_y, max_z, z_of_filler,
             start_z += INCREMENT
         else:
             start_z -= INCREMENT"""
+    #TODO: There is a return here
+    print(':::::::::::::::::The ending return is fired::::::::::::::::')
     return start_z
 
 

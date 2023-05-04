@@ -62,21 +62,24 @@ def generate_data_points(part, PCA_1, PCA_2, filename):
         PC2_m_y = float(df.iloc[row_num, col_num])
         col_num = df.columns.get_loc(part + '_y_intercept')
         b_y = float(df.iloc[row_num, col_num])
+
+        center_xs.append(-2)
+
         if part == 'LP':
             zORxs.append(PC1_m_y * PCA_1_score + PC2_m_y * PCA_2_score + b_y)
         else:
             ys.append(PC1_m_y * PCA_1_score + PC2_m_y * PCA_2_score + b_y)
 
         #TODO: This uses MRI data, so if i am doing ICM just reuse the generic, do not generate new
-        if part == 'LP':
-            col_num = df.columns.get_loc(part + '_FEA_z')
-            initial_lp_CP_zORxs.append(float(df.iloc[row_num, col_num]))
-            col_num = df.columns.get_loc(part + '_FEA_y')
-            initial_lp_CP_ys.append(float(df.iloc[row_num, col_num]))
-            center_xs.append(-2)
+        # if part == 'LP':
+        #     col_num = df.columns.get_loc(part + '_FEA_z')
+        #     initial_lp_CP_zORxs.append(float(df.iloc[row_num, col_num]))
+        #     col_num = df.columns.get_loc(part + '_FEA_y')
+        #     initial_lp_CP_ys.append(float(df.iloc[row_num, col_num]))
+
 
     if part == 'LP':
-        return df, index, zORxs, ys, initial_lp_CP_ys, initial_lp_CP_zORxs, center_xs
+        return df, index, zORxs, ys, center_xs
     else:
         return df, index, zORxs, ys
 
@@ -85,7 +88,7 @@ def generate_data_points(part, PCA_1, PCA_2, filename):
 Function: levator_shape_analysis
 This function takes in the PCA scores given in the Generate_INP.py file 
 '''
-def levator_shape_analysis(PCA_1, PCA_2):
+def levator_shape_analysis(PCA_1, PCA_2, isInitTest):
     filename = 'LP_shape_analysis_FEA_input.csv'
 
     # # scale and angle for OPALX
@@ -97,8 +100,12 @@ def levator_shape_analysis(PCA_1, PCA_2):
     angle = -0.088
 
     #Call helper function
-    df, index, zs, ys, initial_lp_CP_ys, initial_lp_CP_zs, center_xs \
+    df, index, zs, ys, center_xs \
         = generate_data_points('LP', PCA_1, PCA_2, filename)
+
+    if isInitTest:
+        LP_CPs = np.c_[center_xs, ys, zs]
+        return ys, zs, LP_CPs
 
     zs = np.array(zs)
     ys = np.array(ys)
@@ -161,12 +168,12 @@ def levator_shape_analysis(PCA_1, PCA_2):
     print(zs)
     print(ys)
 
-    LP_CPs_initial = np.c_[center_xs,initial_lp_CP_ys,initial_lp_CP_zs]
-    LP_CPs_mod = np.c_[center_xs,ys,zs]
+    # LP_CPs_initial = np.c_[center_xs,initial_lp_CP_ys,initial_lp_CP_zs]
+    LP_CPs = np.c_[center_xs,ys,zs]
 
-    print("%%%%%%%%%%%%%%%%%%", LP_CPs_mod)
+    # print("%%%%%%%%%%%%%%%%%%", LP_CPs_mod)
 
-    return ys, zs, LP_CPs_initial, LP_CPs_mod, initial_lp_CP_ys, initial_lp_CP_zs
+    return ys, zs, LP_CPs
 
 
 '''
@@ -221,27 +228,30 @@ def ICM_shape_analysis(PCA_1, PCA_2, ys, zs, isMod):
     # Working below on finding the center of LP and slope at that point
 ###########################################
 
-    #TODO: Remove the last point from the sorted arrays
-    z_sorted = z_sorted[0:-1]
-    y_sorted = y_sorted[0:-1]
+    #TODO: Remove the last point from the sorted arrays (Changed to start from 2, was 0 before)
+    # z_sorted = z_sorted[2:-1]
+    # y_sorted = y_sorted[2:-1]
     tot_dist = 0
-    tot_dist_arr = []
+    tot_dist_arr = [0]
     last_z = z_sorted[0]
     last_y = y_sorted[0]
-    for index, z in enumerate(z_sorted):
-        dist = ((last_z - z)**2+(last_y - y_sorted[index])**2)**.5
+    for i in range(0, len(z_sorted)-1):
+        dist = ((z_sorted[i] - z_sorted[i+1])**2+(y_sorted[i] - y_sorted[i+1])**2)**.5
         tot_dist += dist
         tot_dist_arr.append(tot_dist)
 
 #TODO: Should these use the one less point list?
     # curve_y = UnivariateSpline(tot_dist_arr, y_sorted, k = 5)
-    curve_y = interp1d(tot_dist_arr, y_sorted)
+    curve_y = interp1d(tot_dist_arr, y_sorted, kind='quadratic')
+    # kind_y = interp1d(tot_dist_arr, y_sorted, kind='quadratic')
     # curve_z = UnivariateSpline(tot_dist_arr, z_sorted, k = 5)
-    curve_z = interp1d(tot_dist_arr, z_sorted)
+    curve_z = interp1d(tot_dist_arr, z_sorted, kind='quadratic')
+    # kind_z = interp1d(tot_dist_arr, z_sorted, kind='cubic')
     # curve_x = interp1d(tot_dist_arr, x_sorted)
 
     # the points are then createdto make the spacing for the points equal
     spaced_distance_array = np.linspace(0,tot_dist_arr[-1],100)
+    # granular_array = np.arange(0, tot_dist_arr[-1], 0.1)
 
     new_distance_array  = [0]
     previous_z = curve_z(0)
@@ -257,19 +267,46 @@ def ICM_shape_analysis(PCA_1, PCA_2, ys, zs, isMod):
         new_distance_array.append(((new_ys[-1] - new_ys[-2])**2 + (new_zs[-1]-new_zs[-2])**2)**0.5 + new_distance_array[-1])
         # print('x,y,z,dist:', new_xs[-1], new_ys[-1], new_zs[-1], new_distance_array[-1])
 
-    half_distance = new_distance_array[-1]
+    new_curve_z = interp1d(new_distance_array, new_zs)
+    new_curve_y = interp1d(new_distance_array, new_ys)
+
+    # TODO: remove later once the curve and midpoint are confirmed correct
+    # splineZ = [kind_z(0)]
+    # splineY = [kind_y(0)]
+    # test_distance_array = [0]
+    # for i in range(0,len(granular_array)):
+    #     splineZ.append(kind_z(granular_array[i]))
+    #     splineY.append(kind_y(granular_array[i]))
+    #     test_distance_array.append(
+    #         ((splineY[-1] - splineY[-2]) ** 2 + (splineZ[-1] - splineZ[-2]) ** 2) ** 0.5 + test_distance_array[-1])
+
+
+    fig = plt.figure(2)
+    fig.suptitle('spline test, (curve vs sorted)')
+    ax = fig.add_subplot(111)
+    plt.plot(new_zs, new_ys)
+    plt.plot(z_sorted, y_sorted)
+    ax.set_xlabel('z')
+    ax.set_ylabel('y')
+    plt.show()
+
+    # test_half = test_distance_array[-1]
+    half_distance = new_distance_array[-1] / 2
+    print('___________________ new distance array last value:' + str(new_distance_array[-1]))
 
     # The value below may need to be changed. It is currently where the
     # levator plate is located in the x coordinates
     # middle_x = -2
-    mid_plate_y = float(curve_y(half_distance))
-    mid_plate_z = float(curve_z(half_distance))
+    mid_plate_y = float(new_curve_y(half_distance))
+    mid_plate_z = float(new_curve_z(half_distance))
 
-    y_before = float(curve_y(half_distance - 1))
-    z_before = float(curve_z(half_distance - 1))
+    dist_for_slope = 4
 
-    y_after = float(curve_y(half_distance + 1))
-    z_after = float(curve_z(half_distance + 1))
+    y_before = float(new_curve_y(half_distance - dist_for_slope))
+    z_before = float(new_curve_z(half_distance - dist_for_slope))
+
+    y_after = float(new_curve_y(half_distance + dist_for_slope))
+    z_after = float(new_curve_z(half_distance + dist_for_slope))
 
     # # find the slope at the middle of the levator plate (where the ICM is)
     slope = (y_after-y_before)/(z_after-z_before)
@@ -357,3 +394,17 @@ def ICM_shape_analysis(PCA_1, PCA_2, ys, zs, isMod):
         return ICM_CPs
 
     # print("ICM %%%%%%%%%%%%%%%%%%", LP_CPs_mod)
+
+
+def checkPlot(title, initialPoints, modPoints):
+    fig = plt.figure(1)
+    ax = fig.add_subplot(111, projection='3d')
+    fig.suptitle(title)
+    ax.scatter(initialPoints[:, 0], initialPoints[:, 2], initialPoints[:, 1], c='b', marker='+',
+               label='initial')
+    ax.scatter(modPoints[:, 0], modPoints[:, 2], modPoints[:, 1], c='r', marker='+', label='mod')
+    ax.set_xlabel('x')
+    ax.set_ylabel('z')
+    ax.set_zlabel('y')
+    plt.legend()
+    plt.show()

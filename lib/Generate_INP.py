@@ -199,6 +199,8 @@ def AnalogGenerateINP(TissueParameters, MaterialStartLine, LoadLine, LoadLineNo,
 
         PM_boundary_CPs = np.c_[Xs,Ys,Zs]
 
+        lib.Shape_Analysis.checkPlot('PM Boundary Initial', PM_boundary_CPs, PM_boundary_CPs)
+
         # LA BCs
         Xs = []
         Ys = []
@@ -213,6 +215,25 @@ def AnalogGenerateINP(TissueParameters, MaterialStartLine, LoadLine, LoadLineNo,
             Zs.append(np_points[i-1,2])
 
         LA_boundary_CPs = np.c_[Xs,Ys,Zs]
+
+        lib.Shape_Analysis.checkPlot('LA Boundary Initial', LA_boundary_CPs, LA_boundary_CPs)
+
+        #TODO: Create ATFP boundary CPs, using raw np_points
+        # ATFP BCs
+        Xs = []
+        Ys = []
+        Zs = []
+
+        np_points = np.array(io.extractPointsForPartFrom(GenericINPFile, ATFP))
+
+        for i in range(len(np_points)):
+            Xs.append(np_points[i - 1, 0])
+            Ys.append(np_points[i - 1, 1])
+            Zs.append(np_points[i - 1, 2])
+
+        ATFP_boundary_CPs = np.c_[Xs, Ys, Zs]
+
+        lib.Shape_Analysis.checkPlot('ATFP Boundary Initial', ATFP_boundary_CPs, ATFP_boundary_CPs)
 
 
         # Hiatus point on GI Filler
@@ -247,6 +268,8 @@ def AnalogGenerateINP(TissueParameters, MaterialStartLine, LoadLine, LoadLineNo,
             rotated_Ys.append(rotated_point.y)
             rotated_Zs.append(rotated_point.z)
         inner_PM_deformed_CPs = np.c_[rotated_Xs,rotated_Ys,rotated_Zs]
+
+        lib.Shape_Analysis.checkPlot('PM Inner Nodes', inner_PM_CPs, inner_PM_deformed_CPs)
 
 
         ######################### AVW_CPs ################################
@@ -288,7 +311,6 @@ def AnalogGenerateINP(TissueParameters, MaterialStartLine, LoadLine, LoadLineNo,
 
         AVW_CPs_initial = np.c_[init_Xs,init_Ys,init_Zs]
         AVW_CPs_mod = np.c_[mod_Xs,mod_Ys,mod_Zs]
-
 
 
         # initial_CPs = np.concatenate((PM_boundary_CPs, LA_boundary_CPs, hiatus_original_CP, inner_PM_CPs, AVW_CPs_initial), axis = 0)
@@ -356,8 +378,10 @@ def AnalogGenerateINP(TissueParameters, MaterialStartLine, LoadLine, LoadLineNo,
 
         #TODO: call from shape_analysis
         #Call levator plate shape analysis
-        ys, zs, LP_CPs_initial, LP_CPs_mod, initial_lp_CP_ys, initial_lp_CP_zs \
-            = lib.Shape_Analysis.levator_shape_analysis(levator_plate_PC1, levator_plate_PC2)
+        initial_lp_CP_ys, initial_lp_CP_zs, LP_CPs_initial \
+            = lib.Shape_Analysis.levator_shape_analysis(0.0, 0.0, False)
+
+        ys, zs, LP_CPs_mod = lib.Shape_Analysis.levator_shape_analysis(levator_plate_PC1, levator_plate_PC2, False)
 
         #Call ICM shape analysis for INITIAL
         ICM_CPs_initial = lib.Shape_Analysis.ICM_shape_analysis(22, 7.65, initial_lp_CP_ys, initial_lp_CP_zs, False)
@@ -514,19 +538,11 @@ def AnalogGenerateINP(TissueParameters, MaterialStartLine, LoadLine, LoadLineNo,
         # initial_CPs = LP_CPs_initial
         # cust_CPs = LP_CPs_mod
 
-        initial_CPs = np.concatenate((PM_boundary_CPs, AVW_CPs_mod, LP_CPs_initial, hiatus_deformed_CP, inner_PM_deformed_CPs, ICM_CPs_initial), axis = 0)
-        cust_CPs = np.concatenate((PM_boundary_CPs, AVW_CPs_mod, LP_CPs_mod, hiatus_deformed_CP, inner_PM_deformed_CPs, ICM_CPs_mod), axis = 0)
+        #TODO: Removing AVW_CPs_mod from both arrays
+        initial_CPs = np.concatenate((PM_boundary_CPs, ATFP_boundary_CPs, LP_CPs_initial, hiatus_deformed_CP, inner_PM_deformed_CPs, ICM_CPs_initial), axis = 0)
+        cust_CPs = np.concatenate((PM_boundary_CPs, ATFP_boundary_CPs, LP_CPs_mod, hiatus_deformed_CP, inner_PM_deformed_CPs, ICM_CPs_mod), axis = 0)
 
-        #TODO: This is a plot to compare the initial and mod for the levator transformation
-        # plt.figure(2)
-        # ax = fig.add_subplot(111, projection='3d')
-        # fig.suptitle('Levator Transformation Init v. Mod (r=10)')
-        #
-        # ax.scatter(initial_CPs[:, 0], initial_CPs[:, 2], initial_CPs[:, 1], c='b', marker='+', label='Initial')
-        # ax.scatter(cust_CPs[:, 0], cust_CPs[:, 2], cust_CPs[:, 1], c='r', marker='+', label='Mod')
-        #
-        # ax.legend()
-        # plt.show()
+        lib.Shape_Analysis.checkPlot('Levator Transformation Init v. Mod (Includes ATFP Boundary)', initial_CPs, cust_CPs)
 
         # TODO: This is the radius changed one
         rbf = RBF(original_control_points = initial_CPs, deformed_control_points = cust_CPs, func='thin_plate_spline', radius = 40)
@@ -1109,7 +1125,6 @@ def AnalogGenerateINP(TissueParameters, MaterialStartLine, LoadLine, LoadLineNo,
 #         # print(hiatus_original_CP)
 #         # print(type(hiatus_original_CP))
 #         # print(hiatus_original_CP.shape)
-#         #TODO: Not sure what boundary_CPs are, as only defined ones are LA and PM
 #         initial_CPs = np.concatenate((midline_initial_CPs, ICM_CPs, PM_boundary_CPs, inner_PM_CPs, hiatus_original_CP), axis = 0)
 #         cust_CPs = np.concatenate((midline_initial_CPs, ICM_CPs, PM_boundary_CPs, inner_PM_CPs, hiatus_deformed_CP ), axis = 0)
 #
@@ -1160,7 +1175,7 @@ def AnalogGenerateINP(TissueParameters, MaterialStartLine, LoadLine, LoadLineNo,
 #         print('1')
 #         gi        = Scaling.rotate_part(GI_FILLER, OutputINPFile, rotate_angle, rot_point)
 #         print('2')
-#         aftp      = Scaling.rotate_part(ATFP, OutputINPFile, rotate_angle, rot_point)
+#         aftp      = Scaling.rotate_part(ATFP, OutputINPFile, rotate_angle, rot_point)Added
 #         print('3')
 #         atla      = Scaling.rotate_part(ATLA, OutputINPFile, rotate_angle, rot_point)
 #         print('4')
@@ -1175,8 +1190,8 @@ def AnalogGenerateINP(TissueParameters, MaterialStartLine, LoadLine, LoadLineNo,
     ######################################################################################
     #TODO: Commented out droop
     # Droop the AVW (probably pass the generic file and obtain the end points for the droop from there)
-    # if config.getint("FLAGS", "CurveAVW") != 0:
-    #     avw = Scaling.curve_avw(AVW, OutputINPFile, GenericINPFile, hiatus, z_cutoff, rotate_angle, rot_point, HiatusLength)
+    if config.getint("FLAGS", "CurveAVW") != 0:
+        avw = Scaling.curve_avw(AVW, OutputINPFile, GenericINPFile, hiatus, z_cutoff, rotate_angle, rot_point, HiatusLength)
     ######################################################################################
 
     ######################################################################################

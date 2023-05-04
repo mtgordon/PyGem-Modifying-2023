@@ -111,7 +111,9 @@ AlternateLoads = json.loads(config["Load"]["AlternateLoads"])
 LoadLineSignal = config["Load"]["LoadLineSignal"]
 
 Results_Folder_Location = config["FILES"]["Results_Folder_Location"]
-
+# print('os test location is below vvv')
+# print(os.getcwd())
+# Results_Folder_Location = os.getcwd()
 
 RotationPoint   = json.loads(config["HIATUS_PROPERTIES"]["RotationPoint"])
 HiatusPoint     = json.loads(config["HIATUS_PROPERTIES"]["HiatusPoint"])
