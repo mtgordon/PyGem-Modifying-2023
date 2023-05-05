@@ -1,0 +1,1 @@
+﻿NDFramePage.OnPageTitleLoaded("File:lib/Get_Data_From_ODB.py","Get_Data_From_ODB.py");NDSummary.OnSummaryLoaded("File:lib/Get_Data_From_ODB.py",[["Python","Python"]],[["Files","File"]],[[218,0,0,"Get_Data_From_ODB.py","Get_Data_From_ODB.py"]]);

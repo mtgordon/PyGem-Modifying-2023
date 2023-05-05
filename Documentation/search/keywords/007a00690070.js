@@ -1,0 +1,1 @@
+﻿NDSearch.OnPrefixDataLoaded("zip",["Function"],[["zipped",,[["DataSet3d",,,,0,"File:lib/workingWith3dDataSets.py:DataSet3d.zipped","PythonClass:DataSet3d:zipped"]]]]);

@@ -1,0 +1,1 @@
+﻿NDFramePage.OnPageTitleLoaded("File:lib/CalculateHiatus.py","CalculateHiatus.py");NDSummary.OnSummaryLoaded("File:lib/CalculateHiatus.py",[["Python","Python"]],[["Functions","Function"],["Groups","Group"]],[[185,0,1,"Functions","Functions"],[186,0,0,"CalculateHiatus","CalculateHiatus"],[187,0,0,"CalculateHiatus_v2","CalculateHiatus_v2"]]);

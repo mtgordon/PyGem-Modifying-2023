@@ -9,30 +9,34 @@ Created on Thu Aug 17 11:17:59 2017
 from lib.workingWith3dDataSets import GeneratedDataSet, DataSet3d
 import copy
 
+'''
+Class: ConnectingTissue
 
-class ConnectingTissue(GeneratedDataSet):
-    """
-    The class receives:
-        a 2d list of size 3xn (x vals, y vals and z vals) of the coordinates
-            where the length of the x_vals, y_vals, and z_vals must be equal
-        connections (dict): a dictionary that contains node connectons.
-            The order of these connections is correct but the direction is not correct for every fiber
-            example: 0 -> 1, 1 -> 2, 2 -> 3, 3->4, 9->8, 8 -> 7, 7->6, 6 -> 5
-        *con_from_1_to_2: can take multiple values as the connecting tissue connects two surfaces together
-            connections to external surfaces with the this fibers node as the key and the other surfaces node as the value
+The class receives:
+    a 2d list of size 3xn (x vals, y vals and z vals) of the coordinates
+        where the length of the x_vals, y_vals, and z_vals must be equal
+    connections (dict): a dictionary that contains node connectons.
+        The order of these connections is correct but the direction is not correct for every fiber
+        example: 0 -> 1, 1 -> 2, 2 -> 3, 3->4, 9->8, 8 -> 7, 7->6, 6 -> 5
+    *con_from_1_to_2: can take multiple values as the connecting tissue connects two surfaces together
+        connections to external surfaces with the this fibers node as the key and the other surfaces node as the value
         
-    Attributes:
-        nodes (list(list(float),list(float),list(float))): The provided 2d Array of 3d coordinates
-        graph (dict{int : int}): a dictionary of nodal connections: # think chains
-            example: 0 -> 1, 1 -> 2, 2 -> 3, 3->4, 5->6, 6 -> 7 
-            If you look, 0 is the start and 4 is the end as 4 does not appear as a 'key' in the dictionary and is not linked to another node
-            Likewise 0 is not a connection to another node as it is never a 'value' in the dictionary
-            So therefore 0 is the starting node and 4 is the ending node and 1,2,3
-        fiber_keys (list(list(int))): a list of the indexes of the fibers, for example the first item in the list will contain the indexs for all the nodes that are in that fiber
-        starting_nodes (list(int)): the indexes of the nodes that connect to surface1
-        ending_nodes (list(int)): the indexes of the nodes that connect to surface2
+Attributes:
+    nodes (list(list(float),list(float),list(float))): The provided 2d Array of 3d coordinates
+    graph (dict{int : int}): a dictionary of nodal connections: # think chains
+        example: 0 -> 1, 1 -> 2, 2 -> 3, 3->4, 5->6, 6 -> 7 
+        If you look, 0 is the start and 4 is the end as 4 does not appear as a 'key' in the dictionary and is not linked to another node
+        Likewise 0 is not a connection to another node as it is never a 'value' in the dictionary
+        So therefore 0 is the starting node and 4 is the ending node and 1,2,3
+    fiber_keys (list(list(int))): a list of the indexes of the fibers, for example the first item in the list will contain the indexs for all the nodes that are in that fiber
+    starting_nodes (list(int)): the indexes of the nodes that connect to surface1
+    ending_nodes (list(int)): the indexes of the nodes that connect to surface2
+'''
+class ConnectingTissue(GeneratedDataSet):
+
     """
-    
+    Constructor: __init__
+    """
     def __init__(self, nodes, connections, con_from_1_to_2):
         self.avw_connections = con_from_1_to_2
 
@@ -70,6 +74,8 @@ class ConnectingTissue(GeneratedDataSet):
     
     
     """
+    Function: update_node
+    
     given an index and a point
     updates the node coordinates at that index
     """
@@ -80,6 +86,8 @@ class ConnectingTissue(GeneratedDataSet):
         #self.nodes[i][2] = point.z
         
     """
+    Function: nodes_as_xyz_list
+    
     returns: a 2d array with the first column being all the x values of the nodes and the z values are the 3rd column
     can be used to create a DataSet3d
     """
@@ -88,20 +96,26 @@ class ConnectingTissue(GeneratedDataSet):
         ys = copy.deepcopy(self.yAxis)
         zs = copy.deepcopy(self.zAxis)
         return [xs,ys,zs]
+
+
     """
-     to keep legacy code working, might not be needed, comment it out and see if the code breaks :)
+    Function: asDataSet3d
+    
+    to keep legacy code working, might not be needed, comment it out and see if the code breaks :)
     """
     def asDataSet3d(self):
         return self
     
     """
-    returns a list(list(Points))
+    Function: fibers
+    
+    returns: a list(list(Points))
         example: the first Node of the first fiber
             x = value[0][0][0]
             y = value[0][0][1]
             z = value[0][0][2]
          a 3d array of the fibers with coordinate values 
-         as opposed to fiber_keys which is a 2d array that contians lists of indexes
+         as opposed to fiber_keys which is a 2d array that contains lists of indexes
          
     """
     def fibers(self):
@@ -117,7 +131,9 @@ class ConnectingTissue(GeneratedDataSet):
     
     
     """
-    returns the fibers nodes connected to the body
+    Function: get_ends_of_fibers
+    
+    returns: the fibers nodes connected to the body
     """
     def get_ends_of_fibers(self):
         
@@ -133,9 +149,9 @@ class ConnectingTissue(GeneratedDataSet):
         return DataSet3d(xs, ys, zs)
 
     """
+    Function: get_starts_of_fibers
     
-    returns the fibers nodes connected to the surface or tissue
-    
+    returns: the fibers nodes connected to the surface or tissue
     """
     def get_starts_of_fibers(self):
         
@@ -151,6 +167,8 @@ class ConnectingTissue(GeneratedDataSet):
         return DataSet3d(xs, ys, zs)
         
     """
+    Function: _init_start_end_graph
+    
     This Method fixes the direction the nodes are in because the connections given are not all in the same direction
         meaning sometime the starting node will be on surface one and the fiber goes to surface two.
         and vice versa
@@ -202,7 +220,9 @@ class ConnectingTissue(GeneratedDataSet):
         
         return starting_nodes, ending_nodes, graph
         
-    
+    '''
+    Function: _init_start_end_graph_for_para
+    '''
     def _init_start_end_graph_for_para(self, connections, ext_connections):
         
         

@@ -1,0 +1,1 @@
+﻿NDSearch.OnPrefixDataLoaded("fib",["Function"],[["fibers",,[["ConnectingTissue",,,,0,"File:lib/ConnectingTissue.py:ConnectingTissue.fibers","PythonClass:ConnectingTissue:fibers"]]]]);

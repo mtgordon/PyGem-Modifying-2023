@@ -1,6 +1,11 @@
 import odbAccess 
 import sys
 from lib.clParse2 import clParse
+
+'''
+Script: Get_Data_From_ODB_Testing.py
+'''
+
 # % /* Author: Javier Palacio Torralba
 # %  * Mechens
 # %  * E-mail contact: javier.palacio@mechens.org

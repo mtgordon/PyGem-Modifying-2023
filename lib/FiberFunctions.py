@@ -14,7 +14,9 @@ from scipy.optimize import fsolve
 import numpy as np
 import sympy
 
-
+'''
+Function: find_index_of_element_connectons
+'''
 def find_index_of_element_connectons(content):
     possible_starts = []
     for i, line in enumerate(content):
@@ -22,7 +24,10 @@ def find_index_of_element_connectons(content):
             possible_starts.append(i)    
         
     return possible_starts
-    
+
+'''
+Function: try_int
+'''
 def try_int(n):
     try:
         return int(n)
@@ -30,6 +35,8 @@ def try_int(n):
         return False
 
 #===============
+# Function: get_connections_for_tissues
+#
 # Gets the points that link the AVW to CL
 # Assumes data comes after "Weld,\n*Element, type=CONN3D2"
 # The lines look like this "3, OPAL325_AVW_v6-1.14, OPAL325_Para_v6-1.15"
@@ -72,11 +79,13 @@ def get_connections_for_tissues(tis1, tis2, file_name):
     return con_nodes
 
 
-# This function takes the apical supports (or other fibers), finds the attachemnt points,
+# Function: CurveFibersInINP
+#
+# This function takes the apical supports (or other fibers), finds the attachment points,
 # and tries to make them a certain length
-def CurveFibersInINP(Part_Name1, Part_Name2, scale, inputFile, outputFile, dirVector):
+def CurveFibersInINP(Part_Name1, Part_Name2, scale, inputFile, outputFile, dirVector, updatedPositiveP=None, updatedNegativeP=None):
     #Part_Name1 = AVW, Part_Name2 = the fiber tissue
-    # Getting the coodinates for the AVW in the correct form fromt the file being worked on
+    # Getting the coordinates for the AVW in the correct form from the file being worked on
     FILE_NAME = inputFile
     AVWpoints = np.array(io.extractPointsForPartFrom(FILE_NAME, "OPAL325_AVW_v6"))
     AVW_surface = DataSet3d(list(AVWpoints[:, 0]), list(AVWpoints[:, 1]), list(AVWpoints[:, 2]))
@@ -87,37 +96,40 @@ def CurveFibersInINP(Part_Name1, Part_Name2, scale, inputFile, outputFile, dirVe
     # Result is something like {7: 10, 1: 11, 14: 13, 16: 15, 5: 17, 3: 19, 4: 25, 8: 12, 9: 14, 10: 16, 11: 18, 12: 20}
     # With the first number being the Fiber node and the second being the AVW node
     con_from_1_to_2 = get_connections_for_tissues(Part_Name2, Part_Name1, FILE_NAME) # connections to the surface 
-#    print("Testing this = ", con_from_1_to_2 )
+    # print("Testing this = ", con_from_1_to_2 )
     ct = ConnectingTissue(nodes, connections, con_from_1_to_2)
 #    print(ct)
 #    if(Part_Name2 == "OPAL325_Para_v6"):
 #        
-#       plot_Dataset(ct2.get_starts_of_fibers(), ct2.get_ends_of_fibers())
-
+#       plot_Dataset(c
 #   The keys might be the node numbers
     fibers = ct.fibers_keys
 #    print("Fibers = ", fibers)
+
     for i, fiber in enumerate(fibers): #loop through each fiber
 #        print(fiber)
         starting_node_index = ct.starting_nodes[i] # getting indexes of nodes from the i fiber
         ending_node_index = ct.ending_nodes[i]
-        
+
+        # print('Original Staring node index at iter: ' + str(i) + ", index: " + str(starting_node_index))
+        # print('Ending node index at iter: ' + str(i) + ", index: " + str(ending_node_index))
+
         starting_p = ct.node(starting_node_index) # getting nodes from the index number
         ending_p = ct.node(ending_node_index)
-                    
+
         # I believe the AVW node number that corresponds to where the fiber connects to the AVW
         avw_node_number = ct.avw_connections[ending_node_index]
-        # node (coordiantes) where the fiber connects to the AVW
+        print()
+        # node (coordinates) where the fiber connects to the AVW
         avw_node = AVW_surface.node(avw_node_number)
 
 
-        #Find the length of the origianl fiber
+        #Find the length of the original fiber
         OriginalFiberLength = 0
 
 
 #        Get the original fiber length
         for j, NodeNumber in enumerate(fiber[:-1]): #loop through each node in the fiber except the last
-    
             p = ct.node(NodeNumber)
             q = ct.node(fiber[j+1]) ### Error when it gets to last element of fiber
     
@@ -147,6 +159,7 @@ def CurveFibersInINP(Part_Name1, Part_Name2, scale, inputFile, outputFile, dirVe
 #avw_node
 #        print("NumberOfCycles = ",NumberOfCycles)
 #        print("Dist = ", _dist)
+        #TODO: MOST PROBABLE PLACE TO UPDATE STARTING NODES
         if IdealFiberLength > _dist:
             sending = (IdealFiberLength, fiber, starting_node_index, ending_node_index, ct, dirVector,NumberOfCycles,avw_node)
             [CorrectAmp] = fsolve(ArcDistance, StartingAmplitude, args=sending)
@@ -156,8 +169,7 @@ def CurveFibersInINP(Part_Name1, Part_Name2, scale, inputFile, outputFile, dirVe
 #        print("Correct Amp is = ", CorrectAmp)
         starting_p = ct.node(starting_node_index) # getting nodes from the index number
         ending_p = ct.node(ending_node_index)
-                
-        
+
         minY = starting_p.y # min and max y values from start and end nodes
         maxY = ending_p.y
 
@@ -169,10 +181,23 @@ def CurveFibersInINP(Part_Name1, Part_Name2, scale, inputFile, outputFile, dirVe
         OldZRange = ending_p.z-starting_p.z
         
         ########################## Set the ending node to the correct location
-        
-        NewXRange = avw_node.x - starting_p.x
-        NewYRange = avw_node.y - starting_p.y
-        NewZRange = avw_node.z - starting_p.z
+
+        #TODO: If else for the updated point located here
+        #TODO: New if branch to implement +/-
+        if Part_Name2 == "OPAL325_CL_v6":
+            if np.sign(starting_p.x) < 0 and updatedNegativeP is not None:
+                starting_p_alterable = updatedNegativeP
+            elif np.sign(starting_p.x) > 0 and updatedPositiveP is not None:
+                starting_p_alterable = updatedPositiveP
+            else:
+                starting_p_alterable = starting_p
+        else:
+            starting_p_alterable = starting_p
+
+        #TODO: have these use the new point
+        NewXRange = avw_node.x - starting_p_alterable.x
+        NewYRange = avw_node.y - starting_p_alterable.y
+        NewZRange = avw_node.z - starting_p_alterable.z
 
 
         FinalFiberLength = 0
@@ -180,11 +205,15 @@ def CurveFibersInINP(Part_Name1, Part_Name2, scale, inputFile, outputFile, dirVe
     
             p = ct.node(NodeNumber)
             
-            RangedpY = NumberOfCycles*(p.y - minY) / (maxY - minY) * math.pi # Set a y range betweeen 0 and PI    
+            RangedpY = NumberOfCycles*(p.y - minY) / (maxY - minY) * math.pi # Set a y range between 0 and PI
             
-            NewX = np.sign(p.x) * dirVector[0]* CorrectAmp * math.sin(RangedpY) + (p.x - starting_p.x) * NewXRange / OldXRange + starting_p.x # different so that it can be done to curve inwards from both sides of the AVW
-            NewY = dirVector[1]* CorrectAmp * math.sin(RangedpY) +  (p.y - starting_p.y) * NewYRange / OldYRange + starting_p.y
-            NewZ = dirVector[2]* CorrectAmp * math.sin(RangedpY) +  (p.z - starting_p.z) * NewZRange / OldZRange + starting_p.z
+            #TODO: have the newRange have the new point and the starting_p at the end (with oldrange) be the new point
+
+
+
+            NewX = np.sign(p.x) * dirVector[0] * CorrectAmp * math.sin(RangedpY) + (p.x - starting_p.x) * NewXRange / OldXRange + starting_p_alterable.x # different so that it can be done to curve inwards from both sides of the AVW
+            NewY = dirVector[1] * CorrectAmp * math.sin(RangedpY) + (p.y - starting_p.y) * NewYRange / OldYRange + starting_p_alterable.y
+            NewZ = dirVector[2] * CorrectAmp * math.sin(RangedpY) + (p.z - starting_p.z) * NewZRange / OldZRange + starting_p_alterable.z
            
             new_p = Point(NewX, NewY, NewZ)
             p = new_p
@@ -201,6 +230,9 @@ def CurveFibersInINP(Part_Name1, Part_Name2, scale, inputFile, outputFile, dirVe
     return     
 
 
+'''
+Function: write_part_to_inp
+'''
 def write_part_to_inp(file_name, outputfile_name, part_name, data_set):
 
     # writes part to file
@@ -211,7 +243,9 @@ def write_part_to_inp(file_name, outputfile_name, part_name, data_set):
     open(outputfile_name, 'w').close()
     io.write_new_inp_file(file_name, part_name, outputfile_name, data_set)
 
-
+'''
+Function: ArcDistance
+'''
 def ArcDistance(a, *sending): # second function
    #(IdealFiberLength, fiber, starting_node_index, ending_node_index, ct, dirVector,NumberOfCycles,avw_node)
     IdealFiberLength, fiber, starting_node_index, ending_node_index, ct, dirVector, NumberOfCycles, avw_node = sending
@@ -263,11 +297,18 @@ def ArcDistance(a, *sending): # second function
 #    print(NewFiberLength-IdealFiberLength)
     return NewFiberLength - IdealFiberLength
 
+'''
+Function: dist
+'''
 def dist(x1, x2, y1, y2, z1, z2):
     return ((x1-x2)**2+(y1-y2)**2+(z1-z2)**2)**0.5
 
 
-#returns average length of a fiber (since it may have multiple "lines")
+'''
+Function: getFiberLength
+
+returns: average length of a fiber (since it may have multiple "lines")
+'''
 def getFiberLength(fiber, inputfile):
     nodes, connections = io.extractPointsForPartFrom2(inputfile, fiber, get_connections=True)
     lines = []
@@ -301,6 +342,11 @@ def getFiberLength(fiber, inputfile):
     #return sum(distances)/len(distances)
     return distances
 
+'''
+Function: getFiberLengths
+
+Calls <getFiberLength> n number of times, when n is the number of elements in the given fibers array
+'''
 def getFiberLengths(inputfile, fibers):
     fiberLengths = []
     for fiber in fibers:
@@ -310,8 +356,12 @@ def getFiberLengths(inputfile, fibers):
 
 
 
-# This function takes the apical supports (or other fibers), finds the attachemnt points,
-# and tries to make them a certain length
+'''
+Function: CurvePARAFibersInINP
+
+This function takes the apical supports (or other fibers), finds the attachemnt points,
+and tries to make them a certain length
+'''
 def CurvePARAFibersInINP(Part_Name1, Part_Name2, scale, inputFile, outputFile, dirVector,  PM_Mid, connections):
 #    g = 0
 #    PM_Mid_new = PM_Mid.generatedCopy()

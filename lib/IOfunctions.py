@@ -2,13 +2,18 @@ import numpy as np
 from lib.workingWith3dDataSets import GeneratedDataSet, DataSet3d
 from math import floor
 
+'''
+Function: openFile
+'''
 def openFile(file_name):
     with open(file_name) as f:
         content = f.readlines()
     content = [x.strip() for x in content]
     return content
 
-
+'''
+Function: extractNodesFromINP
+'''
 def extractNodesFromINP(file_name, part, nodes):
     TissueCoordinates = np.array(extractPointsForPartFrom(file_name, part, get_connections=False))
 #    print(TissueCoordinates)
@@ -17,6 +22,9 @@ def extractNodesFromINP(file_name, part, nodes):
         NodeCoordinates.append(TissueCoordinates[i-1])
     return NodeCoordinates
 
+'''
+Function: extractPointsForPartFrom
+'''
 def extractPointsForPartFrom(file_name, part, get_connections=False):
     # print(file_name)
     content = openFile(file_name)
@@ -76,7 +84,10 @@ def extractPointsForPartFrom(file_name, part, get_connections=False):
         return xyz_vals, conVal
     else: 
         return xyz_vals
-    
+
+'''
+Function: extractPointsForPartFrom2
+'''
 def extractPointsForPartFrom2(file_name, part, get_connections=False):
     content = openFile(file_name)
     found = False
@@ -126,7 +137,7 @@ def extractPointsForPartFrom2(file_name, part, get_connections=False):
 
     xyz_vals = []
     for data_point in line_vals:
-        # the node values are strings and need to be conerted to floats
+        # the node values are strings and need to be converted to floats
         xyz_vals.append([float(data_point[1]), float(data_point[2]), float(data_point[3])])
       
 
@@ -136,7 +147,9 @@ def extractPointsForPartFrom2(file_name, part, get_connections=False):
     else: 
         return xyz_vals
 
-
+'''
+Function: write_new_inp_file
+'''
 def write_new_inp_file(file_name, part, new_file_name, data_set):
     node_pad = 7  # how big of a space to leave for the data
     data_pad = 13 # this insures that of a number is 3 digits long it will be padded with spaces to the specified justifaction to maintian the given length
@@ -167,6 +180,9 @@ def write_new_inp_file(file_name, part, new_file_name, data_set):
             
     new_file.close()
 
+'''
+Function: write_part_to_inp_file
+'''
 def write_part_to_inp_file(file_name, part, data_set):
     node_pad = 7  # how big of a space to leave for the data
     data_pad = 13 # this insures that of a number is 3 digits long it will be padded with spaces to the specified justifaction to maintian the given length
@@ -197,13 +213,20 @@ def write_part_to_inp_file(file_name, part, data_set):
     
     f.close()
 
-#Extracts points but puts it into DataSet3d class
+'''
+Function: get_dataset_from_file
+
+Extracts points but puts it into DataSet3d class
+'''
 def get_dataset_from_file(file_name, part_name):
 #    print(file_name, part_name)
     np_points = np.array(extractPointsForPartFrom(file_name, part_name))
 #    print(np_points)
     return DataSet3d(list(np_points[:, 0]), list(np_points[:, 1]), list(np_points[:, 2]))
 
+'''
+Function: get_interconnections
+'''
 def get_interconnections(file_name, part_name): #connections-between-material
 
     connections = []
@@ -240,6 +263,9 @@ def get_interconnections(file_name, part_name): #connections-between-material
         
     return connections
 
+'''
+Function: addToVals
+'''
 def addToVals(connections, nums):
     
     if len(nums) < 4:
@@ -261,7 +287,11 @@ def addToVals(connections, nums):
         raise(RuntimeError("Error retrieving connections; can only handle sets of 2, 3, or 4 values"))
     return connections
 
-#Returns the line number (not index) that a given string occurs in
+'''
+Function: findLineNum
+
+Returns the line number (not index) that a given string occurs in
+'''
 def findLineNum(file_location, string):
     lineNum = 1
     f = open(file_location, 'r')
@@ -274,6 +304,9 @@ def findLineNum(file_location, string):
 
 
 ############### functions for reading csv file once it has been created with nodal coordinates
+'''
+Function: getFEAData
+'''
 def getFEAData(FileName,nodes):
     csv = np.genfromtxt (FileName, delimiter=",")
 #    print(csv)
@@ -289,7 +322,9 @@ def getFEAData(FileName,nodes):
         z[i]=csv[i*3+2]
     return [x,y,z]
 
-
+'''
+Function: getFEADataCoordinates
+'''
 def getFEADataCoordinates(FileName):
     csv = np.genfromtxt (FileName, delimiter=",")
 
@@ -309,6 +344,9 @@ def getFEADataCoordinates(FileName):
         z[i]=data[i*3+2]
     return [x,y,z]
 
+'''
+Function: getInitialPositions
+'''
 def getInitialPositions(FileName,nodes):
     csv = np.genfromtxt (FileName, delimiter=",")
     x = np.array(csv[:,1])

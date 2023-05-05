@@ -1,0 +1,1 @@
+﻿NDSearch.OnPrefixDataLoaded("low",["Function"],[["lowBoundIndex",,[[,,,,0,"File:lib/AVW_Measurements.py:lowBoundIndex"]]]]);

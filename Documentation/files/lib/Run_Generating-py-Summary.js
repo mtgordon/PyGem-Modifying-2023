@@ -1,0 +1,1 @@
+﻿NDFramePage.OnPageTitleLoaded("File:lib/Run_Generating.py","Run_Generating.py");NDSummary.OnSummaryLoaded("File:lib/Run_Generating.py",[["Python","Python"]],[["Functions","Function"],["Groups","Group"]],[[95,0,1,"Functions","Functions"],[96,0,0,"level1_level3_combinations","level1_level3_combinations"]]);

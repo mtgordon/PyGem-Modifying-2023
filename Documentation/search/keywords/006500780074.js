@@ -1,0 +1,1 @@
+﻿NDSearch.OnPrefixDataLoaded("ext",["Function"],[["extractNodesFromINP",,[[,,,,0,"File:lib/IOfunctions.py:extractNodesFromINP"]]],["extractPointsForPartFrom",,[[,,,,0,"File:lib/IOfunctions.py:extractPointsForPartFrom"]]],["extractPointsForPartFrom2",,[[,,,,0,"File:lib/IOfunctions.py:extractPointsForPartFrom2"]]]]);

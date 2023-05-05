@@ -1,0 +1,1 @@
+﻿NDFramePage.OnPageTitleLoaded("PythonClass:CatenaryCurve","CatenaryCurve");NDSummary.OnSummaryLoaded("PythonClass:CatenaryCurve",[["Python","Python"]],[["Classes","Class"],["Functions","Function"],["Groups","Group"]],[[26,0,0,"CatenaryCurve"],[27,0,2,"Functions","Functions"],[28,0,1,"__init__","__init__"],[29,0,1,"arc_length","arc_length"],[30,0,1,"f","f"]]);

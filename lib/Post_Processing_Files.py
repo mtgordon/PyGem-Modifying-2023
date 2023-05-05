@@ -20,6 +20,9 @@ import time
 import matplotlib.pyplot as plt
 import numpy as np
 
+'''
+Function: Post_Processing
+'''
 def Post_Processing(odb_file, INP_File, INI_File, Output_File_Name, first_file_flag, output_base_filename, frame):
 
     base_file_name = os.path.splitext(os.path.split(odb_file)[1])[0]
@@ -300,7 +303,9 @@ def Post_Processing(odb_file, INP_File, INI_File, Output_File_Name, first_file_f
     
         filewriter.writerow(Output)
         
-        
+'''
+Function: Post_Processing_Files
+'''
 def Post_Processing_Files(odb_file, INP_File, INI_File, Output_File_Name, first_file_flag, output_base_filename, frame):
 
     base_file_name = os.path.splitext(os.path.split(odb_file)[1])[0]
@@ -597,6 +602,7 @@ def Post_Processing_Files(odb_file, INP_File, INI_File, Output_File_Name, first_
             Header.extend(['Length to Apex'])
 #            print('apical_distance:', apical_distance)
 
+            # TODO: Here is the Aa point
             yA, zA = Aa_point(new_zs, new_ys, new_distance_array)
             Aa_distance_relative,  Aa_distance_absolute = distance_to_hymenal_ring(PM_Mid_top_original,pbody_top_original, PM_Mid_top_deformed, pbody_top_deformed, yA, zA)
             Output.extend([Aa_distance_relative])

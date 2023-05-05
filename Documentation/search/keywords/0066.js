@@ -1,0 +1,1 @@
+﻿NDSearch.OnPrefixDataLoaded("f",["Function"],[["f",,[["CatenaryCurve",,,,0,"File:lib/workingWithCatenarys.py:CatenaryCurve.f","PythonClass:CatenaryCurve:f"]]]]);

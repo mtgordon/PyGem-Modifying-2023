@@ -1,0 +1,1 @@
+﻿NDSearch.OnPrefixDataLoaded("tri",["Function"],[["trim",,[["GeneratedDataSet",,,,0,"File:lib/workingWith3dDataSets.py:GeneratedDataSet.trim","PythonClass:GeneratedDataSet:trim"]]]]);

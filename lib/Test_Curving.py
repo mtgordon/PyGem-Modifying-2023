@@ -28,7 +28,9 @@ import time
 import re
 import glob
 
-
+'''
+Function: same_geometry_file
+'''
 def same_geometry_file(OutputINPFile, Results_Folder_Location):
 
     current_file_name = OutputINPFile
@@ -76,6 +78,9 @@ def same_geometry_file(OutputINPFile, Results_Folder_Location):
     return(same_geometry_file)
 start = time.process_time()
 
+'''
+Function: AnalogGenerateINP
+'''
 def AnalogGenerateINP(TissueParameters, MaterialStartLine, LoadLine, LoadLineNo, SlackStrain, DensityFactor, GenericINPFile, OutputINPFile, WidthScale, LengthScale, ZSHIFT, RotationPoint, HiatusPoint, GIFillerPoint, HiatusLength, Results_Folder_Location):
 
 #    GenericINPFile = 'Uncurved_AVW.inp'

@@ -1,0 +1,1 @@
+﻿NDFramePage.OnPageTitleLoaded("File:lib/clParse2.py","clParse2.py");NDSummary.OnSummaryLoaded("File:lib/clParse2.py",[["Python","Python"]],[["Functions","Function"],["Groups","Group"]],[[199,0,1,"Functions","Functions"],[200,0,0,"clParse","clParse"],[201,0,0,"flagInArgs","flagInArgs"]]);

@@ -1,0 +1,1 @@
+﻿NDFramePage.OnPageTitleLoaded("File:lib/RemovePart.py","RemovePart.py");NDSummary.OnSummaryLoaded("File:lib/RemovePart.py",[["Python","Python"]],[["Functions","Function"],["Groups","Group"]],[[140,0,1,"Functions","Functions"],[141,0,0,"remove_part","remove_part"],[142,0,0,"remove_connections","remove_connections"]]);

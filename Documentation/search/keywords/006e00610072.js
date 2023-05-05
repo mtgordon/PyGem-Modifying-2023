@@ -1,0 +1,1 @@
+﻿NDSearch.OnPrefixDataLoaded("nar",["Function"],[["narrow_distal_avw",,[[,,,,0,"File:lib/Scaling_-_20201_01_27.py:narrow_distal_avw"]]],["narrow_distal_avw_curve_down",,[[,,,,0,"File:lib/Scaling_-_20201_01_27.py:narrow_distal_avw_curve_down"]]],["narrow_distal_avw_narrow",,[[,,,,0,"File:lib/Scaling_-_20201_01_27.py:narrow_distal_avw_narrow"]]]]);

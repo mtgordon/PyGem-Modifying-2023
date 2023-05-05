@@ -1,0 +1,1 @@
+﻿NDSearch.OnPrefixDataLoaded("cod",["Information","Section"],[["Code",,[[,"Decomposition of Shape Analysis Code Section",,,0,"File:lib/Shape_Analysis.py:Decomposition_of_Shape_Analysis_Code_Section"],[,"Non-Sabbatical Code",,,1,"File:lib/Scaling_-_20201_01_27.py:Non-Sabbatical_Code"]]]]);

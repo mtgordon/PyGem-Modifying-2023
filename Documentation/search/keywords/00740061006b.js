@@ -1,0 +1,1 @@
+﻿NDSearch.OnPrefixDataLoaded("tak",["Function"],[["takeMeasurements",,[[,,,,0,"File:lib/Scaling_-_20201_01_27.py:takeMeasurements"]]],["takeMeasurements_return",,[[,,,,0,"File:lib/test_Scaling.py:takeMeasurements_return"]]]]);

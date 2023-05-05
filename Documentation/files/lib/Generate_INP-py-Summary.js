@@ -1,0 +1,1 @@
+﻿NDFramePage.OnPageTitleLoaded("File:lib/Generate_INP.py","Generate_INP.py");NDSummary.OnSummaryLoaded("File:lib/Generate_INP.py",[["Python","Python"]],[["Functions","Function"],["Groups","Group"]],[[170,0,1,"Functions","Functions"],[171,0,0,"same_geometry_file","same_geometry_file"],[172,0,0,"AnalogGenerateINP","AnalogGenerateINP"]]);

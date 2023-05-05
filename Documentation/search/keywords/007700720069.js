@@ -1,0 +1,1 @@
+﻿NDSearch.OnPrefixDataLoaded("wri",["Function"],[["write_new_inp_file",,[[,,,,0,"File:lib/IOfunctions.py:write_new_inp_file"]]],["write_part_to_inp",,[[,,,,0,"File:lib/FiberFunctions.py:write_part_to_inp"]]],["write_part_to_inp_file",,[[,,,,0,"File:lib/IOfunctions.py:write_part_to_inp_file"]]]]);

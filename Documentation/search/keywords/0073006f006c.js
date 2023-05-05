@@ -1,0 +1,1 @@
+﻿NDSearch.OnPrefixDataLoaded("sol",["Function"],[["solve_catenary",,[[,,,,0,"File:lib/workingWithCatenarys.py:solve_catenary"]]]]);

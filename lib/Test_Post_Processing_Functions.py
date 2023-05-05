@@ -27,7 +27,9 @@ from lib.odb_io import get_odb_data
 import matplotlib.pyplot as plt
 from math import hypot
 
-
+'''
+Function: Calc_Reaction_Forces
+'''
 def Calc_Reaction_Forces(path_base_file_name, output_base_filencurveame, GenericINPFile, INI_file, frame):
     
     config = configparser.ConfigParser()
@@ -82,9 +84,13 @@ def Calc_Reaction_Forces(path_base_file_name, output_base_filencurveame, Generic
     return(headers, forces)
 
 
-##### Taken from ExposedVaginalWallMeasurements.py
-##### Cannot be imported from there because then it runs the file
-##### Need to move the function to a file for the library
+'''
+Function: getFEADataCoordinates
+
+Taken from ExposedVaginalWallMeasurements.py
+Cannot be imported from there because then it runs the file
+Need to move the function to a file for the library
+'''
 def getFEADataCoordinates(FileName):
     csv_data = np.genfromtxt (FileName, delimiter=",")
 
@@ -110,8 +116,12 @@ def getFEADataCoordinates(FileName):
 # Python program to find equation of a plane  
 # passing through given 3 points. 
   
-# Function to find equation of plane. 
-def equation_plane(x1, y1, z1, x2, y2, z2, x3, y3, z3):  
+'''
+Function: equation_plane
+
+Function to find equation of plane. 
+'''
+def equation_plane(x1, y1, z1, x2, y2, z2, x3, y3, z3):
       
     a1 = x2 - x1 
     b1 = y2 - y1 
@@ -131,8 +141,12 @@ def equation_plane(x1, y1, z1, x2, y2, z2, x3, y3, z3):
 # distance between a point and a Plane in 3 D. 
   
   
-# Function to find distance 
-def shortest_distance(x1, y1, z1, a, b, c, d):  
+'''
+Function: shortest_distance
+
+Function to find distance 
+'''
+def shortest_distance(x1, y1, z1, a, b, c, d):
       
     d = (a * x1 + b * y1 + c * z1 + d) 
 #    print("d = ", d)
@@ -142,9 +156,13 @@ def shortest_distance(x1, y1, z1, a, b, c, d):
     perpendicular_distance = -1*d/e
     return(perpendicular_distance)
 
+'''
+Function: calc_prolapse_size
+
 ###########################################################
 # Read in the parameters from the ini file
 ###########################################################
+'''
 def calc_prolapse_size(GenericINPFile, ODBFile, INP_File, INI_file, frame, AVW_csv_file):
 #"Redo soft tissue prolapse measurement to use a point at the top of the PM-Mid and top of PM-Body with same x coordinate:
 
@@ -594,6 +612,9 @@ def calc_prolapse_size(GenericINPFile, ODBFile, INP_File, INI_file, frame, AVW_c
 #    return(float(max_prolapse), float(max_prolapse_absolute), new_max_prolapse_node, plane_nodes)
     
 
+'''
+Function: calc_prolapse_size_plane
+'''
 def calc_prolapse_size_plane(GenericINPFile, ODBFile, INP_File, INI_file, frame):
     # read from input file
 #    ODBFile = base_file_name + '.odb'
@@ -938,7 +959,10 @@ def calc_prolapse_size_plane(GenericINPFile, ODBFile, INP_File, INI_file, frame)
     print('New Distances:', distance_relative, distance_absolute)
     
     return(max_prolapse, max_prolapse_absolute, max_prolapse_node, plane_nodes)
-    
+
+'''
+Function: calc_exposed_vaginal_length
+'''
 def calc_exposed_vaginal_length(ini_file, AVW_csv_file, inp_file, odb_file, frame):
     
     config = configparser.ConfigParser()
@@ -1192,7 +1216,9 @@ def calc_exposed_vaginal_length(ini_file, AVW_csv_file, inp_file, odb_file, fram
 
     return dist2
 
-
+'''
+Function: calc_exposed_vaginal_length2
+'''
 def calc_exposed_vaginal_length2(GenericINPFile, ODBFile, INP_File, INI_file, frame, AVW_csv_file):
 #"Redo soft tissue prolapse measurement to use a point at the top of the PM-Mid and top of PM-Body with same x coordinate:
     
@@ -1731,7 +1757,10 @@ def calc_exposed_vaginal_length2(GenericINPFile, ODBFile, INP_File, INI_file, fr
 ##    ss.plot_Dataset(surface, DataSet3d([0] * len(new_vals[0]), new_vals[0], new_vals[1]))
 #
 #    return dist2
-    
+
+'''
+Function: Aa_point
+'''
 def Aa_point(zs, ys, distance_array):
 
     distance_to_Aa = 25
@@ -1836,7 +1865,11 @@ def Aa_point(zs, ys, distance_array):
 
 #     return(Aa_point)
 
-# get the farthest back AVW point for the apical point (y coordinate, z coordinate)
+'''
+Function: apical_point
+
+get the farthest back AVW point for the apical point (y coordinate, z coordinate)
+'''
 def apical_point(midline_points):
 
     return(midline_points[-1][0],midline_points[-1][1])
@@ -1902,7 +1935,9 @@ def apical_point(midline_points):
     # return(spline_ordered[-1][0],spline_ordered[-1][1])
 
 
-
+'''
+Function: get_AVW_midline
+'''
 def get_AVW_midline(AVW_csv_file):
     THRESHOLD = 3 # Max Distance point can be from X axis
 
@@ -1955,7 +1990,11 @@ def get_AVW_midline(AVW_csv_file):
     return (spline_ordered)
 
 
+'''
+Function: hymenal_ring
+
 #### Adding 5/4/21
+'''
 def hymenal_ring(PM_Mid_file, PBody_file, INP_File):
 # This is used to determine the distance that points are from the hymenal ring
     
@@ -2070,7 +2109,11 @@ def hymenal_ring(PM_Mid_file, PBody_file, INP_File):
     
 
 
-# this gets the midline nodes and recreates the a spline of new nodes (y,z)
+'''
+Function: get_AVW_midline_nodes
+
+this gets the midline nodes and recreates the a spline of new nodes (y,z)
+'''
 def get_AVW_midline_nodes(AVW_csv_file, slice_x_value):
     
     (xs, ys, zs) = getFEADataCoordinates(AVW_csv_file)
@@ -2156,7 +2199,11 @@ def get_AVW_midline_nodes(AVW_csv_file, slice_x_value):
 
 
 
-# takes the midline points and distance array and smooths it out
+'''
+Function: midline_curve_nodes
+
+takes the midline points and distance array and smooths it out
+'''
 def midline_curve_nodes(midline_points, distance_array):
     ys = [i[0] for i in midline_points]
     zs = [i[1] for i in midline_points]
@@ -2183,7 +2230,11 @@ def midline_curve_nodes(midline_points, distance_array):
 
     return(new_zs, new_ys, new_distance_array)
 
-# finds the farthest distance from the hymenal ring to the the prolapse (AVW)
+'''
+Function: calc_prolapse_size_spline_line
+
+finds the farthest distance from the hymenal ring to the the prolapse (AVW)
+'''
 def calc_prolapse_size_spline_line(GenericINPFile, INP_File, AVW_csv_file, PM_Mid_file, PBody_file):
 #"Redo soft tissue prolapse measurement to use a point at the top of the PM-Mid and top of PM-Body with same x coordinate:
 
@@ -2253,6 +2304,9 @@ def calc_prolapse_size_spline_line(GenericINPFile, INP_File, AVW_csv_file, PM_Mi
 
     return(max_prolapse, max_prolapse_absolute)    
 
+'''
+Function: distance_to_hymenal_ring
+'''
 def distance_to_hymenal_ring(PM_Mid_top_original,pbody_top_original, PM_Mid_top_deformed, pbody_top_deformed, y, z):
 
     midsaggital_x = float(PM_Mid_top_original.x)
@@ -2267,7 +2321,9 @@ def distance_to_hymenal_ring(PM_Mid_top_original,pbody_top_original, PM_Mid_top_
     
     return(float(distance_relative), float(distance_absolute))
 
-
+'''
+Function: distances_along_AVW
+'''
 def distances_along_AVW(PM_Mid_top_original,pbody_top_original, PM_Mid_top_deformed, pbody_top_deformed, ys, zs, distance_array):
     distance_to_line = -1
     i = 0

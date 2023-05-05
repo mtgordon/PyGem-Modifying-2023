@@ -1,0 +1,1 @@
+﻿NDSearch.OnPrefixDataLoaded("upd",["Function"],[["update_node",,[["ConnectingTissue",,,,0,"File:lib/ConnectingTissue.py:ConnectingTissue.update_node","PythonClass:ConnectingTissue:update_node"]]]]);

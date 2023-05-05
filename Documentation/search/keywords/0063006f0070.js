@@ -1,0 +1,1 @@
+﻿NDSearch.OnPrefixDataLoaded("cop",["Function"],[["copy",,[["Point",,,,0,"File:lib/workingWith3dDataSets.py:Point.copy","PythonClass:Point:copy"]]]]);

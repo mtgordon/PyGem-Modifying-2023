@@ -13,7 +13,11 @@ import numpy as np
 from lib.IOfunctions import findLineNum
 
 
-# Adding in an array (MaterialPrestretch that will have the additional length (or strain...not sure yet) of the different tissues)
+'''
+Function: INPAnalogMaterialProperties
+
+Adding in an array (MaterialPrestretch that will have the additional length (or strain...not sure yet) of the different tissues)
+'''
 def INPAnalogMaterialProperties(TissueParameters, DensityFactor, LoadLine, LoadLineNo, OutputINPFile, MaterialPrestretchCoefficients):
     
     print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ OUTPUT FILE NAME")
@@ -222,7 +226,9 @@ def INPAnalogMaterialProperties(TissueParameters, DensityFactor, LoadLine, LoadL
             sys.stdout.write(line)
             
             
-            
+'''
+Function: RemoveMaterialInsertion
+'''
 def RemoveMaterialInsertion(OutputINPFile, GenericINPFile):
 
 #    The line where the material that needs to be removed currently starts

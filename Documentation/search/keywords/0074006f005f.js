@@ -1,0 +1,1 @@
+﻿NDSearch.OnPrefixDataLoaded("to_",["Function"],[["to_inp_string",,[["DataSet3d",,,,0,"File:lib/workingWith3dDataSets.py:DataSet3d.to_inp_string","PythonClass:DataSet3d:to_inp_string"]]]]);

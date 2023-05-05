@@ -7,7 +7,9 @@ Created on Thu Dec  5 13:55:21 2019
 
 #import shutil
 
-
+'''
+Function: remove_part
+'''
 def remove_part(part, INP_file):
     with open(INP_file) as f:
         content = f.readlines()
@@ -53,7 +55,9 @@ def remove_part(part, INP_file):
     #            If we're not deleting a part, just write the line
                 new_file.write(line + "\n")
 
-
+'''
+Function: remove_connections
+'''
 def remove_connections(nodes, part, INP_file):
     if nodes == ['*']:
         nodes = ['']
