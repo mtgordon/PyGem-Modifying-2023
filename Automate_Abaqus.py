@@ -183,163 +183,154 @@ first_file = 1
 
 current_run_dict = default_dict
 
+# TODO: Start of possible while loop
 # Run each combination from the rows in Run_Variables
 for row in DOE_dict:
-    print('Row:', row)
-    
-    current_run_dict = default_dict
-#    print(DOE_dict.fieldnames)
-    for key in DOE_dict.fieldnames:
-        if key in default_dict.keys():
-            current_run_dict[key] = row[key]
-        else:
-            if key != 'Run Number':
-                print(key, 'is an unvalid entry')
-                sys.exit()
-                
-                
-    LoadLineNo = findLineNum(current_run_dict['Generic_File'], LoadLineSignal) + 2
-    MaterialStartLine = findLineNum(current_run_dict['Generic_File'], "** MATERIALS") + 2
-    f = open(current_run_dict['Generic_File'])
-    for i in range(0, LoadLineNo-1):
-        f.readline()
-    OldLoadLine = f.readline()
-    f.close()
+    #while True:
+        print('Row:', row)
 
-    LoadLine = OldLoadLine.split(',')
-    #TODO: This is where the local 'LoadValue' was used, and now uses the key from the default_dict
-    LoadLine[2] = ' ' + str(current_run_dict['Load_Value'])
-    LoadLine = str.join(',', LoadLine)
+        current_run_dict = default_dict
+    #    print(DOE_dict.fieldnames)
+        for key in DOE_dict.fieldnames:
+            if key in default_dict.keys():
+                current_run_dict[key] = row[key]
+            else:
+                if key != 'Run Number':
+                    print(key, 'is an unvalid entry')
+                    sys.exit()
 
-    
-    # Create a string saying what the tissue values are
-    # This will be used to create various filenames
-    CurrentParameters = '_CL'+ str(current_run_dict['CL_Material']) + '_PARA' + str(current_run_dict['Para_Material']) + '_PCM' + str(current_run_dict['LA_Material']) + '_AVW' + str(current_run_dict['AVW_Material']) + '_CLSS' + str(int(float(current_run_dict['CL_Strain'])*100)) + '_AVWL' + str(current_run_dict['AVW_Length']) + '_HL' + str(int(float(current_run_dict['Hiatus_Size']))) + '_AVWW' + str(current_run_dict['AVW_Width']) + '_AS' + str(current_run_dict['Apical_Shift']) + '_FLP' + str(current_run_dict['Levator_Plate_PC1']) + '_SLP' + str(current_run_dict['Levator_Plate_PC2']) + '_FICM' + str(current_run_dict['ICM_PC1'])  + '_SICM' + str(current_run_dict['ICM_PC2'] + '_IAP' + str(current_run_dict['Load_Value']))
 
-    Date = datetime.today().strftime('%Y%m%d')
-    Gen_File_Code = current_run_dict['Generic_File'][0]
-    File_Name_Code = FileNamePrefix + '_D' + Date + '_Gen' + Gen_File_Code + CurrentParameters
-    INPOutputFileName = File_Name_Code +'.inp'
-    
-#   Create the INP file for the tissue combinations    
-    if GenerateINPFile == 1:
-        shutil.copy(current_run_dict['Generic_File'], INPOutputFileName)
-        time.sleep(1)
-        material_properties = [float(current_run_dict['CL_Material']), float(current_run_dict['Para_Material']), float(current_run_dict['LA_Material']), float(current_run_dict['AVW_Material']), float(current_run_dict['Pbody_Material']), float(current_run_dict['PM_Mid_Material'])]
-        print('mat prop in Automate Abaqus:', material_properties)
-        if troubleshooting == 1:
-            print('Troubleshooting!!!!!!!!!!!!')
-            AnalogGenerateINP(material_properties, MaterialStartLine, LoadLine, LoadLineNo, [float(current_run_dict['CL_Strain']), float(current_run_dict['US_Strain']), float(current_run_dict['Para_Strain'])], DensityFactor[0], current_run_dict['Generic_File'], INPOutputFileName, current_run_dict['AVW_Width'], current_run_dict['AVW_Length'], float(current_run_dict['Apical_Shift']), RotationPoint, HiatusPoint, GIFillerPoint, float(current_run_dict['Hiatus_Size']), float(current_run_dict['Levator_Plate_PC1']), float(current_run_dict['Levator_Plate_PC2']), float(current_run_dict['ICM_PC1']), float(current_run_dict['ICM_PC2']), Results_Folder_Location)
-            FinalINPOutputFileName = INPOutputFileName
-            INP_error = 0
-        else:
-            try:
-                INP_error = 0
+        LoadLineNo = findLineNum(current_run_dict['Generic_File'], LoadLineSignal) + 2
+        MaterialStartLine = findLineNum(current_run_dict['Generic_File'], "** MATERIALS") + 2
+        f = open(current_run_dict['Generic_File'])
+        for i in range(0, LoadLineNo-1):
+            f.readline()
+        OldLoadLine = f.readline()
+        f.close()
+
+        #TODO: Start while loop here and change load dict
+        LoadLine = OldLoadLine.split(',')
+        #TODO: This is where the local 'LoadValue' was used, and now uses the key from the default_dict
+        LoadLine[2] = ' ' + str(current_run_dict['Load_Value'])
+        LoadLine = str.join(',', LoadLine)
+
+        # Create a string saying what the tissue values are
+        # This will be used to create various filenames
+        CurrentParameters = '_CL'+ str(current_run_dict['CL_Material']) + '_PARA' + str(current_run_dict['Para_Material']) + '_PCM' + str(current_run_dict['LA_Material']) + '_AVW' + str(current_run_dict['AVW_Material']) + '_CLSS' + str(int(float(current_run_dict['CL_Strain'])*100)) + '_AVWL' + str(current_run_dict['AVW_Length']) + '_HL' + str(int(float(current_run_dict['Hiatus_Size']))) + '_AVWW' + str(current_run_dict['AVW_Width']) + '_AS' + str(current_run_dict['Apical_Shift']) + '_FLP' + str(current_run_dict['Levator_Plate_PC1']) + '_SLP' + str(current_run_dict['Levator_Plate_PC2']) + '_FICM' + str(current_run_dict['ICM_PC1'])  + '_SICM' + str(current_run_dict['ICM_PC2'] + '_IAP' + str(current_run_dict['Load_Value']))
+
+        Date = datetime.today().strftime('%Y%m%d')
+        Gen_File_Code = current_run_dict['Generic_File'][0]
+        File_Name_Code = FileNamePrefix + '_D' + Date + '_Gen' + Gen_File_Code + CurrentParameters
+        INPOutputFileName = File_Name_Code +'.inp'
+
+    #   Create the INP file for the tissue combinations
+        if GenerateINPFile == 1:
+            shutil.copy(current_run_dict['Generic_File'], INPOutputFileName)
+            time.sleep(1)
+            material_properties = [float(current_run_dict['CL_Material']), float(current_run_dict['Para_Material']), float(current_run_dict['LA_Material']), float(current_run_dict['AVW_Material']), float(current_run_dict['Pbody_Material']), float(current_run_dict['PM_Mid_Material'])]
+            print('mat prop in Automate Abaqus:', material_properties)
+            if troubleshooting == 1:
+                print('Troubleshooting!!!!!!!!!!!!')
                 AnalogGenerateINP(material_properties, MaterialStartLine, LoadLine, LoadLineNo, [float(current_run_dict['CL_Strain']), float(current_run_dict['US_Strain']), float(current_run_dict['Para_Strain'])], DensityFactor[0], current_run_dict['Generic_File'], INPOutputFileName, current_run_dict['AVW_Width'], current_run_dict['AVW_Length'], float(current_run_dict['Apical_Shift']), RotationPoint, HiatusPoint, GIFillerPoint, float(current_run_dict['Hiatus_Size']), float(current_run_dict['Levator_Plate_PC1']), float(current_run_dict['Levator_Plate_PC2']), float(current_run_dict['ICM_PC1']), float(current_run_dict['ICM_PC2']), Results_Folder_Location)
                 FinalINPOutputFileName = INPOutputFileName
-            except:
-                INP_error = 1
-                print('ERROR IN GENERATING THE INP FILE')
-                FinalINPOutputFileName = File_Name_Code +'_ERROR.inp'
-                pass
-            
-        # Copy the INP file to the results folder
-        print(Results_Folder_Location + '\\' + INPOutputFileName)
-        try:
-            os.remove(Results_Folder_Location + '\\' + FinalINPOutputFileName)
-        except:
-            pass
-        time.sleep(3)
-
-        shutil.copy(INPOutputFileName, Results_Folder_Location + '\\' + FinalINPOutputFileName)
-        time.sleep(3)
-
-#    Runs the INP file and puts results in the Results Folder
-    if RunINPFile == 1 and INP_error == 0:
-        print("Running the INP File in Abaqus")
-        RunningPrefix = 'Running_'
-#            Creating a shorter filename because Abaqus can't handle long ones
-        running_base_filename = 'Running_INP'
-        # Create a copy of the INP for running
-        if config.getint("FLAGS", "testing") != 0:
-            shutil.copy(INPOutputFileName, running_base_filename + '.inp')
-        else:
-            shutil.copy(INPOutputFileName, RunningPrefix + INPOutputFileName)
-        # Move the INP file to the results folder
-        shutil.move(INPOutputFileName, Results_Folder_Location + '\\' + INPOutputFileName)
-        # Run the INP in Abaqus
-        if config.getint("FLAGS", "testing") != 0:
-            RunINPinAbaqus(running_base_filename, AbaqusBatLocation)
-        else:
-            RunINPinAbaqus(RunningPrefix + File_Name_Code, AbaqusBatLocation)
-                
-        # Test to see if the run completed or not
-        if config.getint("FLAGS", "testing") != 0:
-            OutputFileName = running_base_filename + '.txt'
-        else:
-            OutputFileName = RunningPrefix + File_Name_Code + '.txt'
-            
-
-        if analysis_was_successful(OutputFileName):
-            print("Successful Run")
-            RunSuccess = 1
-            ODBFile = File_Name_Code + '.odb'
-            OutputFileName = File_Name_Code + '.txt'
-        else:
-            print("Run Not Successfully Completed")
-            RunSuccess = 0            
-            ODBFile = File_Name_Code + '_ERROR.odb'
-            OutputFileName = File_Name_Code + '_output_ERROR.txt'
-
-
-        if config.getint("FLAGS", "testing") != 0:
-            shutil.move(running_base_filename + '.odb', Results_Folder_Location + '\\' + ODBFile)
-            shutil.move(running_base_filename + '.txt', Results_Folder_Location + '\\' + OutputFileName)
-        else:
-            shutil.move(RunningPrefix + File_Name_Code + '.odb', Results_Folder_Location + '\\' + ODBFile)
-            shutil.move(RunningPrefix + File_Name_Code + '.txt', Results_Folder_Location + '\\' + OutputFileName)
-
-        for fname in os.listdir("."):
-            if config.getint("FLAGS", "testing") != 0:
-                if fname.startswith(running_base_filename):
-                    try:      
-                        os.remove(os.path.join(".", fname))
-                    except OSError:
-                        pass
+                INP_error = 0
             else:
-                if fname.startswith(RunningPrefix):
-                    try:      
-                        os.remove(os.path.join(".", fname))
-                    except OSError:
-                        pass
-
-    if GetData == 1 and RunSuccess == 1 and INP_error == 0:
-        
-        error_log_file = Results_Folder_Location + '\Error_Log.txt'
-        ODBFile_NoPath = ODBFile
-        
-        file_to_analyze = Results_Folder_Location + '\Working_' + ODBFile_NoPath
-        full_odb_file = Results_Folder_Location + '\\' + ODBFile_NoPath
-        shutil.copy(full_odb_file, file_to_analyze)
-        INI_File = ini_file
-
-        for frame in frames:
-            print("which frame?", frame)
-    
-##     Lines below can be used if the post processing generates an error and you want it to stop rather than keep going
-            if troubleshooting == 1:
-                print('Troubleshooting post processing')
-                INP_NoPath = os.path.splitext(ODBFile_NoPath)[0] + '.inp'
-                full_INP_file_to_analyze = Results_Folder_Location + '\Working_' + INP_NoPath
-                print("New INP location: ", full_INP_file_to_analyze)
-                shutil.copy(Results_Folder_Location + "\\" + INP_NoPath, full_INP_file_to_analyze)
-                full_odb_file_to_analyze = file_to_analyze
-                raw_path_base_file_name = os.path.splitext(full_odb_file)[0]
-                Post_Processing_Files(full_odb_file_to_analyze, full_INP_file_to_analyze, INI_File, Output_File_Name, first_file, raw_path_base_file_name, frame)
-                first_file = 0
-            else:
-            #    Post process the odb file
                 try:
+                    INP_error = 0
+                    AnalogGenerateINP(material_properties, MaterialStartLine, LoadLine, LoadLineNo, [float(current_run_dict['CL_Strain']), float(current_run_dict['US_Strain']), float(current_run_dict['Para_Strain'])], DensityFactor[0], current_run_dict['Generic_File'], INPOutputFileName, current_run_dict['AVW_Width'], current_run_dict['AVW_Length'], float(current_run_dict['Apical_Shift']), RotationPoint, HiatusPoint, GIFillerPoint, float(current_run_dict['Hiatus_Size']), float(current_run_dict['Levator_Plate_PC1']), float(current_run_dict['Levator_Plate_PC2']), float(current_run_dict['ICM_PC1']), float(current_run_dict['ICM_PC2']), Results_Folder_Location)
+                    FinalINPOutputFileName = INPOutputFileName
+                except:
+                    INP_error = 1
+                    print('ERROR IN GENERATING THE INP FILE')
+                    FinalINPOutputFileName = File_Name_Code +'_ERROR.inp'
+                    pass
+
+            # Copy the INP file to the results folder
+            print(Results_Folder_Location + '\\' + INPOutputFileName)
+            try:
+                os.remove(Results_Folder_Location + '\\' + FinalINPOutputFileName)
+            except:
+                pass
+            time.sleep(3)
+
+            shutil.copy(INPOutputFileName, Results_Folder_Location + '\\' + FinalINPOutputFileName)
+            time.sleep(3)
+
+    #    Runs the INP file and puts results in the Results Folder
+        if RunINPFile == 1 and INP_error == 0:
+            print("Running the INP File in Abaqus")
+            RunningPrefix = 'Running_'
+    #            Creating a shorter filename because Abaqus can't handle long ones
+            running_base_filename = 'Running_INP'
+            # Create a copy of the INP for running
+            if config.getint("FLAGS", "testing") != 0:
+                shutil.copy(INPOutputFileName, running_base_filename + '.inp')
+            else:
+                shutil.copy(INPOutputFileName, RunningPrefix + INPOutputFileName)
+            # Move the INP file to the results folder
+            shutil.move(INPOutputFileName, Results_Folder_Location + '\\' + INPOutputFileName)
+            # Run the INP in Abaqus
+            if config.getint("FLAGS", "testing") != 0:
+                RunINPinAbaqus(running_base_filename, AbaqusBatLocation)
+            else:
+                RunINPinAbaqus(RunningPrefix + File_Name_Code, AbaqusBatLocation)
+
+            # Test to see if the run completed or not
+            if config.getint("FLAGS", "testing") != 0:
+                OutputFileName = running_base_filename + '.txt'
+            else:
+                OutputFileName = RunningPrefix + File_Name_Code + '.txt'
+
+
+            if analysis_was_successful(OutputFileName):
+                print("Successful Run")
+                RunSuccess = 1
+                ODBFile = File_Name_Code + '.odb'
+                OutputFileName = File_Name_Code + '.txt'
+            else:
+                print("Run Not Successfully Completed")
+                RunSuccess = 0
+                ODBFile = File_Name_Code + '_ERROR.odb'
+                OutputFileName = File_Name_Code + '_output_ERROR.txt'
+
+
+            if config.getint("FLAGS", "testing") != 0:
+                shutil.move(running_base_filename + '.odb', Results_Folder_Location + '\\' + ODBFile)
+                shutil.move(running_base_filename + '.txt', Results_Folder_Location + '\\' + OutputFileName)
+            else:
+                shutil.move(RunningPrefix + File_Name_Code + '.odb', Results_Folder_Location + '\\' + ODBFile)
+                shutil.move(RunningPrefix + File_Name_Code + '.txt', Results_Folder_Location + '\\' + OutputFileName)
+
+            for fname in os.listdir("."):
+                if config.getint("FLAGS", "testing") != 0:
+                    if fname.startswith(running_base_filename):
+                        try:
+                            os.remove(os.path.join(".", fname))
+                        except OSError:
+                            pass
+                else:
+                    if fname.startswith(RunningPrefix):
+                        try:
+                            os.remove(os.path.join(".", fname))
+                        except OSError:
+                            pass
+
+        if GetData == 1 and RunSuccess == 1 and INP_error == 0:
+
+            error_log_file = Results_Folder_Location + '\Error_Log.txt'
+            ODBFile_NoPath = ODBFile
+
+            file_to_analyze = Results_Folder_Location + '\Working_' + ODBFile_NoPath
+            full_odb_file = Results_Folder_Location + '\\' + ODBFile_NoPath
+            shutil.copy(full_odb_file, file_to_analyze)
+            INI_File = ini_file
+
+            for frame in frames:
+                print("which frame?", frame)
+
+    ##     Lines below can be used if the post processing generates an error and you want it to stop rather than keep going
+                if troubleshooting == 1:
+                    print('Troubleshooting post processing')
                     INP_NoPath = os.path.splitext(ODBFile_NoPath)[0] + '.inp'
                     full_INP_file_to_analyze = Results_Folder_Location + '\Working_' + INP_NoPath
                     print("New INP location: ", full_INP_file_to_analyze)
@@ -347,35 +338,46 @@ for row in DOE_dict:
                     full_odb_file_to_analyze = file_to_analyze
                     raw_path_base_file_name = os.path.splitext(full_odb_file)[0]
                     Post_Processing_Files(full_odb_file_to_analyze, full_INP_file_to_analyze, INI_File, Output_File_Name, first_file, raw_path_base_file_name, frame)
-                    #   Turn off first file flag so that it will add data to the file next time through
                     first_file = 0
-                except:
-                    with open(error_log_file, 'a+') as out_file:
-                        now = datetime.now()
-                        out_file.write(now.strftime("%Y-%m-%d %H:%M:%S") + ' Error in post processing ' + ODBFile_NoPath + '\n')
-                    pass
-        
-        for filename in glob.glob(Results_Folder_Location + "\Working*"):
-            os.remove(filename) 
+                else:
+                #    Post process the odb file
+                    try:
+                        INP_NoPath = os.path.splitext(ODBFile_NoPath)[0] + '.inp'
+                        full_INP_file_to_analyze = Results_Folder_Location + '\Working_' + INP_NoPath
+                        print("New INP location: ", full_INP_file_to_analyze)
+                        shutil.copy(Results_Folder_Location + "\\" + INP_NoPath, full_INP_file_to_analyze)
+                        full_odb_file_to_analyze = file_to_analyze
+                        raw_path_base_file_name = os.path.splitext(full_odb_file)[0]
+                        Post_Processing_Files(full_odb_file_to_analyze, full_INP_file_to_analyze, INI_File, Output_File_Name, first_file, raw_path_base_file_name, frame)
+                        #   Turn off first file flag so that it will add data to the file next time through
+                        first_file = 0
+                    except:
+                        with open(error_log_file, 'a+') as out_file:
+                            now = datetime.now()
+                            out_file.write(now.strftime("%Y-%m-%d %H:%M:%S") + ' Error in post processing ' + ODBFile_NoPath + '\n')
+                        pass
 
-        try:      
-            os.remove(ODBFile + '.odb')
-        except OSError:
-            pass
+            for filename in glob.glob(Results_Folder_Location + "\Working*"):
+                os.remove(filename)
+
+            try:
+                os.remove(ODBFile + '.odb')
+            except OSError:
+                pass
 
 
-if vary_loading:
+if vary_loading: #TODO: load_search needs to be added to parameters.ini
 
     # Re-run code to vary the loads if the run wasn't completed successfully
     # Loop through the different loads, making INP files, running them, and seeing if they worked
     for LoadPercentage in AlternateLoads:
         ERROR_inp_files = []
-        
+
         # Get all of the files from the folder that didn't run correctly
         for file in glob.glob(Results_Folder_Location + '\*ERROR.odb'):
     #        ERROR Files listed as INP files (_ERROR.odb taken off the end and .inp added)
             ERROR_inp_files.append(os.path.splitext(file)[0] + '.inp')
-        
+
         for Bad_File in ERROR_inp_files:
             File_Name_Code = os.path.split(Bad_File[:-10])[1]
             OriginalINPFile = Bad_File[:-10]+'.inp'
@@ -388,18 +390,18 @@ if vary_loading:
     #        Find the line number that corresponds to the LoadLineSignal and add 2 lines
     #       (1 because the numbering starts at 1 and 1 because it is the line after this that we care about)
             LoadLineNo = findLineNum(OriginalINPFile , LoadLineSignal) + 2
-            
+
     #       New INP File name is the same as the previous one but with _Force and the number at the end
             INPFile = os.path.splitext(ResultINPFileName)[0] + '_Force' + str(int(LoadPercentage*100)) + '.inp'
     #       Copy the old file to the new file name
             shutil.copy(OriginalINPFile, INPFile)
-    
+
     #       Loop through each line to read in the line that we want (set to OldLoadLine)
             with open(INPFile) as f:
                 for i in range(0, LoadLineNo-1):
                     f.readline()
                 OldLoadLine = f.readline()
-            
+
     #       Split the line into an array
             LoadLine = OldLoadLine.split(',')
             print(LoadLine)
@@ -411,7 +413,7 @@ if vary_loading:
     #       Combine the array again as a string for writnig to the file
             LoadLine = str.join(',', LoadLine)
             print(LoadLine)
-     
+
     #       Go through the file until you hit the correct line and then print the new load line
             for i, line in enumerate(fileinput.input(INPFile, inplace=1)):
                 if i == LoadLineNo - 1:
@@ -422,7 +424,7 @@ if vary_loading:
             if RunINPFile == 1:
                 INPOutputFileName = INPFile
                 print(INPOutputFileName)
-                
+
                 print("Running the INP File in Abaqus")
                 RunningPrefix = 'Running_'
     #            Creating a shorter filename because Abaqus can't handle long ones
@@ -439,13 +441,13 @@ if vary_loading:
                     RunINPinAbaqus(running_base_filename, AbaqusBatLocation)
                 else:
                     RunINPinAbaqus(RunningPrefix + File_Name_Code, AbaqusBatLocation)
-                
+
                 # Test to see if the run completed or not
                 if config.getint("FLAGS", "testing") != 0:
                     OutputFileName = running_base_filename + '.txt'
                 else:
                     OutputFileName = RunningPrefix + File_Name_Code + '.txt'
-                    
+
                 if analysis_was_successful(OutputFileName):
                     print("Successful Run")
                     RunSuccess = 1
@@ -458,28 +460,30 @@ if vary_loading:
                     RunSuccess = 0
                     ODBFile = File_Name_Code + '_Force' + str(int(LoadPercentage*100)) + '_ERROR.odb'
                     OutputFileName = File_Name_Code + '_Force' + str(int(LoadPercentage*100)) + '_output_ERROR.txt'
-    
+
                 if config.getint("FLAGS", "testing") != 0:
                     shutil.move(running_base_filename + '.odb', Results_Folder_Location + '\\' + ODBFile)
                     shutil.move(running_base_filename + '.txt', Results_Folder_Location + '\\' + OutputFileName)
                 else:
                     shutil.move(RunningPrefix + File_Name_Code + '.odb', Results_Folder_Location + '\\' + ODBFile)
                     shutil.move(RunningPrefix + File_Name_Code + '.txt', Results_Folder_Location + '\\' + OutputFileName)
-                        
+
                 for fname in os.listdir("."):
                     if config.getint("FLAGS", "testing") != 0:
                         if fname.startswith(running_base_filename):
-                            try:      
+                            try:
                                 os.remove(os.path.join(".", fname))
                             except OSError:
                                 pass
                     else:
                         if fname.startswith(RunningPrefix):
-                            try:      
+                            try:
                                 os.remove(os.path.join(".", fname))
                             except OSError:
                                 pass
 
+
+# TODO: End of possible while loop
 run_file.close()
 
 '''

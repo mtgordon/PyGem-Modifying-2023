@@ -218,7 +218,6 @@ def ICM_shape_analysis(PCA_1, PCA_2, ys, zs, isMod):
 
     plt.plot(xs, ys, c='b', marker='+')
 
-
     # print('ICM shape analysis points')
     # print(xs)
     # print(ys)
