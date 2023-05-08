@@ -106,6 +106,7 @@ vary_loading = config.getint("FLAGS","vary_loading") # Flag for running the INP 
 troubleshooting = config.getint("FLAGS","troubleshooting") # Flag for running the INP files in Abaqus
 load_search = config.getint("FLAGS","load_search") #TODO: Added flag for inhibiting extra runs on a bad file
 max_prolapse_num = config.getint("Load", "MaxProlapseNum")
+use_test_csv = config.getint("FLAGS", "use_test_csv")
 
 frames = config["POST_ANALYSIS"]["frames"]
 frames = list(frames.split(','))
@@ -214,11 +215,12 @@ for row in DOE_dict:
     # Set up the load variables before while loop
     large_load = None
     small_load = None
-    final_load = None
+    new_load = None
     iteration = 0
+    first_iter = True
 
     #TODO: Start while loop here and change loadLine dict
-    while final_load is None and iteration < max_prolapse_num:
+    while iteration < max_prolapse_num:
 
         LoadLine = OldLoadLine.split(',')
         #TODO: This is where the local 'LoadValue' was used, and now uses the key from the default_dict
@@ -376,47 +378,51 @@ for row in DOE_dict:
             except OSError:
                 pass
 
-        #TODO: create temporary csv the read csv value used for testing
-        with open(Results_Folder_Location + '\\' + Output_File_Name, 'w', newline='') as Output_File:
-            filewriter = csv.writer(Output_File, delimiter=',',
-                                    quotechar='|', quoting=csv.QUOTE_MINIMAL)
-            filewriter.writerow(['test1', 'test2'])
-            filewriter.writerow([0.05, 101010101010102323232323232])
-            filewriter.writerow([0.05, current_run_dict['Load_Value'] * current_run_dict['Load_Value'] * 80 - 4])
+        #If the load_search flag is off, then only run through the while loop once and do not search for specific load
+        if load_search != 1:
+            break
+
+        #TODO: If testing the load search without an abaqus system, use temporary csv file created below
+        if use_test_csv == 1:
+            #Create temporary csv the read csv value used for testing
+            if first_iter:
+                with open(Results_Folder_Location + '\\' + Output_File_Name, 'w', newline='') as Output_File:
+                    filewriter = csv.writer(Output_File, delimiter=',',
+                                            quotechar='|', quoting=csv.QUOTE_MINIMAL)
+                    filewriter.writerow(['test1', 'test2'])
+                    filewriter.writerow([current_run_dict['Load_Value'],
+                                         current_run_dict['Load_Value'] * current_run_dict['Load_Value'] * 80 - 4])
+                    first_iter = False
+            else:
+                with open(Results_Folder_Location + '\\' + Output_File_Name, 'a', newline='') as Output_File:
+                    filewriter = csv.writer(Output_File, delimiter=',',
+                                            quotechar='|', quoting=csv.QUOTE_MINIMAL)
+                    filewriter.writerow([current_run_dict['Load_Value'],
+                                         current_run_dict['Load_Value'] * current_run_dict['Load_Value'] * 80 - 4])
 
         #TODO: read from the post_process csv file, using the most recent row and desired column value
         post_df = pandas.read_csv(Results_Folder_Location + '\\' + Output_File_Name)
         csv_value = float(post_df['test2'][len(post_df)-1])
 
+        # Save and adjust the load value if it is outside a threshold (phase 1)
+        if csv_value > 5:
+            large_load = current_run_dict['Load_Value']
+            current_run_dict['Load_Value'] *= 0.5
+        elif csv_value < 0.3:
+            small_load = current_run_dict['Load_Value']
+            current_run_dict['Load_Value'] *= 10
+        else:
+            # TODO: this is guess, if like the csv_value happens to hit inside boundaries during finding low and high
+            new_load = current_run_dict['Load_Value']
+            break
+
+
+        # Once both boundary loads are found, find the final load (phase 2)
         if small_load is not None and large_load is not None:
-            final_load = (small_load + large_load) / 2
+            new_load = (small_load + large_load) / 2
+            current_run_dict['Load_Value'] = new_load
 
-        # Convergence of the small load, enacted until found then does not update
-        if small_load is None:
-            # The current AA_point is larger than the threshold, so lower load
-            if csv_value > 0.6:
-                current_run_dict['Load_Value'] = current_run_dict['Load_Value'] * 0.8
-            # The current AA_point is smaller than the threshold, so increase load
-            elif csv_value < 0.4:
-                current_run_dict['Load_Value'] = current_run_dict['Load_Value'] * 1.2
-            # The current AA_point is within the threshold range, so the load is found
-            else:
-                small_load = current_run_dict['Load_Value']
-                small_AA = csv_value
-
-        #Convergence of the large load, only enacted once the small load is found
-        if small_load is not None:
-            #The current AA_point is larger than the threshold, so lower load
-            if csv_value > 5.1:
-                current_run_dict['Load_Value'] = current_run_dict['Load_Value'] * 0.8
-            #The current AA_point is smaller than the threshold, so increase load
-            elif csv_value < 4.9:
-                current_run_dict['Load_Value'] = current_run_dict['Load_Value'] * 1.2
-            #The current AA_point is within the threshold range, so the load is found
-            else:
-                large_load = current_run_dict['Load_Value']
-                large_AA = csv_value
-
+        #Keep track of load search iterations
         iteration += 1
         if iteration == max_prolapse_num:
             print('[][][][][][][] max limit reached [][][][][][][]')
@@ -425,10 +431,11 @@ for row in DOE_dict:
 
 
 
-print('final small value: ' + str(small_load) + ' with AA_point: ' + str(small_AA))
-print('final large value: ' + str(large_load) + ' with AA_point: ' + str(large_AA))
+# print('final small value: ' + str(small_load) + ' with AA_point: ' + str(small_AA))
+# print('final large value: ' + str(large_load) + ' with AA_point: ' + str(large_AA))
 
-print('FINAL LOAD: ' + str(final_load))
+print('FINAL LOAD: ' + str(new_load))
+print('FINAL CSV value ' + str(csv_value))
 
 
 if vary_loading == 1 and load_search != 1: #TODO: load_search added to parameters.ini
