@@ -159,7 +159,6 @@ def CurveFibersInINP(Part_Name1, Part_Name2, scale, inputFile, outputFile, dirVe
 #avw_node
 #        print("NumberOfCycles = ",NumberOfCycles)
 #        print("Dist = ", _dist)
-        #TODO: MOST PROBABLE PLACE TO UPDATE STARTING NODES
         if IdealFiberLength > _dist:
             sending = (IdealFiberLength, fiber, starting_node_index, ending_node_index, ct, dirVector,NumberOfCycles,avw_node)
             [CorrectAmp] = fsolve(ArcDistance, StartingAmplitude, args=sending)

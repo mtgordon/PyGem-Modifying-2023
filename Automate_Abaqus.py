@@ -13,6 +13,9 @@ from datetime import datetime
 import glob
 import fileinput
 import sys
+
+import pandas
+
 from lib.Generate_INP import AnalogGenerateINP
 #from lib.Test_Curving import AnalogGenerateINP
 from lib.RunINPinAbaqus import RunINPinAbaqus
@@ -101,6 +104,8 @@ Get_Hiatus_Measurements = config.getint("FLAGS","get_hiatus_measurements") # fla
 AbaqusBatLocation= config["SYSTEM_INFO"]["AbaqusBatLocation"]
 vary_loading = config.getint("FLAGS","vary_loading") # Flag for running the INP files in Abaqus
 troubleshooting = config.getint("FLAGS","troubleshooting") # Flag for running the INP files in Abaqus
+load_search = config.getint("FLAGS","load_search") #TODO: Added flag for inhibiting extra runs on a bad file
+max_prolapse_num = config.getint("Load", "MaxProlapseNum")
 
 frames = config["POST_ANALYSIS"]["frames"]
 frames = list(frames.split(','))
@@ -183,32 +188,38 @@ first_file = 1
 
 current_run_dict = default_dict
 
-# TODO: Start of possible while loop
 # Run each combination from the rows in Run_Variables
 for row in DOE_dict:
-    #while True:
-        print('Row:', row)
+    print('Row:', row)
 
-        current_run_dict = default_dict
-    #    print(DOE_dict.fieldnames)
-        for key in DOE_dict.fieldnames:
-            if key in default_dict.keys():
-                current_run_dict[key] = row[key]
-            else:
-                if key != 'Run Number':
-                    print(key, 'is an unvalid entry')
-                    sys.exit()
+    current_run_dict = default_dict
+#    print(DOE_dict.fieldnames)
+    for key in DOE_dict.fieldnames:
+        if key in default_dict.keys():
+            current_run_dict[key] = row[key]
+        else:
+            if key != 'Run Number':
+                print(key, 'is an unvalid entry')
+                sys.exit()
 
 
-        LoadLineNo = findLineNum(current_run_dict['Generic_File'], LoadLineSignal) + 2
-        MaterialStartLine = findLineNum(current_run_dict['Generic_File'], "** MATERIALS") + 2
-        f = open(current_run_dict['Generic_File'])
-        for i in range(0, LoadLineNo-1):
-            f.readline()
-        OldLoadLine = f.readline()
-        f.close()
+    LoadLineNo = findLineNum(current_run_dict['Generic_File'], LoadLineSignal) + 2
+    MaterialStartLine = findLineNum(current_run_dict['Generic_File'], "** MATERIALS") + 2
+    f = open(current_run_dict['Generic_File'])
+    for i in range(0, LoadLineNo-1):
+        f.readline()
+    OldLoadLine = f.readline()
+    f.close()
 
-        #TODO: Start while loop here and change load dict
+    # Set up the load variables before while loop
+    large_load = None
+    small_load = None
+    final_load = None
+    iteration = 0
+
+    #TODO: Start while loop here and change loadLine dict
+    while final_load is None and iteration < max_prolapse_num:
+
         LoadLine = OldLoadLine.split(',')
         #TODO: This is where the local 'LoadValue' was used, and now uses the key from the default_dict
         LoadLine[2] = ' ' + str(current_run_dict['Load_Value'])
@@ -365,8 +376,62 @@ for row in DOE_dict:
             except OSError:
                 pass
 
+        #TODO: create temporary csv the read csv value used for testing
+        with open(Results_Folder_Location + '\\' + Output_File_Name, 'w', newline='') as Output_File:
+            filewriter = csv.writer(Output_File, delimiter=',',
+                                    quotechar='|', quoting=csv.QUOTE_MINIMAL)
+            filewriter.writerow(['test1', 'test2'])
+            filewriter.writerow([0.05, 101010101010102323232323232])
+            filewriter.writerow([0.05, current_run_dict['Load_Value'] * current_run_dict['Load_Value'] * 80 - 4])
 
-if vary_loading: #TODO: load_search needs to be added to parameters.ini
+        #TODO: read from the post_process csv file, using the most recent row and desired column value
+        post_df = pandas.read_csv(Results_Folder_Location + '\\' + Output_File_Name)
+        csv_value = float(post_df['test2'][len(post_df)-1])
+
+        if small_load is not None and large_load is not None:
+            final_load = (small_load + large_load) / 2
+
+        # Convergence of the small load, enacted until found then does not update
+        if small_load is None:
+            # The current AA_point is larger than the threshold, so lower load
+            if csv_value > 0.6:
+                current_run_dict['Load_Value'] = current_run_dict['Load_Value'] * 0.8
+            # The current AA_point is smaller than the threshold, so increase load
+            elif csv_value < 0.4:
+                current_run_dict['Load_Value'] = current_run_dict['Load_Value'] * 1.2
+            # The current AA_point is within the threshold range, so the load is found
+            else:
+                small_load = current_run_dict['Load_Value']
+                small_AA = csv_value
+
+        #Convergence of the large load, only enacted once the small load is found
+        if small_load is not None:
+            #The current AA_point is larger than the threshold, so lower load
+            if csv_value > 5.1:
+                current_run_dict['Load_Value'] = current_run_dict['Load_Value'] * 0.8
+            #The current AA_point is smaller than the threshold, so increase load
+            elif csv_value < 4.9:
+                current_run_dict['Load_Value'] = current_run_dict['Load_Value'] * 1.2
+            #The current AA_point is within the threshold range, so the load is found
+            else:
+                large_load = current_run_dict['Load_Value']
+                large_AA = csv_value
+
+        iteration += 1
+        if iteration == max_prolapse_num:
+            print('[][][][][][][] max limit reached [][][][][][][]')
+
+    # Do operations on the found large and small loads
+
+
+
+print('final small value: ' + str(small_load) + ' with AA_point: ' + str(small_AA))
+print('final large value: ' + str(large_load) + ' with AA_point: ' + str(large_AA))
+
+print('FINAL LOAD: ' + str(final_load))
+
+
+if vary_loading == 1 and load_search != 1: #TODO: load_search added to parameters.ini
 
     # Re-run code to vary the loads if the run wasn't completed successfully
     # Loop through the different loads, making INP files, running them, and seeing if they worked
