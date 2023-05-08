@@ -186,14 +186,16 @@ DOE_dict = csv.DictReader(run_file)
 # new file and add headers
 first_file = 1
 
+# Flag to indicate the first time through the while loop for the load search
+first_iter = True
 
-current_run_dict = default_dict
+current_run_dict = default_dict.copy()
 
 # Run each combination from the rows in Run_Variables
 for row in DOE_dict:
     print('Row:', row)
 
-    current_run_dict = default_dict
+    current_run_dict = default_dict.copy()
 #    print(DOE_dict.fieldnames)
     for key in DOE_dict.fieldnames:
         if key in default_dict.keys():
@@ -217,7 +219,6 @@ for row in DOE_dict:
     small_load = None
     new_load = None
     iteration = 0
-    first_iter = True
 
     #TODO: Start while loop here and change loadLine dict
     while iteration < max_prolapse_num:
@@ -382,27 +383,31 @@ for row in DOE_dict:
         if load_search != 1:
             break
 
+        #TODO: ASSIGN CSV VALUE OF INTEREST HERE (FOR NOW)
+        csv_header = 'Test CSV Value'
+
         #TODO: If testing the load search without an abaqus system, use temporary csv file created below
         if use_test_csv == 1:
             #Create temporary csv the read csv value used for testing
             if first_iter:
+                csv_header = 'Test CSV Value'
                 with open(Results_Folder_Location + '\\' + Output_File_Name, 'w', newline='') as Output_File:
                     filewriter = csv.writer(Output_File, delimiter=',',
                                             quotechar='|', quoting=csv.QUOTE_MINIMAL)
-                    filewriter.writerow(['test1', 'test2'])
-                    filewriter.writerow([current_run_dict['Load_Value'],
+                    filewriter.writerow(['INP File', 'Load Value', csv_header])
+                    filewriter.writerow([INPOutputFileName, current_run_dict['Load_Value'],
                                          current_run_dict['Load_Value'] * current_run_dict['Load_Value'] * 80 - 4])
                     first_iter = False
             else:
                 with open(Results_Folder_Location + '\\' + Output_File_Name, 'a', newline='') as Output_File:
                     filewriter = csv.writer(Output_File, delimiter=',',
                                             quotechar='|', quoting=csv.QUOTE_MINIMAL)
-                    filewriter.writerow([current_run_dict['Load_Value'],
+                    filewriter.writerow([INPOutputFileName, current_run_dict['Load_Value'],
                                          current_run_dict['Load_Value'] * current_run_dict['Load_Value'] * 80 - 4])
 
         #TODO: read from the post_process csv file, using the most recent row and desired column value
         post_df = pandas.read_csv(Results_Folder_Location + '\\' + Output_File_Name)
-        csv_value = float(post_df['test2'][len(post_df)-1])
+        csv_value = float(post_df[csv_header][len(post_df)-1])
 
         # Save and adjust the load value if it is outside a threshold (phase 1)
         if csv_value > 5:
@@ -427,15 +432,6 @@ for row in DOE_dict:
         if iteration == max_prolapse_num:
             print('[][][][][][][] max limit reached [][][][][][][]')
 
-    # Do operations on the found large and small loads
-
-
-
-# print('final small value: ' + str(small_load) + ' with AA_point: ' + str(small_AA))
-# print('final large value: ' + str(large_load) + ' with AA_point: ' + str(large_AA))
-
-print('FINAL LOAD: ' + str(new_load))
-print('FINAL CSV value ' + str(csv_value))
 
 
 if vary_loading == 1 and load_search != 1: #TODO: load_search added to parameters.ini

@@ -1188,10 +1188,10 @@ def AnalogGenerateINP(TissueParameters, MaterialStartLine, LoadLine, LoadLineNo,
 #         ######################################################################################
 
     ######################################################################################
-    #TODO: Commented out droop
-    # Droop the AVW (probably pass the generic file and obtain the end points for the droop from there)
-    if config.getint("FLAGS", "CurveAVW") != 0:
-        avw = Scaling.curve_avw(AVW, OutputINPFile, GenericINPFile, hiatus, z_cutoff, rotate_angle, rot_point, HiatusLength)
+        #TODO: Commented out droop
+        # Droop the AVW (probably pass the generic file and obtain the end points for the droop from there)
+        if config.getint("FLAGS", "CurveAVW") != 0:
+            avw = Scaling.curve_avw(AVW, OutputINPFile, GenericINPFile, hiatus, z_cutoff, rotate_angle, rot_point, HiatusLength)
     ######################################################################################
 
     ######################################################################################
@@ -1208,10 +1208,10 @@ def AnalogGenerateINP(TissueParameters, MaterialStartLine, LoadLine, LoadLineNo,
 ####### New Curving Code Below
 # Need to put a wave in the bottom of the AVW so that it doesn't hit the PM_mid tissue
 
-    pm_mid = io.get_dataset_from_file(OutputINPFile, PM_MID)
-    if config.getint("FLAGS", "testing") != 0:
-        AVW_connections = io.get_interconnections(GenericINPFile, AVW)
-        avw = Scaling.narrow_distal_avw_narrow(AVW, OutputINPFile, GenericINPFile, pm_mid, connections, AVW_connections)
+        pm_mid = io.get_dataset_from_file(OutputINPFile, PM_MID)
+        if config.getint("FLAGS", "testing") != 0:
+            AVW_connections = io.get_interconnections(GenericINPFile, AVW)
+            avw = Scaling.narrow_distal_avw_narrow(AVW, OutputINPFile, GenericINPFile, pm_mid, connections, AVW_connections)
 #        print(avw)
         # avw = Scaling.narrow_distal_avw_narrow_and_curve(AVW, OutputINPFile, GenericINPFile, pm_mid, connections, AVW_connections)
 ####### New Curving Code Above
