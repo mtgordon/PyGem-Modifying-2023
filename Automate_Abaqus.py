@@ -192,7 +192,7 @@ first_iter = True
 current_run_dict = default_dict.copy()
 
 # Run each combination from the rows in Run_Variables
-#TODO: This is a test for the tutorial
+#TODO: This is a test for the tutorial 2
 for row in DOE_dict:
     print('Row:', row)
 
