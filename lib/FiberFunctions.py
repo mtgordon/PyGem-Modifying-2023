@@ -183,7 +183,7 @@ def CurveFibersInINP(Part_Name1, Part_Name2, scale, inputFile, outputFile, dirVe
 
         #TODO: If else for the updated point located here
         #TODO: New if branch to implement +/-
-        if Part_Name2 == "OPAL325_CL_v6":
+        if Part_Name2 == "OPAL325_CL_v6" or Part_Name2 == "OPAL325_US_v6" or Part_Name2 == "OPAL325_Para_v6":
             if np.sign(starting_p.x) < 0 and updatedNegativeP is not None:
                 starting_p_alterable = updatedNegativeP
             elif np.sign(starting_p.x) > 0 and updatedPositiveP is not None:

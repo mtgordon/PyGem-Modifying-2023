@@ -1310,6 +1310,6 @@ def AnalogGenerateINP(TissueParameters, MaterialStartLine, LoadLine, LoadLineNo,
         print("TissueParameters in Generate INP:", TissueParameters)
         INPAnalogMaterialProperties(TissueParameters, DensityFactor, LoadLine, LoadLineNo, OutputINPFile, StretchCoefficients)
 
-        MeasurementsFileName = OutputINPFile + '_Measurements.txt'
+        MeasurementsFileName = Results_Folder_Location + '\\' + OutputINPFile + '_Measurements.txt'
         Scaling.takeMeasurements(MeasurementsFileName, AVW, [CL, PARA, US], GenericINPFile, OutputINPFile)
 

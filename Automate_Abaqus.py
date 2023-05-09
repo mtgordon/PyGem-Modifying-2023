@@ -379,6 +379,13 @@ for row in DOE_dict:
             except OSError:
                 pass
 
+        #Remove the INP file from the working directory
+        try:
+            os.remove(INPOutputFileName)
+        except OSError as error:
+            print(error)
+            pass
+
         #If the load_search flag is off, then only run through the while loop once and do not search for specific load
         if load_search != 1:
             break
