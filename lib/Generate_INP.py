@@ -379,7 +379,7 @@ def AnalogGenerateINP(TissueParameters, MaterialStartLine, LoadLine, LoadLineNo,
         #TODO: call from shape_analysis
         #Call levator plate shape analysis
         initial_lp_CP_ys, initial_lp_CP_zs, LP_CPs_initial \
-            = lib.Shape_Analysis.levator_shape_analysis(0.0, 0.0, False)
+            = lib.Shape_Analysis.levator_shape_analysis(-1.98, 0.12, False)
 
         ys, zs, LP_CPs_mod = lib.Shape_Analysis.levator_shape_analysis(levator_plate_PC1, levator_plate_PC2, False)
 

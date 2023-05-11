@@ -422,7 +422,7 @@ for row in DOE_dict:
             current_run_dict['Load_Value'] *= 0.5
         elif csv_value < 0.3:
             small_load = current_run_dict['Load_Value']
-            current_run_dict['Load_Value'] *= 10
+            current_run_dict['Load_Value'] *= 2
         else:
             # TODO: this is guess, if like the csv_value happens to hit inside boundaries during finding low and high
             new_load = current_run_dict['Load_Value']
