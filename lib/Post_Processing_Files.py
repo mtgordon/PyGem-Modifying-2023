@@ -637,15 +637,18 @@ def Post_Processing_Files(odb_file, INP_File, INI_File, Output_File_Name, first_
 
         
     print(Output)
-        
+
+    print("Above First File Flag")        
     if first_file_flag:
         with open(Results_Folder_Location + '\\' + Output_File_Name, 'w', newline = '') as Output_File:
             filewriter = csv.writer(Output_File, delimiter=',',
                                     quotechar='|', quoting=csv.QUOTE_MINIMAL)        
             filewriter.writerow(Header)
 
+    print("Above Writing Post Processing Data")        
     with open(Results_Folder_Location + '\\' + Output_File_Name, 'a', newline = '') as Output_File:
         filewriter = csv.writer(Output_File, delimiter=',',
                                 quotechar='|', quoting=csv.QUOTE_MINIMAL)
     
         filewriter.writerow(Output)
+    print("After Writing Post Processing Data")

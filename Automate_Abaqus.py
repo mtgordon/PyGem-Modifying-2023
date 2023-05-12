@@ -329,7 +329,7 @@ for row in DOE_dict:
                             pass
 
         if GetData == 1 and RunSuccess == 1 and INP_error == 0:
-
+            print("Beginning Post Processing")
             error_log_file = Results_Folder_Location + '\Error_Log.txt'
             ODBFile_NoPath = ODBFile
 
@@ -351,6 +351,7 @@ for row in DOE_dict:
                     full_odb_file_to_analyze = file_to_analyze
                     raw_path_base_file_name = os.path.splitext(full_odb_file)[0]
                     Post_Processing_Files(full_odb_file_to_analyze, full_INP_file_to_analyze, INI_File, Output_File_Name, first_file, raw_path_base_file_name, frame)
+                    print("Done with Post Processing")
                     first_file = 0
                 else:
                 #    Post process the odb file
@@ -362,6 +363,7 @@ for row in DOE_dict:
                         full_odb_file_to_analyze = file_to_analyze
                         raw_path_base_file_name = os.path.splitext(full_odb_file)[0]
                         Post_Processing_Files(full_odb_file_to_analyze, full_INP_file_to_analyze, INI_File, Output_File_Name, first_file, raw_path_base_file_name, frame)
+                        print("Done with Post Processing")
                         #   Turn off first file flag so that it will add data to the file next time through
                         first_file = 0
                     except:
@@ -382,7 +384,8 @@ for row in DOE_dict:
         try:
             os.remove(INPOutputFileName)
         except OSError as error:
-            print(error)
+#            print("line 388")
+#            print(error)
             pass
 
         #If the load_search flag is off, then only run through the while loop once and do not search for specific load
@@ -390,13 +393,13 @@ for row in DOE_dict:
             break
 
         #TODO: ASSIGN CSV VALUE OF INTEREST HERE (FOR NOW)
-        csv_header = 'Test CSV Value'
+        csv_header = 'Aa_distance_relative'
 
         #TODO: If testing the load search without an abaqus system, use temporary csv file created below
         if use_test_csv == 1:
             #Create temporary csv the read csv value used for testing
             if first_iter:
-                csv_header = 'Test CSV Value'
+                csv_header = 'New Exposed Vaginal Length'
                 with open(Results_Folder_Location + '\\' + Output_File_Name, 'w', newline='') as Output_File:
                     filewriter = csv.writer(Output_File, delimiter=',',
                                             quotechar='|', quoting=csv.QUOTE_MINIMAL)
@@ -413,19 +416,22 @@ for row in DOE_dict:
 
         #TODO: read from the post_process csv file, using the most recent row and desired column value
         post_df = pandas.read_csv(Results_Folder_Location + '\\' + Output_File_Name)
-        csv_value = float(post_df[csv_header][len(post_df)-1])
+        csv_value = float(post_df[csv_header][len(post_df)-1])*-1
 
         # Save and adjust the load value if it is outside a threshold (phase 1)
-        if csv_value > 5:
-            large_load = current_run_dict['Load_Value']
-            current_run_dict['Load_Value'] *= 0.5
-        elif csv_value < 0.3:
-            small_load = current_run_dict['Load_Value']
-            current_run_dict['Load_Value'] *= 2
+        if RunSuccess == 1:
+            if csv_value > 5:
+                large_load = current_run_dict['Load_Value']
+                current_run_dict['Load_Value'] *= 0.5
+            elif csv_value < 0.3:
+                small_load = current_run_dict['Load_Value']
+                current_run_dict['Load_Value'] *= 2
+            else:
+                # TODO: this is guess, if like the csv_value happens to hit inside boundaries during finding low and high
+                new_load = current_run_dict['Load_Value']
+                break
         else:
-            # TODO: this is guess, if like the csv_value happens to hit inside boundaries during finding low and high
-            new_load = current_run_dict['Load_Value']
-            break
+            current_run_dict['Load_Value'] *= 0.75
 
 
         # Once both boundary loads are found, find the final load (phase 2)
