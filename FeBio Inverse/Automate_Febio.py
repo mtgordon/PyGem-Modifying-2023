@@ -67,7 +67,7 @@ for row in DOE_dict:
     tree = ET.parse(originalFebFilename)
     root = tree.getroot()
     for point in root.iter('point'):
-        print(point.text)
+        # print(point.text)
         textList = point.text.split(', ')  # 0 is first coord (no change), 1 is second coord (change)
         newCoord = float(textList[1]) * float(current_run_dict['Mat1'])
         point.text = textList[0] + ', ' + str(newCoord)
