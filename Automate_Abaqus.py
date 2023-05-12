@@ -83,11 +83,10 @@ default_dict = {
         'PM_Mid_Material' : json.loads(config["MATERIAL_PROPERTIES"]["PM_Mid_Default"]),
         'Generic_File' : config["FILES"]["GenericINP_default"],
         'Hiatus_Size' : json.loads(config["HIATUS_PROPERTIES"]["Hiatus_Length_default"]),
-		'Levator_Plate_PC1' : json.loads(config["SHAPE_ANALYSIS"]["Levator_Plate_PC1"]),
+        'Levator_Plate_PC1' : json.loads(config["SHAPE_ANALYSIS"]["Levator_Plate_PC1"]),
         'Levator_Plate_PC2' : json.loads(config["SHAPE_ANALYSIS"]["Levator_Plate_PC2"]),
         'ICM_PC1' : json.loads(config["SHAPE_ANALYSIS"]["ICM_PC1"]),
         'ICM_PC2' : json.loads(config["SHAPE_ANALYSIS"]["ICM_PC2"]),
-        #TODO: The newly added key for the load value: Load_Value
         'Load_Value' : json.loads(config["Load"]["LoadValue"])
 }
 
