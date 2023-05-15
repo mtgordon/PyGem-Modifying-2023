@@ -33,7 +33,7 @@ def generate_data_points(part, PCA_1, PCA_2, filename):
 
     index = df.index
 
-    zORxs = [] #could be zs or xs based on which part
+    z_Or_xs = [] #could be zs or xs based on which part
     ys = []
     initial_lp_CP_ys = []
     initial_lp_CP_zORxs = [] #could be zs or xs based on which part
@@ -54,7 +54,7 @@ def generate_data_points(part, PCA_1, PCA_2, filename):
         if part == 'LP':
             ys.append(PC1_m_x * PCA_1_score + PC2_m_x * PCA_2_score + b_x)
         else:
-            zORxs.append(PC1_m_x * PCA_1_score + PC2_m_x * PCA_2_score + b_x)
+            z_Or_xs.append(PC1_m_x * PCA_1_score + PC2_m_x * PCA_2_score + b_x)
 
         col_num = df.columns.get_loc(part + '_PC1_y_coefficient')
         PC1_m_y = float(df.iloc[row_num, col_num])
@@ -66,7 +66,7 @@ def generate_data_points(part, PCA_1, PCA_2, filename):
         center_xs.append(-2)
 
         if part == 'LP':
-            zORxs.append(PC1_m_y * PCA_1_score + PC2_m_y * PCA_2_score + b_y)
+            z_Or_xs.append(PC1_m_y * PCA_1_score + PC2_m_y * PCA_2_score + b_y)
         else:
             ys.append(PC1_m_y * PCA_1_score + PC2_m_y * PCA_2_score + b_y)
 
@@ -79,9 +79,9 @@ def generate_data_points(part, PCA_1, PCA_2, filename):
 
 
     if part == 'LP':
-        return df, index, zORxs, ys, center_xs
+        return df, index, z_Or_xs, ys, center_xs
     else:
-        return df, index, zORxs, ys
+        return df, index, z_Or_xs, ys
 
 
 '''
