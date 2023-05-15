@@ -1,6 +1,6 @@
 """
 This file is responsible for running FeBio in conjunction with the feb_variables.csv file so that
-a run is completed for each row
+a run is completed for each row (Using both an input and optimize feb file)
 """
 import csv
 import sys
