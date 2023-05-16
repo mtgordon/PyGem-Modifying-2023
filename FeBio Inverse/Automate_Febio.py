@@ -33,11 +33,13 @@ def updateProperties(origFile, fileTemp):
     meshDomains = root.find('MeshDomains')
     for domain in meshDomains:
         for partProp in current_run_dict.keys():
-            if domain.attrib['name'] in partProp:
-                prop = partProp.split('_')[1]
+            partName = partProp.split('_')[0]
+            propName = partProp.split('_')[1]
+            if domain.attrib['name'] == partName:
                 for mat in tree.find('Material'):
                     if mat.attrib['name'] == domain.attrib['mat']:
-                        mat.find(prop).text = str(current_run_dict[partProp])
+                        newValue = float(mat.find(propName).text) * float(current_run_dict[partProp])
+                        mat.find(propName).text = str(newValue)
 
     # using UTF-8 encoding does not bring up any issues (can be changed if needed)
     newInputFile = fileTemp + '.feb'
@@ -48,7 +50,7 @@ def updateProperties(origFile, fileTemp):
 
 dictionary_file = 'feb_variables.csv'
 FeBioLocation = 'C:\\Program Files\\FEBioStudio2\\bin\\febio4.exe'
-originalFebFilename = 'Simple Curve_v3.feb'
+originalFebFilename = 'Curve and Flat and CL and Filler meshed v4.feb'
 
 #Get data from the Run_Variables file
 # Newer code (2/14)
@@ -65,7 +67,11 @@ first_iter = True
 #Have the default material variables be 1 (100%) so they do not change if no variable is given
 default_dict = {
     'Part2_E': 1,
-    'Part2_v': 1
+    'Part2_v': 1,
+    'Part9_E': 1,
+    'Part9_v': 1,
+    'Part27_E': 1,
+    'Part27_v': 1
 }
 
 current_run_dict = default_dict.copy()

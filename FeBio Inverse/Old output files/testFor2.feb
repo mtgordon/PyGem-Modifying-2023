@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<febio_optimize version="2.0">
+	<Options type="levmar">
+		<obj_tol>0.0001</obj_tol>
+		<f_diff_scale>0.001</f_diff_scale>
+		<log_level>LOG_DEFAULT</log_level>
+		<print_level>PRINT_ITERATIONS</print_level>
+	</Options>
+	<Parameters>
+		<param name="fem.material('Material3').k">1,2,4</param>
+		<param name="fem.material('Material2').c2">2,1,5</param>
+	</Parameters>
+	<Objective type="data-fit">
+		<fnc type="parameter">
+			<param name="data-fit"/>
+		</fnc>
+		<data>
+			<pt>0,0</pt>
+			<pt>0.1,0.1</pt>
+			<pt>0.2,0.2</pt>
+			<pt>0.3,0.3</pt>
+			<pt>0.4,0.4</pt>
+			<pt>0.5,0.5</pt>
+			<pt>0.6,0.6</pt>
+			<pt>0.7,0.7</pt>
+			<pt>0.8,0.8</pt>
+			<pt>0.9,0.9</pt>
+			<pt>1,1</pt>
+		</data>
+	</Objective>
+</febio_optimize>
