@@ -260,7 +260,7 @@ If the given point string's format was incorrect, the program will end and notif
 '''
 def configure_start_points(point):
     #Configure the updated points for the start of the fibers
-    strList = point[1:-1].split(',') #The slicing is to get rid of the brackets
+    strList = point.split(',')
     floatList = []
 
     if strList[0] != "x": #Checks for th default, if so, then continue with unaltered point
@@ -270,7 +270,7 @@ def configure_start_points(point):
             except ValueError:
                 print('''\nERROR: Program has stopped, refer to the message below vvv
                 Fiber start point must be in the following format:
-                [x,y,z] (brackets included with x,y,z replaced by the numeric values)
+                "x,y,z" (double quotes included with x,y,z replaced by the numeric values)
                 
                 The given rejected format was: ''' + point)
                 sys.exit(1)
