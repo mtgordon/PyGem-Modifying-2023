@@ -267,10 +267,10 @@ def configure_start_points(point):
         for coord in strList:
             try:
                 floatList.append(float(coord))
-            except ValueError as e:
+            except ValueError:
                 print('''\nERROR: Program has stopped, refer to the message below vvv
                 Fiber start point must be in the following format:
-                [x,y,z] (brakcets included with x,y,z replaced by the numeric values)
+                [x,y,z] (brackets included with x,y,z replaced by the numeric values)
                 
                 The given rejected format was: ''' + point)
                 sys.exit(1)
