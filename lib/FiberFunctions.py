@@ -10,6 +10,7 @@ from lib.Surface_Tools import pythag, plot_Dataset, find_starting_ending_points_
 import lib.IOfunctions as io
 from lib.ConnectingTissue import ConnectingTissue
 from lib.workingWith3dDataSets import Point, DataSet3d
+from lib.RemovePart import remove_connections
 from scipy.optimize import fsolve
 import numpy as np
 import sympy
@@ -83,7 +84,8 @@ def get_connections_for_tissues(tis1, tis2, file_name):
 #
 # This function takes the apical supports (or other fibers), finds the attachment points,
 # and tries to make them a certain length
-def CurveFibersInINP(Part_Name1, Part_Name2, scale, inputFile, outputFile, dirVector, updatedPositiveP=None, updatedNegativeP=None):
+def CurveFibersInINP(Part_Name1, Part_Name2, scale, inputFile, outputFile, dirVector, updatedPositiveP=None, updatedNegativeP=None,
+                     positive_connection_remove_percent=0.0, negative_connection_remove_percent=0.0):
     #Part_Name1 = AVW, Part_Name2 = the fiber tissue
     # Getting the coordinates for the AVW in the correct form from the file being worked on
     FILE_NAME = inputFile
@@ -106,6 +108,10 @@ def CurveFibersInINP(Part_Name1, Part_Name2, scale, inputFile, outputFile, dirVe
     fibers = ct.fibers_keys
 #    print("Fibers = ", fibers)
 
+    #Keeps track of the total connection points for the positive fibers
+    positive_connections = []
+    negative_connections = []
+
     for i, fiber in enumerate(fibers): #loop through each fiber
 #        print(fiber)
         starting_node_index = ct.starting_nodes[i] # getting indexes of nodes from the i fiber
@@ -123,6 +129,11 @@ def CurveFibersInINP(Part_Name1, Part_Name2, scale, inputFile, outputFile, dirVe
         # node (coordinates) where the fiber connects to the AVW
         avw_node = AVW_surface.node(avw_node_number)
 
+        if Part_Name2 == "OPAL325_CL_v6":
+            if avw_node.x < 0:
+                negative_connections.append(ending_node_index + 1)
+            else:
+                positive_connections.append(ending_node_index + 1)
 
         #Find the length of the original fiber
         OriginalFiberLength = 0
@@ -225,8 +236,20 @@ def CurveFibersInINP(Part_Name1, Part_Name2, scale, inputFile, outputFile, dirVe
 #        print("Final Fiber Length = ", FinalFiberLength)
       
 #    print(ct)
+
     write_part_to_inp(inputFile, outputFile, Part_Name2, ct)
+
+    # Remove the positive connections
+    remove_percent_fiber_connections(positive_connections, positive_connection_remove_percent, Part_Name2, outputFile)
+
+    # Remove the negative connections
+    remove_percent_fiber_connections(negative_connections, negative_connection_remove_percent, Part_Name2, outputFile)
     return     
+
+def remove_percent_fiber_connections(nodes, percent, partName, INPfile):
+    # Takes the percent, if final is <0, then becomes 0
+    cutoff = int(len(nodes) * percent)
+    remove_connections(nodes[0:cutoff], partName, INPfile)
 
 
 '''
@@ -916,3 +939,11 @@ def CurvePARAFibersInINP(Part_Name1, Part_Name2, scale, inputFile, outputFile, d
     print('Para Function, Output File: ', outputFile)
     write_part_to_inp(inputFile, outputFile, Part_Name2, ct)
     return
+
+def update_ligament(updated_Neg_P, updated_Pos_P, start_p):
+    if np.sign(start_p.x) < 0 and updated_Neg_P is not None:
+        return updated_Neg_P
+    elif np.sign(start_p.x) > 0 and updated_Pos_P is not None:
+        return updated_Pos_P
+    else:
+        return start_p
