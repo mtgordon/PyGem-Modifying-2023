@@ -6,6 +6,8 @@ Created on Fri Aug 25 12:48:48 2017
 """
 
 import math
+import sys
+
 from lib.Surface_Tools import pythag, plot_Dataset, find_starting_ending_points_for_inside, findInnerNodes
 import lib.IOfunctions as io
 from lib.ConnectingTissue import ConnectingTissue
@@ -84,8 +86,12 @@ def get_connections_for_tissues(tis1, tis2, file_name):
 #
 # This function takes the apical supports (or other fibers), finds the attachment points,
 # and tries to make them a certain length
-def CurveFibersInINP(Part_Name1, Part_Name2, scale, inputFile, outputFile, dirVector, updatedPositiveP=None, updatedNegativeP=None,
-                     positive_connection_remove_percent=0.0, negative_connection_remove_percent=0.0):
+def CurveFibersInINP(Part_Name1, Part_Name2, scale, inputFile, outputFile, dirVector, updatedPositiveP, updatedNegativeP,
+                     positiveConnectionRemovePercent, negativeConnectionRemovePercent):
+
+    updatedPositiveP = configure_start_points(updatedPositiveP)
+    updatedNegativeP = configure_start_points(updatedNegativeP)
+
     #Part_Name1 = AVW, Part_Name2 = the fiber tissue
     # Getting the coordinates for the AVW in the correct form from the file being worked on
     FILE_NAME = inputFile
@@ -239,16 +245,55 @@ def CurveFibersInINP(Part_Name1, Part_Name2, scale, inputFile, outputFile, dirVe
 
     write_part_to_inp(inputFile, outputFile, Part_Name2, ct)
 
-    # Remove the positive connections
-    remove_percent_fiber_connections(positive_connections, positive_connection_remove_percent, Part_Name2, outputFile)
+    if Part_Name2 == "OPAL325_CL_v6":
+        # Remove the positive connections
+        remove_percent_fiber_connections(positive_connections, positiveConnectionRemovePercent, Part_Name2, outputFile)
+        # Remove the negative connections
+        remove_percent_fiber_connections(negative_connections, negativeConnectionRemovePercent, Part_Name2, outputFile)
+    return
 
-    # Remove the negative connections
-    remove_percent_fiber_connections(negative_connections, negative_connection_remove_percent, Part_Name2, outputFile)
-    return     
+'''
+Function: configure_start_points
+Takes in the string point from the run dictionary and converts it into the Point object for later use.
+If no new point was given, then uses the point generated in the calculations.
+If the given point string's format was incorrect, the program will end and notify the user.
+'''
+def configure_start_points(point):
+    #Configure the updated points for the start of the fibers
+    strList = point[1:-1].split(',') #The slicing is to get rid of the brackets
+    floatList = []
 
+    if strList[0] != "x": #Checks for th default, if so, then continue with unaltered point
+        for coord in strList:
+            try:
+                floatList.append(float(coord))
+            except ValueError as e:
+                print('''\nERROR: Program has stopped, refer to the message below vvv
+                Fiber start point must be in the following format:
+                [x,y,z] (brakcets included with x,y,z replaced by the numeric values)
+                
+                The given rejected format was: ''' + point)
+                sys.exit(1)
+        return Point(floatList[0], floatList[1], floatList[2])
+    else:
+        return None
+
+'''
+Function: remove_percent_fiber_connections
+Takes in a list of nodes that correspond to connections involving the specified part, the percentage of those
+connections to be removed, and the INP file used. It is important to note that the percent given is the portion of
+the original connections to be removed, not the connections being kept. The nodes passed into the remove_connections
+function are those deleted from the INP file, so if you want more connections removed, make that passed in list larger.
+
+For example (node list refers to the one passed to remove_connections):
+percent = 1.0: node list size matches the original
+percent = 0.7: node list size is 70% of the original
+percent = 0.5: node list size is half the original
+percent = 0.2: node list size is 20% of the original
+percent = 0.0: node list size is empty
+'''
 def remove_percent_fiber_connections(nodes, percent, partName, INPfile):
-    # Takes the percent, if final is <0, then becomes 0
-    cutoff = int(len(nodes) * percent)
+    cutoff = int(round(len(nodes) * percent))
     remove_connections(nodes[0:cutoff], partName, INPfile)
 
 

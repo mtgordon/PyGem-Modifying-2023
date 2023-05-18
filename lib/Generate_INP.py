@@ -80,7 +80,12 @@ start = time.process_time()
 '''
 Function: AnalogGenerateINP
 '''
-def AnalogGenerateINP(TissueParameters, MaterialStartLine, LoadLine, LoadLineNo, SlackStrain, DensityFactor, GenericINPFile, OutputINPFile, WidthScale, LengthScale, ZSHIFT, RotationPoint, HiatusPoint, GIFillerPoint, HiatusLength, levator_plate_PC1, levator_plate_PC2, ICM_PC1, ICM_PC2, Results_Folder_Location):
+def AnalogGenerateINP(TissueParameters, MaterialStartLine, LoadLine, LoadLineNo, SlackStrain, DensityFactor,
+                      GenericINPFile, OutputINPFile, WidthScale, LengthScale, ZSHIFT, RotationPoint, HiatusPoint,
+                      GIFillerPoint, HiatusLength, levator_plate_PC1, levator_plate_PC2, ICM_PC1, ICM_PC2,
+                      positive_CL_point, negative_CL_point, positive_US_point, negative_US_point,
+                      positive_PARA_point, negative_PARA_point, positive_CL_remove_percent, negative_remove_percent,
+                      Results_Folder_Location):
 
     config = configparser.ConfigParser()
     config.sections()
@@ -1232,7 +1237,8 @@ def AnalogGenerateINP(TissueParameters, MaterialStartLine, LoadLine, LoadLineNo,
         shutil.copy(OutputINPFile, TempFile)
     # Sets the vector for adding the wave to the fiber to increase length
         dirVector = [1,0,0]
-        CurveFibersInINP("OPAL325_AVW_v6", "OPAL325_CL_v6", SlackStrain[0], TempFile, OutputINPFile, dirVector)
+        CurveFibersInINP("OPAL325_AVW_v6", "OPAL325_CL_v6", SlackStrain[0], TempFile, OutputINPFile, dirVector,
+                         positive_CL_point, negative_CL_point, positive_CL_remove_percent, negative_remove_percent)
 
         print(time.process_time() - start)
 
@@ -1242,7 +1248,8 @@ def AnalogGenerateINP(TissueParameters, MaterialStartLine, LoadLine, LoadLineNo,
         shutil.copy(OutputINPFile, TempFile)
     # Sets the vector for adding the wave to the fiber to increase length
         dirVector = [1,0,0]
-        CurveFibersInINP("OPAL325_AVW_v6", "OPAL325_US_v6", SlackStrain[1], TempFile, OutputINPFile, dirVector)
+        CurveFibersInINP("OPAL325_AVW_v6", "OPAL325_US_v6", SlackStrain[1], TempFile, OutputINPFile, dirVector,
+                         positive_US_point, negative_US_point, positive_CL_remove_percent, negative_remove_percent)
 
         print(time.process_time() - start)
 
@@ -1267,7 +1274,8 @@ def AnalogGenerateINP(TissueParameters, MaterialStartLine, LoadLine, LoadLineNo,
             shutil.copy(OutputINPFile, TempFile)
             # Sets the vector for adding the wave to the fiber to increase length
             dirVector = [1,0,0]
-            CurveFibersInINP("OPAL325_AVW_v6", "OPAL325_Para_v6", SlackStrain[2], TempFile, OutputINPFile, dirVector)
+            CurveFibersInINP("OPAL325_AVW_v6", "OPAL325_Para_v6", SlackStrain[2], TempFile, OutputINPFile, dirVector,
+                             positive_PARA_point, negative_PARA_point, positive_CL_remove_percent, negative_remove_percent)
 
 
         print("Creating Correct Stress Strain Data Curves")

@@ -87,7 +87,15 @@ default_dict = {
         'Levator_Plate_PC2' : json.loads(config["SHAPE_ANALYSIS"]["Levator_Plate_PC2"]),
         'ICM_PC1' : json.loads(config["SHAPE_ANALYSIS"]["ICM_PC1"]),
         'ICM_PC2' : json.loads(config["SHAPE_ANALYSIS"]["ICM_PC2"]),
-        'Load_Value' : json.loads(config["Load"]["LoadValue"])
+        'Load_Value' : json.loads(config["Load"]["LoadValue"]),
+        'Positive_CL_Point' : json.loads(config["FIBER_PROPERTIES"]["updated_positive_CL_point"]),
+        'Negative_CL_Point' : json.loads(config["FIBER_PROPERTIES"]["updated_negative_CL_point"]),
+        'Positive_US_Point' : json.loads(config["FIBER_PROPERTIES"]["updated_positive_US_point"]),
+        'Negative_US_Point' : json.loads(config["FIBER_PROPERTIES"]["updated_negative_US_point"]),
+        'Positive_PARA_Point' : json.loads(config["FIBER_PROPERTIES"]["updated_positive_PARA_point"]),
+        'Negative_PARA_Point' : json.loads(config["FIBER_PROPERTIES"]["updated_negative_PARA_point"]),
+        'Positive_CL_Remove_Percent' : json.loads(config["FIBER_PROPERTIES"]["positive_CL_remove_percent"]),
+        'Negative_CL_Remove_Percent' : json.loads(config["FIBER_PROPERTIES"]["negative_CL_remove_percent"])
 }
 
 
@@ -244,13 +252,13 @@ for row in DOE_dict:
             print('mat prop in Automate Abaqus:', material_properties)
             if troubleshooting == 1:
                 print('Troubleshooting!!!!!!!!!!!!')
-                AnalogGenerateINP(material_properties, MaterialStartLine, LoadLine, LoadLineNo, [float(current_run_dict['CL_Strain']), float(current_run_dict['US_Strain']), float(current_run_dict['Para_Strain'])], DensityFactor[0], current_run_dict['Generic_File'], INPOutputFileName, current_run_dict['AVW_Width'], current_run_dict['AVW_Length'], float(current_run_dict['Apical_Shift']), RotationPoint, HiatusPoint, GIFillerPoint, float(current_run_dict['Hiatus_Size']), float(current_run_dict['Levator_Plate_PC1']), float(current_run_dict['Levator_Plate_PC2']), float(current_run_dict['ICM_PC1']), float(current_run_dict['ICM_PC2']), Results_Folder_Location)
+                AnalogGenerateINP(material_properties, MaterialStartLine, LoadLine, LoadLineNo, [float(current_run_dict['CL_Strain']), float(current_run_dict['US_Strain']), float(current_run_dict['Para_Strain'])], DensityFactor[0], current_run_dict['Generic_File'], INPOutputFileName, current_run_dict['AVW_Width'], current_run_dict['AVW_Length'], float(current_run_dict['Apical_Shift']), RotationPoint, HiatusPoint, GIFillerPoint, float(current_run_dict['Hiatus_Size']), float(current_run_dict['Levator_Plate_PC1']), float(current_run_dict['Levator_Plate_PC2']), float(current_run_dict['ICM_PC1']), float(current_run_dict['ICM_PC2']), current_run_dict['Positive_CL_Point'], current_run_dict['Negative_CL_Point'], current_run_dict['Positive_US_Point'], current_run_dict['Negative_US_Point'], current_run_dict['Positive_PARA_Point'], current_run_dict['Negative_PARA_Point'], float(current_run_dict['Positive_CL_Remove_Percent']), float(current_run_dict['Negative_CL_Remove_Percent']), Results_Folder_Location)
                 FinalINPOutputFileName = INPOutputFileName
                 INP_error = 0
             else:
                 try:
                     INP_error = 0
-                    AnalogGenerateINP(material_properties, MaterialStartLine, LoadLine, LoadLineNo, [float(current_run_dict['CL_Strain']), float(current_run_dict['US_Strain']), float(current_run_dict['Para_Strain'])], DensityFactor[0], current_run_dict['Generic_File'], INPOutputFileName, current_run_dict['AVW_Width'], current_run_dict['AVW_Length'], float(current_run_dict['Apical_Shift']), RotationPoint, HiatusPoint, GIFillerPoint, float(current_run_dict['Hiatus_Size']), float(current_run_dict['Levator_Plate_PC1']), float(current_run_dict['Levator_Plate_PC2']), float(current_run_dict['ICM_PC1']), float(current_run_dict['ICM_PC2']), Results_Folder_Location)
+                    AnalogGenerateINP(material_properties, MaterialStartLine, LoadLine, LoadLineNo, [float(current_run_dict['CL_Strain']), float(current_run_dict['US_Strain']), float(current_run_dict['Para_Strain'])], DensityFactor[0], current_run_dict['Generic_File'], INPOutputFileName, current_run_dict['AVW_Width'], current_run_dict['AVW_Length'], float(current_run_dict['Apical_Shift']), RotationPoint, HiatusPoint, GIFillerPoint, float(current_run_dict['Hiatus_Size']), float(current_run_dict['Levator_Plate_PC1']), float(current_run_dict['Levator_Plate_PC2']), float(current_run_dict['ICM_PC1']), float(current_run_dict['ICM_PC2']), current_run_dict['Positive_CL_Point'], current_run_dict['Negative_CL_Point'], current_run_dict['Positive_US_Point'], current_run_dict['Negative_US_Point'], current_run_dict['Positive_PARA_Point'], current_run_dict['Negative_PARA_Point'], float(current_run_dict['Positive_CL_Remove_Percent']), float(current_run_dict['Negative_CL_Remove_Percent']), Results_Folder_Location)
                     FinalINPOutputFileName = INPOutputFileName
                 except:
                     INP_error = 1
