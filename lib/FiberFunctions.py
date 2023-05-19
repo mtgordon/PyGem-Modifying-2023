@@ -6,10 +6,13 @@ Created on Fri Aug 25 12:48:48 2017
 """
 
 import math
+import sys
+
 from lib.Surface_Tools import pythag, plot_Dataset, find_starting_ending_points_for_inside, findInnerNodes
 import lib.IOfunctions as io
 from lib.ConnectingTissue import ConnectingTissue
 from lib.workingWith3dDataSets import Point, DataSet3d
+from lib.RemovePart import remove_connections
 from scipy.optimize import fsolve
 import numpy as np
 import sympy
@@ -83,7 +86,12 @@ def get_connections_for_tissues(tis1, tis2, file_name):
 #
 # This function takes the apical supports (or other fibers), finds the attachment points,
 # and tries to make them a certain length
-def CurveFibersInINP(Part_Name1, Part_Name2, scale, inputFile, outputFile, dirVector, updatedPositiveP=None, updatedNegativeP=None):
+def CurveFibersInINP(Part_Name1, Part_Name2, scale, inputFile, outputFile, dirVector, updatedPositiveP, updatedNegativeP,
+                     positiveConnectionRemovePercent, negativeConnectionRemovePercent):
+
+    updatedPositiveP = configure_start_points(updatedPositiveP)
+    updatedNegativeP = configure_start_points(updatedNegativeP)
+
     #Part_Name1 = AVW, Part_Name2 = the fiber tissue
     # Getting the coordinates for the AVW in the correct form from the file being worked on
     FILE_NAME = inputFile
@@ -106,6 +114,10 @@ def CurveFibersInINP(Part_Name1, Part_Name2, scale, inputFile, outputFile, dirVe
     fibers = ct.fibers_keys
 #    print("Fibers = ", fibers)
 
+    #Keeps track of the total connection points for the positive fibers
+    positive_connections = []
+    negative_connections = []
+
     for i, fiber in enumerate(fibers): #loop through each fiber
 #        print(fiber)
         starting_node_index = ct.starting_nodes[i] # getting indexes of nodes from the i fiber
@@ -123,6 +135,11 @@ def CurveFibersInINP(Part_Name1, Part_Name2, scale, inputFile, outputFile, dirVe
         # node (coordinates) where the fiber connects to the AVW
         avw_node = AVW_surface.node(avw_node_number)
 
+        if Part_Name2 == "OPAL325_CL_v6":
+            if avw_node.x < 0:
+                negative_connections.append(ending_node_index + 1)
+            else:
+                positive_connections.append(ending_node_index + 1)
 
         #Find the length of the original fiber
         OriginalFiberLength = 0
@@ -159,7 +176,6 @@ def CurveFibersInINP(Part_Name1, Part_Name2, scale, inputFile, outputFile, dirVe
 #avw_node
 #        print("NumberOfCycles = ",NumberOfCycles)
 #        print("Dist = ", _dist)
-        #TODO: MOST PROBABLE PLACE TO UPDATE STARTING NODES
         if IdealFiberLength > _dist:
             sending = (IdealFiberLength, fiber, starting_node_index, ending_node_index, ct, dirVector,NumberOfCycles,avw_node)
             [CorrectAmp] = fsolve(ArcDistance, StartingAmplitude, args=sending)
@@ -184,7 +200,7 @@ def CurveFibersInINP(Part_Name1, Part_Name2, scale, inputFile, outputFile, dirVe
 
         #TODO: If else for the updated point located here
         #TODO: New if branch to implement +/-
-        if Part_Name2 == "OPAL325_CL_v6":
+        if Part_Name2 == "OPAL325_CL_v6" or Part_Name2 == "OPAL325_US_v6" or Part_Name2 == "OPAL325_Para_v6":
             if np.sign(starting_p.x) < 0 and updatedNegativeP is not None:
                 starting_p_alterable = updatedNegativeP
             elif np.sign(starting_p.x) > 0 and updatedPositiveP is not None:
@@ -226,8 +242,59 @@ def CurveFibersInINP(Part_Name1, Part_Name2, scale, inputFile, outputFile, dirVe
 #        print("Final Fiber Length = ", FinalFiberLength)
       
 #    print(ct)
+
     write_part_to_inp(inputFile, outputFile, Part_Name2, ct)
-    return     
+
+    if Part_Name2 == "OPAL325_CL_v6":
+        # Remove the positive connections
+        remove_percent_fiber_connections(positive_connections, positiveConnectionRemovePercent, Part_Name2, outputFile)
+        # Remove the negative connections
+        remove_percent_fiber_connections(negative_connections, negativeConnectionRemovePercent, Part_Name2, outputFile)
+    return
+
+'''
+Function: configure_start_points
+Takes in the string point from the run dictionary and converts it into the Point object for later use.
+If no new point was given, then uses the point generated in the calculations.
+If the given point string's format was incorrect, the program will end and notify the user.
+'''
+def configure_start_points(point):
+    #Configure the updated points for the start of the fibers
+    strList = point.split(',')
+    floatList = []
+
+    if strList[0] != "x": #Checks for th default, if so, then continue with unaltered point
+        for coord in strList:
+            try:
+                floatList.append(float(coord))
+            except ValueError:
+                print('''\nERROR: Program has stopped, refer to the message below vvv
+                Fiber start point must be in the following format:
+                "x,y,z" (double quotes included with x,y,z replaced by the numeric values)
+                
+                The given rejected format was: ''' + point)
+                sys.exit(1)
+        return Point(floatList[0], floatList[1], floatList[2])
+    else:
+        return None
+
+'''
+Function: remove_percent_fiber_connections
+Takes in a list of nodes that correspond to connections involving the specified part, the percentage of those
+connections to be removed, and the INP file used. It is important to note that the percent given is the portion of
+the original connections to be removed, not the connections being kept. The nodes passed into the remove_connections
+function are those deleted from the INP file, so if you want more connections removed, make that passed in list larger.
+
+For example (node list refers to the one passed to remove_connections):
+percent = 1.0: node list size matches the original
+percent = 0.7: node list size is 70% of the original
+percent = 0.5: node list size is half the original
+percent = 0.2: node list size is 20% of the original
+percent = 0.0: node list size is empty
+'''
+def remove_percent_fiber_connections(nodes, percent, partName, INPfile):
+    cutoff = int(round(len(nodes) * percent))
+    remove_connections(nodes[0:cutoff], partName, INPfile)
 
 
 '''
@@ -917,3 +984,11 @@ def CurvePARAFibersInINP(Part_Name1, Part_Name2, scale, inputFile, outputFile, d
     print('Para Function, Output File: ', outputFile)
     write_part_to_inp(inputFile, outputFile, Part_Name2, ct)
     return
+
+def update_ligament(updated_Neg_P, updated_Pos_P, start_p):
+    if np.sign(start_p.x) < 0 and updated_Neg_P is not None:
+        return updated_Neg_P
+    elif np.sign(start_p.x) > 0 and updated_Pos_P is not None:
+        return updated_Pos_P
+    else:
+        return start_p

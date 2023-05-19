@@ -80,7 +80,12 @@ start = time.process_time()
 '''
 Function: AnalogGenerateINP
 '''
-def AnalogGenerateINP(TissueParameters, MaterialStartLine, LoadLine, LoadLineNo, SlackStrain, DensityFactor, GenericINPFile, OutputINPFile, WidthScale, LengthScale, ZSHIFT, RotationPoint, HiatusPoint, GIFillerPoint, HiatusLength, levator_plate_PC1, levator_plate_PC2, ICM_PC1, ICM_PC2, Results_Folder_Location):
+def AnalogGenerateINP(TissueParameters, MaterialStartLine, LoadLine, LoadLineNo, SlackStrain, DensityFactor,
+                      GenericINPFile, OutputINPFile, WidthScale, LengthScale, ZSHIFT, RotationPoint, HiatusPoint,
+                      GIFillerPoint, HiatusLength, levator_plate_PC1, levator_plate_PC2, ICM_PC1, ICM_PC2,
+                      positive_CL_point, negative_CL_point, positive_US_point, negative_US_point,
+                      positive_PARA_point, negative_PARA_point, positive_CL_remove_percent, negative_remove_percent,
+                      Results_Folder_Location):
 
     config = configparser.ConfigParser()
     config.sections()
@@ -376,10 +381,10 @@ def AnalogGenerateINP(TissueParameters, MaterialStartLine, LoadLine, LoadLineNo,
 
 
 
-        #TODO: call from shape_analysis
+        #TODO: call from shape_analysis (git test)
         #Call levator plate shape analysis
         initial_lp_CP_ys, initial_lp_CP_zs, LP_CPs_initial \
-            = lib.Shape_Analysis.levator_shape_analysis(0.0, 0.0, False)
+            = lib.Shape_Analysis.levator_shape_analysis(-1.98, 0.12, False)
 
         ys, zs, LP_CPs_mod = lib.Shape_Analysis.levator_shape_analysis(levator_plate_PC1, levator_plate_PC2, False)
 
@@ -1188,10 +1193,10 @@ def AnalogGenerateINP(TissueParameters, MaterialStartLine, LoadLine, LoadLineNo,
 #         ######################################################################################
 
     ######################################################################################
-    #TODO: Commented out droop
-    # Droop the AVW (probably pass the generic file and obtain the end points for the droop from there)
-    if config.getint("FLAGS", "CurveAVW") != 0:
-        avw = Scaling.curve_avw(AVW, OutputINPFile, GenericINPFile, hiatus, z_cutoff, rotate_angle, rot_point, HiatusLength)
+        #TODO: Commented out droop
+        # Droop the AVW (probably pass the generic file and obtain the end points for the droop from there)
+        if config.getint("FLAGS", "CurveAVW") != 0:
+            avw = Scaling.curve_avw(AVW, OutputINPFile, GenericINPFile, hiatus, z_cutoff, rotate_angle, rot_point, HiatusLength)
     ######################################################################################
 
     ######################################################################################
@@ -1208,10 +1213,10 @@ def AnalogGenerateINP(TissueParameters, MaterialStartLine, LoadLine, LoadLineNo,
 ####### New Curving Code Below
 # Need to put a wave in the bottom of the AVW so that it doesn't hit the PM_mid tissue
 
-    pm_mid = io.get_dataset_from_file(OutputINPFile, PM_MID)
-    if config.getint("FLAGS", "testing") != 0:
-        AVW_connections = io.get_interconnections(GenericINPFile, AVW)
-        avw = Scaling.narrow_distal_avw_narrow(AVW, OutputINPFile, GenericINPFile, pm_mid, connections, AVW_connections)
+        pm_mid = io.get_dataset_from_file(OutputINPFile, PM_MID)
+        if config.getint("FLAGS", "testing") != 0:
+            AVW_connections = io.get_interconnections(GenericINPFile, AVW)
+            avw = Scaling.narrow_distal_avw_narrow(AVW, OutputINPFile, GenericINPFile, pm_mid, connections, AVW_connections)
 #        print(avw)
         # avw = Scaling.narrow_distal_avw_narrow_and_curve(AVW, OutputINPFile, GenericINPFile, pm_mid, connections, AVW_connections)
 ####### New Curving Code Above
@@ -1232,7 +1237,8 @@ def AnalogGenerateINP(TissueParameters, MaterialStartLine, LoadLine, LoadLineNo,
         shutil.copy(OutputINPFile, TempFile)
     # Sets the vector for adding the wave to the fiber to increase length
         dirVector = [1,0,0]
-        CurveFibersInINP("OPAL325_AVW_v6", "OPAL325_CL_v6", SlackStrain[0], TempFile, OutputINPFile, dirVector)
+        CurveFibersInINP("OPAL325_AVW_v6", "OPAL325_CL_v6", SlackStrain[0], TempFile, OutputINPFile, dirVector,
+                         positive_CL_point, negative_CL_point, positive_CL_remove_percent, negative_remove_percent)
 
         print(time.process_time() - start)
 
@@ -1242,7 +1248,8 @@ def AnalogGenerateINP(TissueParameters, MaterialStartLine, LoadLine, LoadLineNo,
         shutil.copy(OutputINPFile, TempFile)
     # Sets the vector for adding the wave to the fiber to increase length
         dirVector = [1,0,0]
-        CurveFibersInINP("OPAL325_AVW_v6", "OPAL325_US_v6", SlackStrain[1], TempFile, OutputINPFile, dirVector)
+        CurveFibersInINP("OPAL325_AVW_v6", "OPAL325_US_v6", SlackStrain[1], TempFile, OutputINPFile, dirVector,
+                         positive_US_point, negative_US_point, positive_CL_remove_percent, negative_remove_percent)
 
         print(time.process_time() - start)
 
@@ -1267,7 +1274,8 @@ def AnalogGenerateINP(TissueParameters, MaterialStartLine, LoadLine, LoadLineNo,
             shutil.copy(OutputINPFile, TempFile)
             # Sets the vector for adding the wave to the fiber to increase length
             dirVector = [1,0,0]
-            CurveFibersInINP("OPAL325_AVW_v6", "OPAL325_Para_v6", SlackStrain[2], TempFile, OutputINPFile, dirVector)
+            CurveFibersInINP("OPAL325_AVW_v6", "OPAL325_Para_v6", SlackStrain[2], TempFile, OutputINPFile, dirVector,
+                             positive_PARA_point, negative_PARA_point, positive_CL_remove_percent, negative_remove_percent)
 
 
         print("Creating Correct Stress Strain Data Curves")
@@ -1310,6 +1318,6 @@ def AnalogGenerateINP(TissueParameters, MaterialStartLine, LoadLine, LoadLineNo,
         print("TissueParameters in Generate INP:", TissueParameters)
         INPAnalogMaterialProperties(TissueParameters, DensityFactor, LoadLine, LoadLineNo, OutputINPFile, StretchCoefficients)
 
-        MeasurementsFileName = OutputINPFile + '_Measurements.txt'
+        MeasurementsFileName = Results_Folder_Location + '\\' + OutputINPFile + '_Measurements.txt'
         Scaling.takeMeasurements(MeasurementsFileName, AVW, [CL, PARA, US], GenericINPFile, OutputINPFile)
 

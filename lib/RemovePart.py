@@ -6,6 +6,7 @@ Created on Thu Dec  5 13:55:21 2019
 """
 
 #import shutil
+import re
 
 '''
 Function: remove_part
@@ -77,7 +78,8 @@ def remove_connections(nodes, part, INP_file):
                 if EndTrigger in line:
                     Connections = 0
                     new_file.write(line + "\n")
-                elif any(part + '-1.' + str(node) in line for node in nodes):
+                    #part + '-1.' + str(node) in line
+                elif any(bool(re.search(rf"\b{part + '-1.' + str(node)}\b", line)) for node in nodes):
                     RemovedConnections += 1
     #                new_line = line
     #                print(line[0])
