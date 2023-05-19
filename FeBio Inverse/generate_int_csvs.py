@@ -50,7 +50,9 @@ def generate_2d_coords_for_pca(log_file_name,feb_file_name,obj_name):
 
 
   #TODO we have to make  this csv_filename dynamic but that will be later.
-  csv_filename="intermediate_pc_data"
+
+  csv_filename= log_file_name.split("\\")[-1] + "_intermediate_csv"
+  #csv_filename="intermediate_pc_data"
   save_to_csv(csv_filename,new_xs,new_ys)
 
 #---------------------------------------------------------------------------------------------------------------------------------------------
