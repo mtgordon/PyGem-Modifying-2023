@@ -13,6 +13,9 @@ from datetime import datetime
 import glob
 import fileinput
 import sys
+
+import pandas
+
 from lib.Generate_INP import AnalogGenerateINP
 #from lib.Test_Curving import AnalogGenerateINP
 from lib.RunINPinAbaqus import RunINPinAbaqus
@@ -80,12 +83,19 @@ default_dict = {
         'PM_Mid_Material' : json.loads(config["MATERIAL_PROPERTIES"]["PM_Mid_Default"]),
         'Generic_File' : config["FILES"]["GenericINP_default"],
         'Hiatus_Size' : json.loads(config["HIATUS_PROPERTIES"]["Hiatus_Length_default"]),
-		'Levator_Plate_PC1' : json.loads(config["SHAPE_ANALYSIS"]["Levator_Plate_PC1"]),
+        'Levator_Plate_PC1' : json.loads(config["SHAPE_ANALYSIS"]["Levator_Plate_PC1"]),
         'Levator_Plate_PC2' : json.loads(config["SHAPE_ANALYSIS"]["Levator_Plate_PC2"]),
         'ICM_PC1' : json.loads(config["SHAPE_ANALYSIS"]["ICM_PC1"]),
         'ICM_PC2' : json.loads(config["SHAPE_ANALYSIS"]["ICM_PC2"]),
-        #TODO: The newly added key for the load value: Load_Value
-        'Load_Value' : json.loads(config["Load"]["LoadValue"])
+        'Load_Value' : json.loads(config["Load"]["LoadValue"]),
+        'Positive_CL_Point' : json.loads(config["FIBER_PROPERTIES"]["updated_positive_CL_point"]),
+        'Negative_CL_Point' : json.loads(config["FIBER_PROPERTIES"]["updated_negative_CL_point"]),
+        'Positive_US_Point' : json.loads(config["FIBER_PROPERTIES"]["updated_positive_US_point"]),
+        'Negative_US_Point' : json.loads(config["FIBER_PROPERTIES"]["updated_negative_US_point"]),
+        'Positive_PARA_Point' : json.loads(config["FIBER_PROPERTIES"]["updated_positive_PARA_point"]),
+        'Negative_PARA_Point' : json.loads(config["FIBER_PROPERTIES"]["updated_negative_PARA_point"]),
+        'Positive_CL_Remove_Percent' : json.loads(config["FIBER_PROPERTIES"]["positive_CL_remove_percent"]),
+        'Negative_CL_Remove_Percent' : json.loads(config["FIBER_PROPERTIES"]["negative_CL_remove_percent"])
 }
 
 
@@ -101,6 +111,9 @@ Get_Hiatus_Measurements = config.getint("FLAGS","get_hiatus_measurements") # fla
 AbaqusBatLocation= config["SYSTEM_INFO"]["AbaqusBatLocation"]
 vary_loading = config.getint("FLAGS","vary_loading") # Flag for running the INP files in Abaqus
 troubleshooting = config.getint("FLAGS","troubleshooting") # Flag for running the INP files in Abaqus
+load_search = config.getint("FLAGS","load_search") #TODO: Added flag for inhibiting extra runs on a bad file
+max_prolapse_num = config.getint("Load", "MaxProlapseNum")
+use_test_csv = config.getint("FLAGS", "use_test_csv")
 
 frames = config["POST_ANALYSIS"]["frames"]
 frames = list(frames.split(','))
@@ -180,35 +193,43 @@ DOE_dict = csv.DictReader(run_file)
 # new file and add headers
 first_file = 1
 
+# Flag to indicate the first time through the while loop for the load search
+first_iter = True
 
-current_run_dict = default_dict
+current_run_dict = default_dict.copy()
 
-# TODO: Start of possible while loop
 # Run each combination from the rows in Run_Variables
 for row in DOE_dict:
-    #while True:
-        print('Row:', row)
+    print('Row:', row)
 
-        current_run_dict = default_dict
-    #    print(DOE_dict.fieldnames)
-        for key in DOE_dict.fieldnames:
-            if key in default_dict.keys():
-                current_run_dict[key] = row[key]
-            else:
-                if key != 'Run Number':
-                    print(key, 'is an unvalid entry')
-                    sys.exit()
+    current_run_dict = default_dict.copy()
+#    print(DOE_dict.fieldnames)
+    for key in DOE_dict.fieldnames:
+        if key in default_dict.keys():
+            current_run_dict[key] = row[key]
+        else:
+            if key != 'Run Number':
+                print(key, 'is an unvalid entry')
+                sys.exit()
 
 
-        LoadLineNo = findLineNum(current_run_dict['Generic_File'], LoadLineSignal) + 2
-        MaterialStartLine = findLineNum(current_run_dict['Generic_File'], "** MATERIALS") + 2
-        f = open(current_run_dict['Generic_File'])
-        for i in range(0, LoadLineNo-1):
-            f.readline()
-        OldLoadLine = f.readline()
-        f.close()
+    LoadLineNo = findLineNum(current_run_dict['Generic_File'], LoadLineSignal) + 2
+    MaterialStartLine = findLineNum(current_run_dict['Generic_File'], "** MATERIALS") + 2
+    f = open(current_run_dict['Generic_File'])
+    for i in range(0, LoadLineNo-1):
+        f.readline()
+    OldLoadLine = f.readline()
+    f.close()
 
-        #TODO: Start while loop here and change load dict
+    # Set up the load variables before while loop
+    large_load = None
+    small_load = None
+    new_load = None
+    iteration = 0
+
+    #TODO: Start while loop here and change loadLine dict
+    while iteration < max_prolapse_num:
+
         LoadLine = OldLoadLine.split(',')
         #TODO: This is where the local 'LoadValue' was used, and now uses the key from the default_dict
         LoadLine[2] = ' ' + str(current_run_dict['Load_Value'])
@@ -231,13 +252,13 @@ for row in DOE_dict:
             print('mat prop in Automate Abaqus:', material_properties)
             if troubleshooting == 1:
                 print('Troubleshooting!!!!!!!!!!!!')
-                AnalogGenerateINP(material_properties, MaterialStartLine, LoadLine, LoadLineNo, [float(current_run_dict['CL_Strain']), float(current_run_dict['US_Strain']), float(current_run_dict['Para_Strain'])], DensityFactor[0], current_run_dict['Generic_File'], INPOutputFileName, current_run_dict['AVW_Width'], current_run_dict['AVW_Length'], float(current_run_dict['Apical_Shift']), RotationPoint, HiatusPoint, GIFillerPoint, float(current_run_dict['Hiatus_Size']), float(current_run_dict['Levator_Plate_PC1']), float(current_run_dict['Levator_Plate_PC2']), float(current_run_dict['ICM_PC1']), float(current_run_dict['ICM_PC2']), Results_Folder_Location)
+                AnalogGenerateINP(material_properties, MaterialStartLine, LoadLine, LoadLineNo, [float(current_run_dict['CL_Strain']), float(current_run_dict['US_Strain']), float(current_run_dict['Para_Strain'])], DensityFactor[0], current_run_dict['Generic_File'], INPOutputFileName, current_run_dict['AVW_Width'], current_run_dict['AVW_Length'], float(current_run_dict['Apical_Shift']), RotationPoint, HiatusPoint, GIFillerPoint, float(current_run_dict['Hiatus_Size']), float(current_run_dict['Levator_Plate_PC1']), float(current_run_dict['Levator_Plate_PC2']), float(current_run_dict['ICM_PC1']), float(current_run_dict['ICM_PC2']), current_run_dict['Positive_CL_Point'], current_run_dict['Negative_CL_Point'], current_run_dict['Positive_US_Point'], current_run_dict['Negative_US_Point'], current_run_dict['Positive_PARA_Point'], current_run_dict['Negative_PARA_Point'], float(current_run_dict['Positive_CL_Remove_Percent']), float(current_run_dict['Negative_CL_Remove_Percent']), Results_Folder_Location)
                 FinalINPOutputFileName = INPOutputFileName
                 INP_error = 0
             else:
                 try:
                     INP_error = 0
-                    AnalogGenerateINP(material_properties, MaterialStartLine, LoadLine, LoadLineNo, [float(current_run_dict['CL_Strain']), float(current_run_dict['US_Strain']), float(current_run_dict['Para_Strain'])], DensityFactor[0], current_run_dict['Generic_File'], INPOutputFileName, current_run_dict['AVW_Width'], current_run_dict['AVW_Length'], float(current_run_dict['Apical_Shift']), RotationPoint, HiatusPoint, GIFillerPoint, float(current_run_dict['Hiatus_Size']), float(current_run_dict['Levator_Plate_PC1']), float(current_run_dict['Levator_Plate_PC2']), float(current_run_dict['ICM_PC1']), float(current_run_dict['ICM_PC2']), Results_Folder_Location)
+                    AnalogGenerateINP(material_properties, MaterialStartLine, LoadLine, LoadLineNo, [float(current_run_dict['CL_Strain']), float(current_run_dict['US_Strain']), float(current_run_dict['Para_Strain'])], DensityFactor[0], current_run_dict['Generic_File'], INPOutputFileName, current_run_dict['AVW_Width'], current_run_dict['AVW_Length'], float(current_run_dict['Apical_Shift']), RotationPoint, HiatusPoint, GIFillerPoint, float(current_run_dict['Hiatus_Size']), float(current_run_dict['Levator_Plate_PC1']), float(current_run_dict['Levator_Plate_PC2']), float(current_run_dict['ICM_PC1']), float(current_run_dict['ICM_PC2']), current_run_dict['Positive_CL_Point'], current_run_dict['Negative_CL_Point'], current_run_dict['Positive_US_Point'], current_run_dict['Negative_US_Point'], current_run_dict['Positive_PARA_Point'], current_run_dict['Negative_PARA_Point'], float(current_run_dict['Positive_CL_Remove_Percent']), float(current_run_dict['Negative_CL_Remove_Percent']), Results_Folder_Location)
                     FinalINPOutputFileName = INPOutputFileName
                 except:
                     INP_error = 1
@@ -316,7 +337,7 @@ for row in DOE_dict:
                             pass
 
         if GetData == 1 and RunSuccess == 1 and INP_error == 0:
-
+            print("Beginning Post Processing")
             error_log_file = Results_Folder_Location + '\Error_Log.txt'
             ODBFile_NoPath = ODBFile
 
@@ -338,6 +359,7 @@ for row in DOE_dict:
                     full_odb_file_to_analyze = file_to_analyze
                     raw_path_base_file_name = os.path.splitext(full_odb_file)[0]
                     Post_Processing_Files(full_odb_file_to_analyze, full_INP_file_to_analyze, INI_File, Output_File_Name, first_file, raw_path_base_file_name, frame)
+                    print("Done with Post Processing")
                     first_file = 0
                 else:
                 #    Post process the odb file
@@ -349,6 +371,7 @@ for row in DOE_dict:
                         full_odb_file_to_analyze = file_to_analyze
                         raw_path_base_file_name = os.path.splitext(full_odb_file)[0]
                         Post_Processing_Files(full_odb_file_to_analyze, full_INP_file_to_analyze, INI_File, Output_File_Name, first_file, raw_path_base_file_name, frame)
+                        print("Done with Post Processing")
                         #   Turn off first file flag so that it will add data to the file next time through
                         first_file = 0
                     except:
@@ -365,8 +388,73 @@ for row in DOE_dict:
             except OSError:
                 pass
 
+        #Remove the INP file from the working directory
+        try:
+            os.remove(INPOutputFileName)
+        except OSError as error:
+#            print("line 388")
+#            print(error)
+            pass
 
-if vary_loading: #TODO: load_search needs to be added to parameters.ini
+        #If the load_search flag is off, then only run through the while loop once and do not search for specific load
+        if load_search != 1:
+            break
+
+        #TODO: ASSIGN CSV VALUE OF INTEREST HERE (FOR NOW)
+        csv_header = 'Aa_distance_relative'
+
+        #TODO: If testing the load search without an abaqus system, use temporary csv file created below
+        if use_test_csv == 1:
+            #Create temporary csv the read csv value used for testing
+            if first_iter:
+                csv_header = 'New Exposed Vaginal Length'
+                with open(Results_Folder_Location + '\\' + Output_File_Name, 'w', newline='') as Output_File:
+                    filewriter = csv.writer(Output_File, delimiter=',',
+                                            quotechar='|', quoting=csv.QUOTE_MINIMAL)
+                    filewriter.writerow(['INP File', 'Load Value', csv_header])
+                    filewriter.writerow([INPOutputFileName, current_run_dict['Load_Value'],
+                                         current_run_dict['Load_Value'] * current_run_dict['Load_Value'] * 80 - 4])
+                    first_iter = False
+            else:
+                with open(Results_Folder_Location + '\\' + Output_File_Name, 'a', newline='') as Output_File:
+                    filewriter = csv.writer(Output_File, delimiter=',',
+                                            quotechar='|', quoting=csv.QUOTE_MINIMAL)
+                    filewriter.writerow([INPOutputFileName, current_run_dict['Load_Value'],
+                                         current_run_dict['Load_Value'] * current_run_dict['Load_Value'] * 80 - 4])
+
+        #TODO: read from the post_process csv file, using the most recent row and desired column value
+        post_df = pandas.read_csv(Results_Folder_Location + '\\' + Output_File_Name)
+        csv_value = float(post_df[csv_header][len(post_df)-1])*-1
+
+        # Save and adjust the load value if it is outside a threshold (phase 1)
+        if RunSuccess == 1:
+            if csv_value > 5:
+                large_load = current_run_dict['Load_Value']
+                current_run_dict['Load_Value'] *= 0.5
+            elif csv_value < 0.3:
+                small_load = current_run_dict['Load_Value']
+                current_run_dict['Load_Value'] *= 2
+            else:
+                # TODO: this is guess, if like the csv_value happens to hit inside boundaries during finding low and high
+                new_load = current_run_dict['Load_Value']
+                break
+        else:
+            current_run_dict['Load_Value'] *= 0.75
+
+
+        # Once both boundary loads are found, find the final load (phase 2)
+        if small_load is not None and large_load is not None:
+            new_load = (small_load + large_load) / 2
+            current_run_dict['Load_Value'] = new_load
+
+        #Keep track of load search iterations
+        iteration += 1
+        if iteration == max_prolapse_num:
+            print('[][][][][][][] max limit reached [][][][][][][]')
+
+
+
+if vary_loading == 1 and load_search != 1: #TODO: load_search added to parameters.ini
 
     # Re-run code to vary the loads if the run wasn't completed successfully
     # Loop through the different loads, making INP files, running them, and seeing if they worked
