@@ -1,3 +1,13 @@
+# Author: Yutian Yang
+# Created: 5/15/2023
+# Description: This is a file of all the IO functions that edited fot .feb file
+# from what was written for the .inp file before
+# Version: 1.0
+# Website: yyt542985333@gmail.com
+#--------------------------------------------------------------
+# [Additional comments or notes]
+#--------------------------------------------------------------
+
 import xml.etree.ElementTree as ET
 import shutil
 
@@ -6,14 +16,14 @@ import numpy as np
 from lib.workingWith3dDataSets import DataSet3d
 
 
-def extractNodesFromFEB(file_name, node_name, nodes_list):
+def extract_Nodes_from_feb(file_name, node_name, nodes_list):
     """
     Extracts the coordinates of the specified nodes from a given part in an Abaqus input file.
 
     Parameters:
         file_name (str): The name of the .inp file.
-        part (str): The name of the part from which nodes should be extracted.
-        nodes (list): A list of node numbers to be extracted.
+        node_name (str): The name of the node from which nodes should be extracted.
+        nodes_list (list): A list of node numbers to be extracted.
 
     Returns:
         list: A list of node coordinates.
@@ -32,7 +42,7 @@ def extractNodesFromFEB(file_name, node_name, nodes_list):
         >>> file_name = "input.inp"
         >>> part = "MyPart"
         >>> nodes = [1, 3, 5]
-        >>> node_coordinates = extractNodesFromINP(file_name, part, nodes)
+        >>> node_coordinates = extract_Nodes_from_feb(file_name, part, nodes)
         >>> print(node_coordinates)
         [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]]
     """
@@ -135,6 +145,7 @@ def extract_coordinates_list_from_feb2(file_name, node_name, get_connections=Fal
     root = tree.getroot()
 
     points_list = []  # an empty list
+    connection_list = []
 
     # Convert the XML tree into a list
     xml_elements = list(root.iter())
@@ -147,7 +158,6 @@ def extract_coordinates_list_from_feb2(file_name, node_name, get_connections=Fal
 
             # If get_connections is True, also extract the 'elem' data from the next 'Elements' section
             if get_connections:
-                connection_list = []
                 for next_element in xml_elements[i + 1:]:
                     if next_element.tag == "Elements":
                         for elem in next_element.iter('elem'):
@@ -165,14 +175,13 @@ def extract_coordinates_list_from_feb2(file_name, node_name, get_connections=Fal
         return points_list
 
 
-def extract_node_id_list_from_feb(file_name, node_name, get_connections=False):
+def extract_node_id_list_from_feb(file_name, node_name):
     """
     Extracts the IDs of nodes from an FEB file and returns them as a list.
 
     Parameters:
         file_name (str): The name of the FEB file to extract node IDs from.
         node_name (str): The name of the node element in the FEB file.
-        get_connections (bool, optional): Whether to also extract the connections between nodes. Default is False.
 
     Returns:
         list: A list containing the IDs of nodes.
@@ -208,14 +217,13 @@ def extract_node_id_list_from_feb(file_name, node_name, get_connections=False):
     return node_id_list
 
 
-def extract_coordinates_dic_from_feb(file_name, node_name, get_connections=False):
+def extract_coordinates_dic_from_feb(file_name, node_name):
     """
     Extracts the coordinates of nodes from an FEB file and returns them as a dictionary.
 
     Parameters:
     - file_name (str): The name of the FEB file to extract coordinates from.
     - node_name (str): The name of the node element in the FEB file.
-    - get_connections (bool, optional): Whether to also extract the connections between nodes. Default is False.
 
     Returns:
     - nodes_dictionary (dict): A dictionary containing node IDs as keys and coordinates as values.
@@ -370,33 +378,37 @@ def replace_node_in_new_feb_file(file_name, node_name, new_file_name, coordinate
 # TODO: get Dataset3D!!!! Not coordinates list!
 def replace_node_in_feb_file(file_name, node_name, coordinates_list):
     """
-    Replaces a node in an FEB file with the specified coordinates.
+    Replaces the coordinates of a specific 'Nodes' element in an FEBio file with new coordinates.
 
     Parameters:
-    - file_name (str): The name of the FEB file.
-    - node_name (str): The name of the node element to replace.
-    - coordinates_list (list): A list of coordinates [x, y, z] for the new node.
+        file_name (str): The name of the FEBio file.
+        node_name (str): The name of the 'Nodes' element to replace.
+        coordinates_list (list): A list of coordinate tuples [(x1, y1, z1), (x2, y2, z2), ...] for the new coordinates.
 
     Returns:
-    - None
+        None
 
     Description:
-    This function reads an existing FEB file, finds the 'Mesh' element, and replaces the specified 'Nodes' element
-    with a new 'Nodes' element containing the provided coordinates. The 'Nodes' element to be replaced is identified
-    by its 'name' attribute.
+        This function reads the FEBio file specified by 'file_name' and finds the 'Mesh' element.
+        It searches for the 'Nodes' element with the specified 'name' attribute and removes it if found.
+        Then, a new 'Nodes' element is created with the same 'name' attribute, and 'node' elements are added with the new coordinates.
+        The updated XML tree is then written back to the file.
 
-    The new 'Nodes' element is created with the provided 'node_name', and 'node' elements are added for each set
-    of coordinates in the 'coordinates_list'. The 'id' attribute of each 'node' element is assigned sequentially
-    starting from 1.
+        If the 'Mesh' element or the 'Nodes' element with the specified 'name' attribute is not found, an appropriate message is printed.
 
-    The modified XML tree is then written back to the file, overwriting the original contents.
+    Example:
+        >>> file_name = "input.feb"
+        >>> node_name = "MyNodes"
+        >>> coordinates_list = [(1.0, 2.0, 3.0), (4.0, 5.0, 6.0), (7.0, 8.0, 9.0)]
+        >>> replace_node_in_feb_file(file_name, node_name, coordinates_list)
 
-    Note: If no 'Mesh' element is found in the file, or if no 'Nodes' element with the specified 'name' attribute
-    is found, appropriate error messages are printed.
-
-    Example usage:
-    >>> replace_node_in_feb_file('input.feb', 'Nodes name', [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]])
+    Note:
+        - This function assumes that the FEBio file exists and is formatted correctly as an XML file.
+        - The 'node_name' should match the 'name' attribute of the 'Nodes' element to be replaced.
+        - The 'coordinates_list' should contain coordinate tuples in the order [(x1, y1, z1), (x2, y2, z2), ...].
+        - The function modifies the FEBio file in-place and does not create a new file.
     """
+
     # Read the existing FEBio file
     tree = ET.parse(file_name)
     root = tree.getroot()
@@ -470,18 +482,96 @@ def get_dataset_from_feb_file(file_name, node_name):
     return DataSet3d(list(points[:, 0]), list(points[:, 1]), list(points[:, 2]))
 
 
+# TODO: CHECK the return and add Val
+def get_interconnections_feb(file_name, node_name):  # connections-between-material
+    """
+    Extracts the interconnections between nodes in a specified 'Nodes' element from an FEB file.
+
+    Parameters:
+        file_name (str): The name of the FEB file.
+        node_name (str): The name of the 'Nodes' element from which interconnections should be extracted.
+
+    Returns:
+        list: A list of lists, where each sublist contains the node numbers connected to the corresponding node.
+
+    Description:
+        This function reads the FEB file specified by 'file_name' and searches for the 'Nodes' element with the specified 'node_name'.
+        It extracts the interconnections between the nodes by parsing the subsequent 'Elements' element and its 'elem' elements.
+        The extracted interconnections are returned as a list of lists, where each sublist contains the node numbers connected to the corresponding node.
+
+        If the 'Nodes' element with the specified 'node_name' is not found, an empty list is returned.
+
+    Example:
+        >>> file_name = "input.feb"
+        >>> node_name = "MyNodes"
+        >>> connections = get_interconnections_feb(file_name, node_name)
+        >>> print(connections)
+        [[2, 3, 4], [1, 4], [1, 2, 4], [1, 2, 3]]
+
+    Note:
+        - This function assumes that the FEB file exists and is formatted correctly as an XML file.
+        - The 'node_name' should match the 'name' attribute of the target 'Nodes' element.
+        - The interconnections are based on the 'Elements' element and its 'elem' elements in the XML tree structure.
+        - The function does not validate the connectivity or perform any checks on the interconnections.
+    """
+
+    connections = []
+    number_of_nodes = len(extract_coordinates_list_from_feb(file_name, node_name))
+
+    # creates a list of empty nodes
+    for i in range(0, number_of_nodes):
+        connections.append([])
+
+    tree = ET.parse(file_name)
+    root = tree.getroot()
+
+    # Convert the XML tree into a list
+    xml_elements = list(root.iter())
+
+    # Find the 'Nodes' element with the target_name attribute
+    for i, element in enumerate(xml_elements):
+        if element.tag == "Nodes" and element.attrib.get('name') == node_name:
+            for next_element in xml_elements[i + 1:]:
+                if next_element.tag == "Elements":
+                    for elem in next_element.iter('elem'):
+                        temp_list = list(map(int, elem.text.split(',')))
+                        connections = addToVals(connections, temp_list[1:])
+                    break
+            break
+
+    return connections
+
+
 def addToVals(connections, nums):
     """
     Adds connections between nodes to the existing list of connections.
 
     Parameters:
-    connections (list): The existing list of connections.
-    nums (list): A list of node numbers that should be connected.
+        connections (list): The existing list of connections.
+        nums (list): A list of node numbers that should be connected.
 
     Returns:
-    list: The updated list of connections.
-    """
+        list: The updated list of connections.
 
+    Description:
+        This function takes an existing list of connections and adds additional connections between nodes based on the provided 'nums' list.
+        The 'connections' list represents the connections between nodes, where each element at index 'i' corresponds to the connections of node 'i + 1'.
+        The 'nums' list contains the node numbers that should be connected.
+
+        If the length of 'nums' is less than 4, each node in 'nums' is connected to all other nodes in 'nums' that are not already connected to it.
+        If the length of 'nums' is 4, a square pattern of connections is formed between the four nodes.
+        If the length of 'nums' is not 2, 3, or 4, a RuntimeError is raised.
+
+        The function modifies the 'connections' list in-place and returns the updated list.
+
+    Note:
+        - This function assumes that the node numbering starts from 1, so the node numbers in the 'connections' list and 'nums' list should be in the range of 1 to N, where N is the total number of nodes.
+
+    Example usage:
+        >>> connections = [[], [], []]
+        >>> nums = [2, 3, 5]
+        >>> updated_connections = addToVals(connections, nums)
+    """
     if len(nums) < 4:
         for num in nums:
             # goto connection[num], add all unique in nums

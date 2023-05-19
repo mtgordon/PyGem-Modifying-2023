@@ -15,10 +15,25 @@ def openFile(file_name):
     Opens a file and returns its content as a list of lines.
 
     Parameters:
-    file_name (str): The name of the file to open.
+        file_name (str): The name of the file to open.
 
     Returns:
-    list: A list where each element is a stripped line from the file.
+        list: A list where each element is a stripped line from the file.
+
+    Description:
+        This function opens the file specified by 'file_name' and reads its content. Each line of the file is stored as
+        an element in a list. The function then strips leading and trailing whitespaces from each line.
+
+        The function returns the list of lines as the content of the file.
+
+    Example:
+        >>> content = openFile('input.txt')
+        >>> print(content)
+        ['Line 1', 'Line 2', 'Line 3']
+
+    Note:
+        - The function assumes that the file exists and can be successfully opened.
+        - It is recommended to use this function to open text-based files.
     """
     with open(file_name) as f:
         content = f.readlines()
@@ -115,14 +130,14 @@ def extractPointsForPartFrom(file_name, part, get_connections=False):
     for line in content:
         if not found and part not in line:
             continue  # go to next line
-        elif found == False:
+        elif not found:
             found = True
         else:
 
             data = line.split(",")
             try:
                 # if line contains the next expected node number
-                if (int)(data[0]) == line_index:
+                if int(data[0]) == line_index:
 
                     # append data
                     started = True
@@ -166,17 +181,50 @@ Function: extractPointsForPartFrom2
 
 def extractPointsForPartFrom2(file_name, part, get_connections=False):
     """
-    Extracts the points for a specified part from an Abaqus input file. However, this version stores the connection values in a separate list.
+    Extracts the points for a specified part from a file and optionally retrieves the connections between nodes.
 
     Parameters:
-    file_name (str): The name of the .inp file.
-    part (str): The name of the part from which points should be extracted.
-    get_connections (bool, optional): If true, also returns the connections between points.
+        file_name (str): The name of the file to extract points from.
+        part (str): The name of the part to extract points for.
+        get_connections (bool, optional): Whether to also retrieve the connections between nodes. Default is False.
 
     Returns:
-    list: A list of point coordinates, and a list of connections.
-    """
+        tuple or list: If 'get_connections' is True, returns a tuple containing the following elements:
+            - points (list): A list of lists, where each sublist represents the x, y, and z coordinates of a point.
+            - connections (list): A list of lists, where each sublist represents the connections of a node.
+        If 'get_connections' is False, returns a list of lists representing the x, y, and z coordinates of the points.
 
+    Description:
+        This function reads the content of the specified file and extracts the points belonging to the specified part.
+        It searches for the part name preceded by "*Part, name=" to identify the start of the point data.
+        The point data is expected to follow the format of node numbers and their corresponding x, y, and z coordinates.
+
+        If 'get_connections' is True, the function also retrieves the connections between nodes. The connections are
+        expected to follow the format of element numbers and their corresponding node numbers.
+
+        The function returns the extracted points as a list of lists representing the x, y, and z coordinates.
+        If 'get_connections' is True, it also returns the connections as a list of lists representing the connections of each node.
+
+    Example:
+        >>> file_name = "input.inp"
+        >>> part = "MyPart"
+        >>> points = extractPointsForPartFrom2(file_name, part)
+        >>> print(points)
+        [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]]
+
+        >>> file_name = "input.inp"
+        >>> part = "MyPart"
+        >>> points, connections = extractPointsForPartFrom2(file_name, part, get_connections=True)
+        >>> print(points)
+        [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]]
+        >>> print(connections)
+        [[2, 3], [1, 3], [1, 2]]
+
+    Note:
+        - This function assumes that the input file follows a specific format with node numbers and coordinates.
+        - The part name should match the actual part name in the input file.
+        - If 'get_connections' is set to True, the connections are expected to follow a specific format with element numbers and node numbers.
+    """
     content = openFile(file_name)
     found = False
     line_index = 1
@@ -188,7 +236,7 @@ def extractPointsForPartFrom2(file_name, part, get_connections=False):
     for line in content:
         if not found and part not in line:
             continue  # go to next line
-        elif found == False:
+        elif not found:
             found = True
         else:
 
@@ -241,18 +289,38 @@ Function: write_new_inp_file
 
 def write_new_inp_file(file_name, part, new_file_name, data_set):
     """
-    Writes a new Abaqus input file with updated node coordinates for a specified part.
+    Writes a new Abaqus input file (.inp) with updated point data for a specified part.
 
     Parameters:
-    file_name (str): The name of the original .inp file.
-    part (str): The name of the part for which nodes should be updated.
-    new_file_name (str): The name of the new .inp file to be written.
-    data_set (DataSet3d): An instance of DataSet3d containing the new node coordinates.
+        file_name (str): The name of the original Abaqus input file.
+        part (str): The name of the part where the point data will be updated.
+        new_file_name (str): The name of the new Abaqus input file to be created.
+        data_set (DataSet3d): An instance of the DataSet3d class containing the updated point data.
 
     Returns:
-    None
-    """
+        None
 
+    Description:
+        This function reads the content of the original Abaqus input file specified by 'file_name' and searches for the specified 'part' to identify the point data section.
+        It creates a new Abaqus input file specified by 'new_file_name' and writes the updated point data to it.
+
+        The updated point data is provided through an instance of the DataSet3d class named 'data_set'. It contains the x, y, and z coordinates of the new points.
+
+        The function writes the new point data in the same format as the original file, with each line representing a point and its coordinates. The new point data replaces the existing data in the specified part.
+
+    Example:
+        >>> file_name = "input.inp"
+        >>> part = "MyPart"
+        >>> new_file_name = "output.inp"
+        >>> data_set = DataSet3d([1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0])
+        >>> write_new_inp_file(file_name, part, new_file_name, data_set)
+
+    Note:
+        - This function assumes that the input file is a valid Abaqus input file.
+        - The 'part' name should match the actual part name in the input file.
+        - The 'data_set' should be an instance of the DataSet3d class containing the same number of points as the original part.
+        - The new Abaqus input file will be created with the specified 'new_file_name' and will contain the updated point data for the specified part.
+    """
     node_pad = 7  # how big of a space to leave for the data
     data_pad = 13  # this insures that of a number is 3 digits long it will be padded with spaces to the specified justifaction to maintian the given length
 
@@ -291,15 +359,33 @@ Function: write_part_to_inp_file
 
 def write_part_to_inp_file(file_name, part, data_set):
     """
-    Writes directly to the existing Abaqus input file with updated node coordinates for a specified part.
+    Writes the updated point data for a specified part to an Abaqus input file (.inp).
 
     Parameters:
-    file_name (str): The name of the .inp file.
-    part (str): The name of the part for which nodes should be updated.
-    data_set (DataSet3d): An instance of DataSet3d containing the new node coordinates.
+        file_name (str): The name of the Abaqus input file.
+        part (str): The name of the part where the point data will be updated.
+        data_set (DataSet3d): An instance of the DataSet3d class containing the updated point data.
 
     Returns:
-    None
+        None
+
+    Description:
+        This function reads the content of the Abaqus input file specified by 'file_name' and searches for the specified 'part' to identify the point data section.
+        It updates the point data for the specified part with the coordinates provided in the 'data_set' instance.
+
+        The function writes the updated point data to the same input file, overwriting the original data. The new point data is written in the same format as the original file, with each line representing a point and its coordinates.
+
+    Example:
+        >>> file_name = "input.inp"
+        >>> part = "MyPart"
+        >>> data_set = DataSet3d([1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0])
+        >>> write_part_to_inp_file(file_name, part, data_set)
+
+    Note:
+        - This function assumes that the input file is a valid Abaqus input file.
+        - The 'part' name should match the actual part name in the input file.
+        - The 'data_set' should be an instance of the DataSet3d class containing the same number of points as the original part.
+        - The function overwrites the original Abaqus input file with the updated point data for the specified part.
     """
 
     node_pad = 7  # how big of a space to leave for the data
@@ -377,16 +463,33 @@ Function: get_interconnections
 
 def get_interconnections(file_name, part_name):  # connections-between-material
     """
-    Extracts the interconnections between nodes in a specified part from an Abaqus input file.
+    Retrieves the interconnections between nodes in a specified part from an Abaqus input file.
 
     Parameters:
-    file_name (str): The name of the .inp file.
-    part_name (str): The name of the part from which interconnections should be extracted.
+        file_name (str): The name of the Abaqus input file.
+        part_name (str): The name of the part from which interconnections should be extracted.
 
     Returns:
-    list: A list of lists, where each sublist contains the node numbers connected to the corresponding node.
-    """
+        list: A list of lists, where each sublist contains the node numbers connected to the corresponding node.
 
+    Description:
+        This function reads the content of the Abaqus input file specified by 'file_name' and searches for the specified 'part_name' to identify the interconnections between nodes.
+        It extracts the node interconnections from the input file by parsing the lines after the "*Part, name=" section until it encounters the next section or element.
+
+        The function returns a list of lists, where each sublist represents a node and contains the node numbers connected to that node.
+
+    Example:
+        >>> file_name = "input.inp"
+        >>> part_name = "MyPart"
+        >>> interconnections = get_interconnections(file_name, part_name)
+        >>> print(interconnections)
+        [[2, 3, 4], [1, 3, 4], [1, 2, 4], [1, 2, 3]]
+
+    Note:
+        - This function assumes that the input file is a valid Abaqus input file.
+        - The 'part_name' should match the actual part name in the input file.
+        - The interconnections are based on the assumption that they follow the node numbering section and precede the next section or element in the input file.
+    """
     connections = []
     number_of_nodes = len(extractPointsForPartFrom(file_name, part_name))
 
@@ -432,11 +535,30 @@ def addToVals(connections, nums):
     Adds connections between nodes to the existing list of connections.
 
     Parameters:
-    connections (list): The existing list of connections.
-    nums (list): A list of node numbers that should be connected.
+        connections (list): The existing list of connections.
+        nums (list): A list of node numbers that should be connected.
 
     Returns:
-    list: The updated list of connections.
+        list: The updated list of connections.
+
+    Description:
+        This function takes an existing list of connections and adds additional connections between nodes based on the provided 'nums' list.
+        The 'connections' list represents the connections between nodes, where each element at index 'i' corresponds to the connections of node 'i + 1'.
+        The 'nums' list contains the node numbers that should be connected.
+
+        If the length of 'nums' is less than 4, each node in 'nums' is connected to all other nodes in 'nums' that are not already connected to it.
+        If the length of 'nums' is 4, a square pattern of connections is formed between the four nodes.
+        If the length of 'nums' is not 2, 3, or 4, a RuntimeError is raised.
+
+        The function modifies the 'connections' list in-place and returns the updated list.
+
+    Note:
+        - This function assumes that the node numbering starts from 1, so the node numbers in the 'connections' list and 'nums' list should be in the range of 1 to N, where N is the total number of nodes.
+
+    Example usage:
+        >>> connections = [[], [], []]
+        >>> nums = [2, 3, 5]
+        >>> updated_connections = addToVals(connections, nums)
     """
 
     if len(nums) < 4:
@@ -469,16 +591,34 @@ Returns the line number (not index) that a given string occurs in
 
 def findLineNum(file_location, string):
     """
-    Finds the line number in a file where a specified string occurs.
+    Finds the line number in a file where a specific string occurs.
 
     Parameters:
-    file_location (str): The location of the file in which to search.
-    string (str): The string to search for.
+        file_location (str): The location of the file.
+        string (str): The string to search for.
 
     Returns:
-    int: The line number (not index) where the string occurs.
-    """
+        int: The line number where the string occurs.
 
+    Raises:
+        EOFError: If the string is not found in the file.
+
+    Description:
+        This function opens the file specified by 'file_location' and iterates over each line, searching for the occurrence of the specified 'string'.
+        If the string is found, the function returns the corresponding line number.
+        If the string is not found, an EOFError is raised.
+
+    Example:
+        >>> file_location = "data.txt"
+        >>> string = "Hello, World!"
+        >>> line_number = findLineNum(file_location, string)
+        >>> print(line_number)
+        5
+
+    Note:
+        - The line numbers start from 1.
+        - The function assumes that the file exists and is readable.
+    """
     lineNum = 1
     f = open(file_location, 'r')
     for line in f:
@@ -496,16 +636,38 @@ Function: getFEAData
 
 def getFEAData(FileName, nodes):
     """
-    Extracts data from a CSV file for a specified number of nodes.
+    Retrieves FEA data from a CSV file and extracts the coordinates of the specified number of nodes.
 
     Parameters:
-    FileName (str): The name of the CSV file.
-    nodes (int): The number of nodes to extract data for.
+        FileName (str): The name of the CSV file.
+        nodes (int): The number of nodes to extract coordinates for.
 
     Returns:
-    list: A list of x, y, z coordinates for each node.
-    """
+        list: A list containing the extracted coordinates as separate arrays for x, y, and z axes.
 
+    Description:
+        This function reads the CSV file specified by 'FileName' using the numpy.genfromtxt() function, assuming that the data is comma-separated.
+        It initializes empty arrays for x, y, and z coordinates with the size of 'nodes'.
+        Then, it iterates over each node index and extracts the x, y, and z coordinates from the CSV data, assuming that the coordinates for each node are stored in consecutive rows with three values per row.
+        The extracted coordinates are stored in the corresponding arrays.
+        Finally, the function returns a list containing the arrays for x, y, and z coordinates.
+
+    Example:
+        >>> FileName = "data.csv"
+        >>> nodes = 10
+        >>> coordinates = getFEAData(FileName, nodes)
+        >>> x_coords, y_coords, z_coords = coordinates
+        >>> print(x_coords)
+        [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
+        >>> print(y_coords)
+        [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
+        >>> print(z_coords)
+        [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
+
+    Note:
+        - The CSV file should contain the coordinates of nodes in consecutive rows, with three values (x, y, z) per row.
+        - The number of nodes specified should match the actual number of nodes in the CSV file.
+    """
     csv = np.genfromtxt(FileName, delimiter=",")
     #    print(csv)
     #    [rows,columns] = csv.shape
@@ -528,13 +690,37 @@ Function: getFEADataCoordinates
 
 def getFEADataCoordinates(FileName):
     """
-    Extracts the coordinates from a CSV file.
+    Retrieves FEA data coordinates from a CSV file and returns separate arrays for x, y, and z axes.
 
     Parameters:
-    FileName (str): The name of the CSV file.
+        FileName (str): The name of the CSV file.
 
     Returns:
-    list: A list of x, y, z coordinates.
+        list: A list containing the extracted coordinates as separate arrays for x, y, and z axes.
+
+    Description:
+        This function reads the CSV file specified by 'FileName' using the numpy.genfromtxt() function, assuming that the data is comma-separated.
+        It checks if there are multiple rows of data and selects the last row for extraction. If there is only one row, it uses that row.
+        It calculates the number of nodes based on the length of the data row divided by 3.
+        It initializes empty arrays for x, y, and z coordinates with the size of 'nodes'.
+        Then, it iterates over each node index and extracts the x, y, and z coordinates from the data row, assuming that the coordinates for each node are stored in consecutive positions with three values per node.
+        The extracted coordinates are stored in the corresponding arrays.
+        Finally, the function returns a list containing the arrays for x, y, and z coordinates.
+
+    Example:
+        >>> FileName = "data.csv"
+        >>> coordinates = getFEADataCoordinates(FileName)
+        >>> x_coords, y_coords, z_coords = coordinates
+        >>> print(x_coords)
+        [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
+        >>> print(y_coords)
+        [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
+        >>> print(z_coords)
+        [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
+
+    Note:
+        - The CSV file should contain the coordinates of nodes in consecutive positions, with three values (x, y, z) per node.
+        - The function assumes that the CSV file exists and is formatted correctly with the expected number of coordinates.
     """
 
     csv = np.genfromtxt(FileName, delimiter=",")
@@ -563,14 +749,38 @@ Function: getInitialPositions
 
 def getInitialPositions(FileName, nodes):
     """
-    Extracts the initial positions of a specified number of nodes from a CSV file.
+    Retrieves the initial positions of nodes from a CSV file and returns separate arrays for x, y, and z axes.
 
     Parameters:
-    FileName (str): The name of the CSV file.
-    nodes (int): The number of nodes to extract positions for.
+        FileName (str): The name of the CSV file.
+        nodes (int): The number of nodes in the CSV file.
 
     Returns:
-    list: A list of x, y, z coordinates for each node.
+        list: A list containing the extracted initial positions as separate arrays for x, y, and z axes.
+
+    Description:
+        This function reads the CSV file specified by 'FileName' using the numpy.genfromtxt() function, assuming that the data is comma-separated.
+        It extracts the second column as the x-coordinate array, the third column as the y-coordinate array, and the fourth column as the z-coordinate array.
+        The function assumes that the CSV file has rows with node indices and corresponding x, y, and z coordinates.
+        The 'nodes' parameter specifies the number of nodes expected in the CSV file, which determines the size of the coordinate arrays.
+        The extracted coordinate arrays are returned as a list containing separate arrays for x, y, and z axes.
+
+    Example:
+        >>> FileName = "data.csv"
+        >>> nodes = 10
+        >>> positions = getInitialPositions(FileName, nodes)
+        >>> x_coords, y_coords, z_coords = positions
+        >>> print(x_coords)
+        [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
+        >>> print(y_coords)
+        [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
+        >>> print(z_coords)
+        [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
+
+    Note:
+        - The CSV file should contain rows with node indices and corresponding x, y, and z coordinates.
+        - The 'nodes' parameter should be accurate to match the number of nodes in the CSV file.
+        - The function assumes that the CSV file exists and is formatted correctly with the expected number of nodes and coordinates.
     """
 
     csv = np.genfromtxt(FileName, delimiter=",")
@@ -586,6 +796,8 @@ def getInitialPositions(FileName, nodes):
 '''
 Function: get_points_below
 '''
+
+
 def get_points_below(file_name, part_name, threshold_percentage):
     """
     Retrieves the points below a specified threshold percentage along the z-axis from a given file and part.
@@ -646,7 +858,6 @@ Function: write_Nset_to_inp_file
 '''
 
 
-# TODO: Merge this function with the exclude function into a new one for inserting the points below some given points.
 def write_Nset_to_inp_file(file_name, part, Nset_num, section, Nset_list):
     """
     Adds a new node set (Nset) to an existing .inp file (Abaqus input file) and assigns a shell section to it.
@@ -657,6 +868,9 @@ def write_Nset_to_inp_file(file_name, part, Nset_num, section, Nset_list):
         Nset_num (int): The number of the new Nset.
         section (str): The name of the shell section to be assigned to the new Nset.
         Nset_list (list of ints): A list of the node indices that belong to the new Nset.
+
+    Returns:
+        None
 
     Description:
         This function reads the content of the existing .inp file specified by 'file_name' and adds a new node set (Nset)
@@ -721,7 +935,7 @@ def write_Nset_to_inp_file(file_name, part, Nset_num, section, Nset_list):
                     Nset_line = ', '.join(str(number).rjust(node_pad) for number in Nset_list[i:i + line_pad])
                     f.write(Nset_line + "\n")
                     index += line_pad
-                print("Successfully insert new Nset")
+                print("Successfully insert new Nset", Nset_num)
 
             elif found_section and not section_written:
                 section_line = "** Section: " + section + "\n" + "*Shell Section, elset=_PickedSet" + str(
@@ -729,7 +943,7 @@ def write_Nset_to_inp_file(file_name, part, Nset_num, section, Nset_list):
                                + "material=ATFP_HYPER_highdesity\n" + "2., 5"
                 f.write(section_line + "\n")
                 section_written = True
-                print("Successfully insert new Section")
+                print("Successfully insert new Section", section)
 
             f.write(line + "\n")
 
@@ -800,11 +1014,11 @@ def get_dis_Nset_points_list(file_name, part_name, section_name):
     line = linecache.getline(file_name, line_number + 1)
 
     while "*Elset, elset=" not in line and "*Nset, nset=" not in line:
-            numbers = line.strip().split(",")
-            numbers = [int(num.strip()) for num in numbers]
-            exclude_points_list.extend(numbers)
-            line_number += 1
-            line = linecache.getline(file_name, line_number)
+        numbers = line.strip().split(",")
+        numbers = [int(num.strip()) for num in numbers]
+        exclude_points_list.extend(numbers)
+        line_number += 1
+        line = linecache.getline(file_name, line_number)
 
     return exclude_points_list
 
@@ -829,11 +1043,46 @@ def exclude_points_in_list(original_list, exclude_list):
     """
     return [num for num in original_list if num not in exclude_list]
 
-# def write_points_below_excluded_in_inp():
+
+def write_points_below_excluded_to_inp(file_name, part_name, threshold_percentage, Nset_num, section_name):
+    """
+    Writes the points below a specified threshold percentage, excluding certain points, to an Abaqus input file.
+
+    Parameters:
+        file_name (str): The name of the Abaqus input file (.inp) to write to.
+        part_name (str): The name of the part from which points should be extracted.
+        threshold_percentage (float): The threshold percentage below which points are considered.
+        Nset_num (int): The number of the new Nset to be added.
+        section_name (str): The name of the shell section to be assigned to the new Nset.
+
+    Returns:
+        None
+
+    Description:
+        This function performs the following steps:
+        1. Extracts the points below the specified threshold percentage from the part using the 'get_points_below' function.
+        2. Retrieves a list of node indices belonging to a specified dissection Nset using the 'get_dis_Nset_points_list' function.
+        3. Excludes the node indices from the original list using the 'exclude_points_in_list' function.
+        4. Writes the filtered points to a new Nset in the Abaqus input file using the 'write_Nset_to_inp_file' function.
+
+        The function allows for selecting a subset of points below the threshold by excluding certain points based on the dissection Nset.
+        The filtered points are assigned to a new Nset and assigned a shell section.
+
+    Example:
+        >>> write_points_below_excluded_to_inp('input.inp', 'MyPart', 30, 1, 'MySection')
+
+    Note:
+        - The function assumes that the input file is a valid Abaqus .inp file.
+        - Ensure that the 'part_name' and 'section_name' parameters match the actual part and section names in the input file.
+        - The 'threshold_percentage' specifies the cutoff percentage below which points are considered.
+        - The 'Nset_num' should be a unique number for the new Nset to avoid conflicts with existing Nsets.
+    """
+    original_list = get_points_below(file_name, part_name, threshold_percentage)[0]
+    exclude_list = get_dis_Nset_points_list(file_name, part_name, section_name)
+    excluded_list = exclude_points_in_list(original_list, exclude_list)
+    write_Nset_to_inp_file(file_name, part_name, Nset_num, section_name, excluded_list)
 
 
-
-# TODO: Debug the format
 def write_new_part_to_inp_file(file_name, part, element_type, points_list, element_list):
     """
     Writes a new part to an existing .inp file (Abaqus input file).
@@ -907,3 +1156,87 @@ def write_new_part_to_inp_file(file_name, part, element_type, points_list, eleme
             f.write(line + "\n")
 
     print("Successfully insert!")
+
+
+# *************************************************************************************************************************
+def getBnodes(file_location,
+              BoundaryTissue):  # look for *Boundary and grab the next line after dropping the _ and only grabbing PickedSET### storing them in an array
+    BNodes = []
+    boundarySets = []
+    with open(file_location, 'r') as file:
+        line = "h"
+        while "** BOUNDARY CONDITIONS" not in line:
+            line = next(file)
+        while "** INTERACTIONS" not in line:
+            if "*Boundary" in line:
+                boundarySets.append(next(file).split(",")[0])
+            line = next(file)
+
+    with open(file_location, 'r') as file:  # items are above *Boundary lines, must be reopened
+        line = "line"
+        while True:
+            if isBoundaryLine(boundarySets, line):
+                material = getName(line)
+                if BoundaryTissue in material:
+
+                    if "generate" in line:  # then it is parameters for an instruction
+                        instructions = getNodes(file, line)
+                        start = instructions[0]
+                        end = instructions[1]
+                        increment = instructions[2]
+                        nodes = np.arange(start, end + 1, increment).tolist()
+                        BNodes = BNodes + nodes
+
+                    else:  # it's just a list of nodes
+                        newNodes = getNodes(file, line)
+                        for n in newNodes:
+                            if n not in BNodes:
+                                BNodes.append(n)
+                else:
+                    del line
+                try:
+                    line = next(file)
+                except StopIteration:
+                    break
+            else:
+                try:
+                    line = next(file)
+                except StopIteration:
+                    break
+        # BNodes.sort()
+    return BNodes
+
+
+def isBoundaryLine(boundarySets, line):
+  if "*Nset" in line:
+    line = line.split(", ")
+    name = line[1].split("=")[1] #selects _PickedSet5 from nset=_PickedSet5
+    if name in boundarySets:
+        return True
+  return False
+
+
+def getNodes(file, line):
+    numberLines = []  # lines containing lists of numbers in the INP file
+    line = next(file)
+    while "*" not in line:
+        numberLines.append(line)
+        line = next(file)
+
+    nodeIDs = []
+    for line in numberLines:
+        parseNumsFromCSV(nodeIDs, line)
+    return nodeIDs
+
+
+def getName(line):
+  line = line.split(", ")
+  name = line[3].split("=")[1].strip() #selects _PickedSet5 from nset=_PickedSet5
+  return name
+
+
+def parseNumsFromCSV(nodeIDs, line):
+  line.replace(" ", "") #delete spaces
+  numList = line.split(",")
+  for x in numList:
+    nodeIDs.append(int(x)) #int(x) converts it from string to integer
