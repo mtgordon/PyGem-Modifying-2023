@@ -10,13 +10,8 @@ import itertools
 from math import cos, radians, sin, hypot
 from copy import copy
 from PIL import Image, ImageFilter, ImageEnhance, ImageOps
-from skimage.filters import gaussian
-from skimage.segmentation import active_contour
-from skimage.color import rgb2gray
 #import cv2
 from scipy import interpolate
-from skimage import io
-from skimage import data
 from subprocess import call
 import re
 import time
@@ -24,7 +19,7 @@ import seaborn as sns
 import numpy as np
 import csv
 
-def generate_2d_coords_for_pca(log_file_name,feb_file_name,obj_name):
+def generate_2d_coords_for_pca(log_file_name,feb_file_name,csv_filename,obj_name):
   coords_list = extract_coordinates_from_final_step(log_file_name,feb_file_name,obj_name)
   X,Y,Z = get_x_y_z_values(coords_list)
   spline_list,dist_array=get_AVW_midline(X,Y,Z)
@@ -39,8 +34,8 @@ def generate_2d_coords_for_pca(log_file_name,feb_file_name,obj_name):
 
   new_distance = 0
   new_distance_array  = [0]
-  previous_x = curve_x(0)
-  previous_y = curve_y(0)
+  previous_x = curve_x(0).tolist()
+  previous_y = curve_y(0).tolist()
   new_xs = [previous_x]
   new_ys = [previous_y]
 
@@ -51,10 +46,11 @@ def generate_2d_coords_for_pca(log_file_name,feb_file_name,obj_name):
 
   #TODO we have to make  this csv_filename dynamic but that will be later.
 
-  csv_filename= log_file_name.split("\\")[-1] + "_intermediate_csv"
-  #csv_filename="intermediate_pc_data"
-  save_to_csv(csv_filename,new_xs,new_ys)
+  # csv_filename= log_file_name.split("\\")[-1]
+  # csv_filename = csv_filename.split(".lo")[0] + "_intermediate_csv"
 
+  # save_to_csv(csv_filename,new_xs,new_ys)
+  return new_xs + new_ys
 #---------------------------------------------------------------------------------------------------------------------------------------------
 #Helpers to the main list
 
@@ -180,10 +176,7 @@ def get_AVW_midline(xs, ys, zs):
     return spline_ordered, new_distance_array
 
 def save_to_csv(file_name,x_coords,y_coords):
-  with open(file_name,'w',newline='') as csvfile:
+  with open(file_name,'a',newline='') as csvfile:
     writer = csv.writer(csvfile)
     writer.writerow(x_coords + y_coords)
-
-
-generate_2d_coords_for_pca("Curve and Flat (Log update success).log", "Curve and Flat (Log update success).feb", "Object2")
 
