@@ -74,19 +74,26 @@ def new_check_normal_run(log_file_path):
 # FeBio Variables
 dictionary_file = 'feb_variables.csv'
 FeBioLocation = 'C:\\Program Files\\FEBioStudio2\\bin\\febio4.exe'
-originalFebFilePath = 'C:\\Users\\Elijah Brown\\Desktop\\Bio Research\\Results\\Curve_and_Flat_and_CL_and_Filler_meshed_v4_v2_log_included.feb'
+originalFebFilePath = 'C:\\Users\\Elijah Brown\\Desktop\\Bio Research\\Results\\Testing_high_modulus.feb'
+
+# Post Processing Variables
+current_date = datetime.datetime.now()
+date_prefix = str(current_date.year) + '_' + str(current_date.month)  + '_' + str(current_date.day)
+object_list = ['Object2', 'Object8']
+obj_coords_list = []
+file_num = 0
+Results_Folder = 'C:\\Users\\Elijah Brown\\Desktop\\Bio Research\\Results'
+csv_filename = Results_Folder + '\\' + date_prefix + '_intermediate.csv'
+
+# FLAGS
+first_int_file_flag = True
+final_csv_flag = True
+GENERATE_INTERMEDIATE_FLAG = True
 
 #Get data from the Run_Variables file
 # Newer code (2/14)
 run_file = open(dictionary_file)
 DOE_dict = csv.DictReader(run_file)
-
-# Flag to indicate it the first time through the loop so that it will create a
-# new file and add headers (MAY REMOVE)
-first_file = 1
-
-# Flag to indicate the first time through the while loop for the load search
-first_iter = True
 
 #Have the default material variables be 1 (100%) so they do not change if no variable is given
 default_dict = {
@@ -98,16 +105,6 @@ default_dict = {
 }
 
 current_run_dict = default_dict.copy()
-
-# Post Processing Variables
-first_file_flag = True
-current_date = datetime.datetime.now()
-date_prefix = str(current_date.year) + '_' + str(current_date.month)  + '_' + str(current_date.day)
-object_list = ['Object2', 'Object8']
-obj_coords_list = []
-file_num = 0
-GENERATE_INTERMEDIATE_FLAG = True
-Results_Folder = 'C:\\Users\\Elijah Brown\\Desktop\\Bio Research\\Results'
 
 # Run the FEB files for each sat of variables in the run_variables csv
 for row in DOE_dict:
@@ -140,9 +137,6 @@ for row in DOE_dict:
         # Post process
         csv_row = []
 
-        # Get the pure file name that just has the material parameters
-        csv_filename = date_prefix + '_intermediate.csv'
-
         # Get the changed material properties
         paren_pattern = re.compile(r'(?<=\().*?(?=\))')  # find digits in parentheses
         prop_result = paren_pattern.findall(fileTemplate)
@@ -167,12 +161,13 @@ for row in DOE_dict:
         csv_row.extend(prop_final)
         csv_row.extend(pc_points)  # the 30 pc coordinates
 
-        if first_file_flag:
-            with open(Results_Folder + '\\' + csv_filename, 'w', newline='') as csvfile:
+        if first_int_file_flag:
+            with open(csv_filename, 'w', newline='') as csvfile:
                 writer = csv.writer(csvfile)
                 writer.writerow(csv_row)
+                first_int_file_flag = False
         else:
-            with open(Results_Folder + '\\' + csv_filename, 'a', newline='') as csvfile:
+            with open(csv_filename, 'a', newline='') as csvfile:
                 writer = csv.writer(csvfile)
                 writer.writerow(csv_row)
 
@@ -182,31 +177,17 @@ for row in DOE_dict:
         print('Completed Iteration ' + str(file_num) + ": " + fileTemplate)
         obj_coords_list = []
 
-        # Generate the final csv with the 2 pc scores
-        pc_df = pd.DataFrame(pc_points)
-        # int_df = pd.read_csv("intermediate_pc_data", header=None)
-        total_result_PC, pca = PCA_data.PCA_(pc_df)
-
-        PC_scores = total_result_PC[['principal component 1', 'principal component 2']]
-        print(PC_scores)
-        pc_scores_lst = PC_scores.values.tolist()
-
-        final_row = []
-        final_row.append(fileTemplate)
-        final_row.append(apex)
-        final_row.extend(prop_final)
-        final_row.extend(pc_scores_lst)
-
-        if first_file_flag:
-            with open(Results_Folder + '\\' + date_prefix + "_features.csv", 'w', newline='') as csvfile:
-                writer = csv.writer(csvfile)
-                writer.writerow(final_row)
-            first_file_flag = False
-        else:
-            with open(Results_Folder + '\\' + date_prefix + "_features.csv", 'a', newline='') as csvfile:
-                writer = csv.writer(csvfile)
-                writer.writerow(final_row)
-
     else:
-        os.rename(workingInputFileName, workingInputFileName + '_error')
+        os.rename(workingInputFileName, os.path.splitext(workingInputFileName)[0] + '_error.feb')
 
+if final_csv_flag:
+    # use the generated csv to get the 2 PC scores
+    int_df = pd.read_csv(csv_filename, header=None)
+    pc_df = int_df.iloc[:, 4:len(int_df.columns)]
+    total_result_PC, pca = PCA_data.PCA_(pc_df)
+
+    PC_scores = total_result_PC[['principal component 1', 'principal component 2']]
+    print(PC_scores)
+
+    final_df = pd.concat([int_df.iloc[:, 0:4], PC_scores], axis=1)
+    final_df.to_csv(Results_Folder + '\\' + date_prefix + "_features.csv", index=False, header=False)
