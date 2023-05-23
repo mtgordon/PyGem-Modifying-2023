@@ -39,7 +39,7 @@ GENERATE_INTERMEDIATE_FLAG = True
 
 if GENERATE_INTERMEDIATE_FLAG:
 
-    for feb_name in glob.glob("C:\\Users\\Elijah Brown\\Desktop\\Bio Research\\Post Process\\*.feb"):
+    for feb_name in glob.glob("D:\\Gordon\\Feb Runs in Use\\Weekend of 5_19th\\*.feb"):
 
         int_log_name = feb_name.split(".f")
         int_log_name[1] = ".log"
