@@ -178,4 +178,5 @@ def get_AVW_midline(xs, ys, zs):
 def save_to_csv(file_name,x_coords,y_coords):
   with open(file_name,'a',newline='') as csvfile:
     writer = csv.writer(csvfile)
+
     writer.writerow(x_coords + y_coords)
