@@ -823,7 +823,7 @@ def get_points_below(file_name, part_name, threshold_percentage):
 
     Example:
         >>> file_name = "input.inp"
-        >>> part_name = "MyPart"
+        >>> part_name = "GivenPart"
         >>> threshold_percentage = 30
         >>> filtered_points, filtered_count, total_count = get_points_below(file_name, part_name, threshold_percentage)
         >>> print(filtered_points)
@@ -853,47 +853,111 @@ def get_points_below(file_name, part_name, threshold_percentage):
     return filtered_points, len(filtered_points), all_points.shape[0]
 
 
+def get_points_x_from_mid(file_name, part_name, mid_x, threshold_x_from_mid):
+    """
+    Get the points within a specified range of x values from the mid_x point in a given file and part.
+
+    Parameters:
+        file_name (str): The name of the file containing the points.
+        part_name (str): The name of the part containing the points.
+        mid_x (float): The x-coordinate of the mid point.
+        threshold_x_from_mid (float): The threshold distance from the mid point in the x-direction.
+
+    Returns:
+        tuple: A tuple containing:
+            - filtered_points (list): The filtered points within the specified range.
+            - filtered_count (int): The count of filtered points.
+            - total_count (int): The total count of all points in the part.
+
+    Description:
+        This function reads the points from the specified file and part, and filters out the points that fall within
+        the specified range of x values from the mid_x point. The range is determined by adding/subtracting the
+        threshold_x_from_mid value from the mid_x value. The function returns the filtered points, the count of filtered
+        points, and the total count of all points in the part.
+
+    Example:
+        >>> file_name = "points_file.csv"
+        >>> part_name = "Part1"
+        >>> mid_x = 5.0
+        >>> threshold_x_from_mid = 2.0
+        >>> filtered_points, filtered_count, total_count = get_points_x_from_mid(file_name, part_name, mid_x, threshold_x_from_mid)
+        >>> print(filtered_points)
+        [2, 3, 4, 5, 6]
+        >>> print(filtered_count)
+        5
+        >>> print(total_count)
+        10
+
+    Notes:
+        - The function assumes that the points file is in a format compatible with the `extractPointsForPartFrom()` function.
+        - The part name (part_name) should match the exact name used in the file.
+        - The mid_x value should correspond to the desired x-coordinate of the midpoint.
+        - The threshold_x_from_mid value determines the range of x values to be considered around the midpoint.
+        - The filtered_points list contains the indices of the filtered points, not the actual point coordinates.
+    """
+    # Generate an array including all the points from the given file with part
+    all_points = np.array(extractPointsForPartFrom(file_name, part_name))
+    # print(all_points)
+
+    print("mid x: ", mid_x)
+
+    # Calculate threshold z value
+    threshold_left = mid_x - threshold_x_from_mid
+    threshold_right = mid_x + threshold_x_from_mid
+
+    # Get the original sort number of each filtered point
+    filtered_points = []
+    for i, point in enumerate(all_points):
+        if threshold_left < point[0] < threshold_right:
+            filtered_points.append(i + 1)
+
+    # Return the filtered points, filtered count, and total count
+    return filtered_points, len(filtered_points), all_points.shape[0]
+
+
 '''
 Function: write_Nset_to_inp_file
 '''
 
 
-def write_Nset_to_inp_file(file_name, part, Nset_num, section, Nset_list):
+def write_Nset_to_inp_file(file_name, part, Nset_num, section, material, Nset_list):
     """
-    Adds a new node set (Nset) to an existing .inp file (Abaqus input file) and assigns a shell section to it.
+    Write a new Nset (node set) to an input file.
 
     Parameters:
-        file_name (str): The path to the existing .inp file.
-        part (str): The name of the part where the Nset will be added.
+        file_name (str): The name of the input file to write to.
+        part (str): The name of the part to modify.
         Nset_num (int): The number of the new Nset.
-        section (str): The name of the shell section to be assigned to the new Nset.
-        Nset_list (list of ints): A list of the node indices that belong to the new Nset.
-
-    Returns:
-        None
+        section (str): The name of the section associated with the Nset.
+        material (str): The material associated with the section.
+        Nset_list (list): The list of node numbers to be included in the Nset.
 
     Description:
-        This function reads the content of the existing .inp file specified by 'file_name' and adds a new node set (Nset)
-        to the specified 'part'. The Nset is identified by the '*Nset, nset=' keyword followed by the Nset number.
+        This function modifies an input file by adding a new Nset (node set) to the specified part. The Nset is created
+        with the given number (Nset_num) and includes the list of node numbers (Nset_list). Additionally, the function
+        adds a section to the input file that associates the Nset with a specified section name (section) and material
+        (material).
 
-        The function writes the Nset information after the first occurrence of "*Nset, nset=" within the specified part.
-        The node indices are written in lines with up to 16 indices per line. The node indices are provided as a list
-        of integers in 'Nset_list'.
+        The function reads the content of the original input file, finds the part to be modified, and inserts the new Nset
+        and section at the appropriate locations. The modified content is then written back to the input file.
 
-        After writing the Nset information, the function assigns the specified 'section' to the new Nset. The section is
-        written after the next occurrence of "** Section:" within the file.
+    Example:
+        >>> file_name = "input_file.inp"
+        >>> part = "Part1"
+        >>> Nset_num = 1
+        >>> section = "Section1"
+        >>> material = "Material1"
+        >>> Nset_list = [1, 2, 3, 4, 5]
+        >>> write_Nset_to_inp_file(file_name, part, Nset_num, section, material, Nset_list)
 
-        If the file does not exist or cannot be opened due to insufficient permissions, an error message is printed,
-        and the function returns immediately without making any changes.
-
-    Note:
-        - The function assumes that the input file is a valid Abaqus .inp file.
-        - It is important to provide valid 'part' and 'section' names to ensure correct placement and assignment.
-        - Ensure that the 'Nset_num' is a unique number to avoid conflicts with existing Nsets.
-
-    Example usage:
-        >>> write_Nset_to_inp_file('input.inp', 'MyPart', 1, 'MySection', [1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+    Notes:
+        - The function assumes that the input file follows the INP format used by Abaqus software.
+        - The part name (part) should match the exact name used in the input file.
+        - The Nset number (Nset_num) should be unique and not conflict with existing Nsets.
+        - The section name (section) and material (material) should match the names defined in the input file.
+        - The Nset_list should contain valid node numbers corresponding to the nodes in the specified part.
     """
+
     node_pad = 3  # how big of a space to leave for the data
     line_pad = 16  # how many number in each line
 
@@ -938,9 +1002,7 @@ def write_Nset_to_inp_file(file_name, part, Nset_num, section, Nset_list):
                 print("Successfully insert new Nset", Nset_num)
 
             elif found_section and not section_written:
-                section_line = "** Section: " + section + "\n" + "*Shell Section, elset=_PickedSet" + str(
-                    Nset_num) + ",\n" \
-                               + "material=ATFP_HYPER_highdesity\n" + "2., 5"
+                section_line = "** Section: " + section + "\n" + "*Shell Section, elset=_PickedSet" + str(Nset_num) + ", material=" + str(material) + "\n" + "2., 5"
                 f.write(section_line + "\n")
                 section_written = True
                 print("Successfully insert new Section", section)
@@ -1044,43 +1106,98 @@ def exclude_points_in_list(original_list, exclude_list):
     return [num for num in original_list if num not in exclude_list]
 
 
-def write_points_below_excluded_to_inp(file_name, part_name, threshold_percentage, Nset_num, section_name):
+def write_points_below_excluded_to_inp(file_name, part_name, threshold_percent_from_bot, Nset_num, section_name, material):
     """
-    Writes the points below a specified threshold percentage, excluding certain points, to an Abaqus input file.
+    Write the points below a certain threshold percentage from the bottom to an INP file.
 
     Parameters:
-        file_name (str): The name of the Abaqus input file (.inp) to write to.
-        part_name (str): The name of the part from which points should be extracted.
-        threshold_percentage (float): The threshold percentage below which points are considered.
-        Nset_num (int): The number of the new Nset to be added.
-        section_name (str): The name of the shell section to be assigned to the new Nset.
+        file_name (str): The name of the INP file to write the points to.
+        part_name (str): The name of the part containing the points.
+        threshold_percent_from_bot (float): The threshold percentage from the bottom to exclude points.
+        Nset_num (int): The Nset number to assign to the excluded points.
+        section_name (str): The section name to assign to the excluded points.
+        material (str): The material to assign to the section.
 
     Returns:
         None
 
     Description:
-        This function performs the following steps:
-        1. Extracts the points below the specified threshold percentage from the part using the 'get_points_below' function.
-        2. Retrieves a list of node indices belonging to a specified dissection Nset using the 'get_dis_Nset_points_list' function.
-        3. Excludes the node indices from the original list using the 'exclude_points_in_list' function.
-        4. Writes the filtered points to a new Nset in the Abaqus input file using the 'write_Nset_to_inp_file' function.
-
-        The function allows for selecting a subset of points below the threshold by excluding certain points based on the dissection Nset.
-        The filtered points are assigned to a new Nset and assigned a shell section.
+        This function writes the points below a specified threshold percentage from the bottom of a part to an INP file.
+        It first gets the points below the threshold using the `get_points_below()` function. Then, it retrieves the
+        excluded points from the INP file using the `get_dis_Nset_points_list()` function. It further filters out any
+        points that are already excluded. Finally, it calls the `write_Nset_to_inp_file()` function to write the filtered
+        points to the INP file.
 
     Example:
-        >>> write_points_below_excluded_to_inp('input.inp', 'MyPart', 30, 1, 'MySection')
+        >>> file_name = "example.inp"
+        >>> part_name = "Part1"
+        >>> threshold_percent_from_bot = 20.0
+        >>> Nset_num = 1
+        >>> section_name = "Section1"
+        >>> material = "Material1"
+        >>> write_points_below_excluded_to_inp(file_name, part_name, threshold_percent_from_bot, Nset_num, section_name, material)
 
-    Note:
-        - The function assumes that the input file is a valid Abaqus .inp file.
-        - Ensure that the 'part_name' and 'section_name' parameters match the actual part and section names in the input file.
-        - The 'threshold_percentage' specifies the cutoff percentage below which points are considered.
-        - The 'Nset_num' should be a unique number for the new Nset to avoid conflicts with existing Nsets.
+    Notes:
+        - The INP file must exist and be accessible for writing.
+        - The part name (part_name) should match the exact name used in the INP file.
+        - The threshold_percent_from_bot value represents the percentage of points to exclude from the bottom of the part.
+        - The Nset_num value is used to assign a unique Nset number to the excluded points.
+        - The section_name is the name to assign to the excluded points' section.
+        - The material is the material to assign to the section.
+        - The function assumes that the `get_points_below()`, `get_dis_Nset_points_list()`, and `write_Nset_to_inp_file()`
+          functions are defined elsewhere in the codebase.
     """
-    original_list = get_points_below(file_name, part_name, threshold_percentage)[0]
+
+    original_list = get_points_below(file_name, part_name, threshold_percent_from_bot)[0]
     exclude_list = get_dis_Nset_points_list(file_name, part_name, section_name)
     excluded_list = exclude_points_in_list(original_list, exclude_list)
-    write_Nset_to_inp_file(file_name, part_name, Nset_num, section_name, excluded_list)
+    write_Nset_to_inp_file(file_name, part_name, Nset_num, section_name, material, excluded_list)
+
+
+def write_points_x_from_mid_excluded_to_inp(file_name, part_name, mid_x, threshold_x_from_mid, Nset_num, section_name, material):
+    """
+    Write excluded points (based on x-coordinate from the mid-point) to an input file as a new Nset.
+
+    Parameters:
+        file_name (str): The name of the input file to write to.
+        part_name (str): The name of the part containing the points.
+        mid_x (float): The x-coordinate of the mid-point.
+        threshold_x_from_mid (float): The threshold distance from the mid-point of x for exclusion.
+        Nset_num (int): The number of the new Nset.
+        section_name (str): The name of the section associated with the Nset.
+        material (str): The material associated with the section.
+
+    Description:
+        This function identifies points in the specified part that have x-coordinates within a threshold distance from
+        the mid-point of x. It excludes those points from the original list of points and writes the remaining points as a new
+        Nset (node set) to the input file. The new Nset is associated with the specified section and material.
+
+        The function utilizes other utility functions to extract the original list of points, exclude points based on
+        section membership, and write the new Nset to the input file.
+
+    Example:
+        >>> file_name = "input_file.inp"
+        >>> part_name = "Part1"
+        >>> mid_x = 5.0
+        >>> threshold_x_from_mid = 1.0
+        >>> Nset_num = 1
+        >>> section_name = "Section1"
+        >>> material = "Material1"
+        >>> write_points_x_from_mid_excluded_to_inp(file_name, part_name, mid_x, threshold_x_from_mid, Nset_num, section_name, material)
+
+    Notes:
+        - The function assumes that the input file follows the INP format used by Abaqus software.
+        - The part name (part_name) should match the exact name used in the input file.
+        - The x-coordinate of the mid-point (mid_x) should be within the range of x-coordinates in the specified part.
+        - The threshold distance (threshold_x_from_mid) should be a positive value.
+        - The Nset number (Nset_num) should be unique and not conflict with existing Nsets.
+        - The section name (section_name) and material (material) should match the names defined in the input file.
+    """
+
+    original_list = get_points_x_from_mid(file_name, part_name, mid_x, threshold_x_from_mid)[0]
+    exclude_list = get_dis_Nset_points_list(file_name, part_name, section_name)
+    excluded_list = exclude_points_in_list(original_list, exclude_list)
+    write_Nset_to_inp_file(file_name, part_name, Nset_num, section_name, material, excluded_list)
 
 
 def write_new_part_to_inp_file(file_name, part, element_type, points_list, element_list):
@@ -1208,12 +1325,12 @@ def getBnodes(file_location,
 
 
 def isBoundaryLine(boundarySets, line):
-  if "*Nset" in line:
-    line = line.split(", ")
-    name = line[1].split("=")[1] #selects _PickedSet5 from nset=_PickedSet5
-    if name in boundarySets:
-        return True
-  return False
+    if "*Nset" in line:
+        line = line.split(", ")
+        name = line[1].split("=")[1]  # selects _PickedSet5 from nset=_PickedSet5
+        if name in boundarySets:
+            return True
+    return False
 
 
 def getNodes(file, line):
@@ -1230,13 +1347,13 @@ def getNodes(file, line):
 
 
 def getName(line):
-  line = line.split(", ")
-  name = line[3].split("=")[1].strip() #selects _PickedSet5 from nset=_PickedSet5
-  return name
+    line = line.split(", ")
+    name = line[3].split("=")[1].strip()  # selects _PickedSet5 from nset=_PickedSet5
+    return name
 
 
 def parseNumsFromCSV(nodeIDs, line):
-  line.replace(" ", "") #delete spaces
-  numList = line.split(",")
-  for x in numList:
-    nodeIDs.append(int(x)) #int(x) converts it from string to integer
+    line.replace(" ", "")  # delete spaces
+    numList = line.split(",")
+    for x in numList:
+        nodeIDs.append(int(x))  # int(x) converts it from string to integer

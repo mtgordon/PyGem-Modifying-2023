@@ -43,10 +43,10 @@ TEST: io.addToVals
 """
 TEST: io.get_interconnections
 """
-connection_list = io.get_interconnections(file_name, part_name)
-for connection in connection_list:
-    print(connection)
-
+# connection_list = io.get_interconnections(file_name, part_name)
+# for connection in connection_list:
+#     print(connection)
+#
 
 """
 TEST: io.write_points_below_excluded_to_inp
@@ -55,5 +55,18 @@ TEST: io.write_points_below_excluded_to_inp
 # print("Filtered points number: ", filtered_points)
 # print("Filtered count: ", filtered_count)
 # print("Total count: ", total_count)
-#
+# #
 # io.write_points_below_excluded_to_inp(file_name, part_name, 37, 999, "AWP")
+
+
+"""
+TEST: io.get_points_x_from_mid
+"""
+mid_x = -2
+filtered_points, filtered_count, total_count = io.get_points_x_from_mid(file_name, part_name, mid_x, 8)
+print("Filtered points number: ", filtered_points)
+print("Filtered count: ", filtered_count)
+print("Total count: ", total_count)
+
+io.write_points_x_from_mid_excluded_to_inp(file_name, part_name, mid_x, 8, 222, "AWP", "Scar_tissue")
+# #
