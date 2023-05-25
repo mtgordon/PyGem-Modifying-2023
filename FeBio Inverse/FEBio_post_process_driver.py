@@ -32,7 +32,12 @@ first_file_flag = True
 current_date = datetime.datetime.now()
 date_prefix = str(current_date.year) + '_' + str(current_date.month)  + '_' + str(current_date.day)
 
-GENERATE_INTERMEDIATE_FLAG = False
+object_list = ['Object2', 'Object8']
+obj_coords_list = []
+file_num = 0
+
+GENERATE_INTERMEDIATE_FLAG = True
+
 
 if GENERATE_INTERMEDIATE_FLAG:
 
@@ -58,12 +63,20 @@ if GENERATE_INTERMEDIATE_FLAG:
             if prop != 1.0:
                 prop_final.append(prop)
 
-        # Get the pC points
-        pc_points = gic.generate_2d_coords_for_pca(log_name, feb_name, csv_filename, "Object2")
+
+
+        # Get the coordinates for each object in list
+        for obj in object_list:
+            obj_coords_list.append(gic.extract_coordinates_from_final_step(log_name, feb_name, obj))
+            print('Extracting... ' + obj + ' for ' + file_params)
+
+        #Get the PC points for Object2
+        pc_points = gic.generate_2d_coords_for_pca(obj_coords_list[0])
 
         # Begin building the row to be put into the intermediate csv
         csv_row.append(file_params) # file params
-        csv_row.append(proc.find_apex(feb_name)) # apex
+        csv_row.append(proc.find_apex(obj_coords_list[1])) # apex FIX
+
         csv_row.extend(prop_final)
         csv_row.extend(pc_points) # the 30 pc coordinates
 
@@ -78,7 +91,11 @@ if GENERATE_INTERMEDIATE_FLAG:
                 writer.writerow(csv_row)
 
         # sleep to give the file time to reach directory
-        time.sleep(5)
+
+        time.sleep(1)
+        file_num += 1
+        print(str(file_num) + ": " + file_params)
+        obj_coords_list = []
 
 
 print('TESTING')
@@ -92,4 +109,6 @@ PC_scores = total_result_PC[['principal component 1', 'principal component 2']]
 print(PC_scores)
 
 final_df = pd.concat([int_df.iloc[:, 0:4], PC_scores], axis=1)
+
 final_df.to_csv(date_prefix + "_features.csv", index=False, header=False)
+
