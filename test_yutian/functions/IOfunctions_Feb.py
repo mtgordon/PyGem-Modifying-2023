@@ -3,7 +3,7 @@
 # Description: This is a file of all the IO functions that edited fot .feb file
 # from what was written for the .inp file before
 # Version: 1.0
-# Website: yyt542985333@gmail.com
+# Email: yyt542985333@gmail.com
 #--------------------------------------------------------------
 # [Additional comments or notes]
 #--------------------------------------------------------------
