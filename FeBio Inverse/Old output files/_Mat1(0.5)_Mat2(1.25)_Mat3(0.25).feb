@@ -1,0 +1,30 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<febio_optimize version="2.0">
+	<Options type="levmar">
+		<obj_tol>0.001</obj_tol>
+		<f_diff_scale>0.001</f_diff_scale>
+		<print_level>PRINT_VERBOSE</print_level>
+	</Options>
+	<Parameters>
+		<param name="fem.material('Material1').c3">0.1, .01, 10</param>
+	</Parameters>
+	<Objective type="data-fit">
+		<fnc type="parameter">
+			<ordinate name="fem.element_data('Ex', 1)" />
+			<param name="fem.element_data('sx', 1)" />
+		</fnc>
+		<data>
+			<point>0.000, 0.0</point>
+			<point>0.105, 0.3543705</point>
+			<point>0.220, 0.919475</point>
+			<point>0.345, 1.83204</point>
+			<point>0.480, 3.317165</point>
+			<point>0.625, 5.7457</point>
+			<point>0.780, 9.72895</point>
+			<point>0.945, 16.27445</point>
+			<point>1.120, 27.04345</point>
+			<point>1.305, 44.7745</point>
+			<point>1.500, 73.9825</point>
+		</data>
+	</Objective>
+</febio_optimize>
