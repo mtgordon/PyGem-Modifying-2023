@@ -1192,6 +1192,9 @@ def AnalogGenerateINP(TissueParameters, MaterialStartLine, LoadLine, LoadLineNo,
 #         print('7')
 #         ######################################################################################
 
+        #ADDING THE SCAR TISSUE FUNCTION
+        # io.write_points_x_from_mid_excluded_to_inp(OutputINPFile, AVW, )
+
     ######################################################################################
         #TODO: Commented out droop
         # Droop the AVW (probably pass the generic file and obtain the end points for the droop from there)

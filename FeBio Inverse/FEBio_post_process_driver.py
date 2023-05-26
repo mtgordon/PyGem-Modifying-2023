@@ -98,10 +98,6 @@ if GENERATE_INTERMEDIATE_FLAG:
         obj_coords_list = []
 
 
-print('TESTING')
-
-
-
 # use the generated csv to get the 2 PC scores
 def process_features(csv_file):
     int_df = pd.read_csv(csv_file)
@@ -112,5 +108,5 @@ def process_features(csv_file):
     PC_scores = total_result_PC[['principal component 1', 'principal component 2']]
     print(PC_scores)
 
-    final_df = pd.concat([int_df.loc[:, ["File Name", "Apex", "E1", "E2"]], PC_scores], axis=1)
+    final_df = pd.concat([int_df.loc[:, ["File Name", "E1", "E2", "Apex"]], PC_scores], axis=1)
     final_df.to_csv(Results_Folder + '\\' + date_prefix + "_features.csv", index=False)

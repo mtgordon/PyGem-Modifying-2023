@@ -158,17 +158,17 @@ for row in DOE_dict:
 
         # Begin building the row to be put into the intermediate csv
         csv_row.append(fileTemplate)  # file params
+        csv_row.extend(prop_final)
         apex = proc.find_apex(obj_coords_list[1])
         csv_row.append(apex)  # apex FIX
-        csv_row.extend(prop_final)
         csv_row.extend(pc_points)  # the 30 pc coordinates
 
 
         if first_int_file_flag:
             csv_header.append('File Name')
-            csv_header.append('Apex')
             csv_header.append('E1')
             csv_header.append('E2')
+            csv_header.append('Apex')
             coord = 'x'
             for i in range(2):
                 if i == 1:
