@@ -1,2 +1,2 @@
-Levator_Plate_PC1,Levator_Plate_PC2,ICM_PC1,ICM_PC2,Hiatus_Size,Positive_CL_Point,Negative_CL_Remove_Percent
--5.371643982,-0.66032807,4.000975115,-6.736577008,35,"3.4,5.7,2.1",1.0
+Levator_Plate_PC1,Levator_Plate_PC2,ICM_PC1,ICM_PC2,Hiatus_Size,Negative_CL_Point
+-5.371643982,-0.66032807,4.000975115,-6.736577008,35,"-45,-15,40"
