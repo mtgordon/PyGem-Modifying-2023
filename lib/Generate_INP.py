@@ -85,7 +85,7 @@ def AnalogGenerateINP(TissueParameters, MaterialStartLine, LoadLine, LoadLineNo,
                       GIFillerPoint, HiatusLength, levator_plate_PC1, levator_plate_PC2, ICM_PC1, ICM_PC2,
                       positive_CL_point, negative_CL_point, positive_US_point, negative_US_point,
                       positive_PARA_point, negative_PARA_point, positive_CL_remove_percent, negative_remove_percent,
-                      Results_Folder_Location):
+                      mid_x, threshold_x_from_mid, generate_scar_tissue_flag, Results_Folder_Location):
 
     config = configparser.ConfigParser()
     config.sections()
@@ -1193,7 +1193,8 @@ def AnalogGenerateINP(TissueParameters, MaterialStartLine, LoadLine, LoadLineNo,
 #         ######################################################################################
 
         #ADDING THE SCAR TISSUE FUNCTION
-        # io.write_points_x_from_mid_excluded_to_inp(OutputINPFile, AVW, )
+        if generate_scar_tissue_flag != 0:
+            io.write_points_x_from_mid_excluded_to_inp(OutputINPFile, AVW, mid_x, threshold_x_from_mid, 22, 'AWP', 'SCAR_TISSUE')
 
     ######################################################################################
         #TODO: Commented out droop

@@ -27,3 +27,5 @@ Positive_PARA_Point,PPARAP,"x,y,z"
 Negative_PARA_Point,NPARAP,"x,y,z"
 Positive_CL_Remove_Percent,PCLRP,0.0
 Negative_CL_Remove_Percent,NCLRP,0.0
+X_Mid,XMID,0
+X_Threshold_From_Mid,XTHR,0

@@ -95,7 +95,9 @@ default_dict = {
         'Positive_PARA_Point' : json.loads(config["FIBER_PROPERTIES"]["updated_positive_PARA_point"]),
         'Negative_PARA_Point' : json.loads(config["FIBER_PROPERTIES"]["updated_negative_PARA_point"]),
         'Positive_CL_Remove_Percent' : json.loads(config["FIBER_PROPERTIES"]["positive_CL_remove_percent"]),
-        'Negative_CL_Remove_Percent' : json.loads(config["FIBER_PROPERTIES"]["negative_CL_remove_percent"])
+        'Negative_CL_Remove_Percent' : json.loads(config["FIBER_PROPERTIES"]["negative_CL_remove_percent"]),
+        'X_Mid' : json.loads(config["AVW"]["x_mid"]),
+        'X_Threshold_From_Mid' : json.loads(config["AVW"]["x_threshold_from_mid"])
 }
 
 abbrev_dict = {
@@ -126,7 +128,9 @@ abbrev_dict = {
         'Positive_PARA_Point' : "PPARAP",
         'Negative_PARA_Point' : "NPARAP",
         'Positive_CL_Remove_Percent' : "PCLRP",
-        'Negative_CL_Remove_Percent' : "NCLRP"
+        'Negative_CL_Remove_Percent' : "NCLRP",
+        'X_Mid' : "XMID",
+        'X_Threshold_From_Mid' : "XTHR"
 }
 
 
@@ -145,6 +149,7 @@ troubleshooting = config.getint("FLAGS","troubleshooting") # Flag for running th
 load_search = config.getint("FLAGS","load_search") #TODO: Added flag for inhibiting extra runs on a bad file
 max_prolapse_num = config.getint("Load", "MaxProlapseNum")
 use_test_csv = config.getint("FLAGS", "use_test_csv")
+Generate_Scar_Tissue = config.getint("FLAGS", "Generate_Scar_Tissue")
 
 frames = config["POST_ANALYSIS"]["frames"]
 frames = list(frames.split(','))
@@ -229,6 +234,8 @@ first_iter = True
 
 current_run_dict = default_dict.copy()
 
+suffixCount = 0
+
 # Run each combination from the rows in Run_Variables
 for row in DOE_dict:
     print('Row:', row)
@@ -275,10 +282,25 @@ for row in DOE_dict:
             param = '_' + abbrev_dict[key] + str(current_run_dict[key])
             CurrentParameters += param
 
-        Date = datetime.today().strftime('%Y%m%d')
-        Gen_File_Code = current_run_dict['Generic_File'][0]
-        File_Name_Code = FileNamePrefix + '_D' + Date + '_Gen' + Gen_File_Code + CurrentParameters
+        #TODO: Update the INP File name
+        Date = datetime.today().strftime('D%Y%m%d_T%H%M%S')
+        suffix = "_S" + str(suffixCount)
+        suffixCount += 1
+        File_Name_Code = Date + suffix
+        # Gen_File_Code = current_run_dict['Generic_File'][0]
+        # File_Name_Code = FileNamePrefix + '_D' + Date + '_Gen' + Gen_File_Code + CurrentParameters
         INPOutputFileName = File_Name_Code +'.inp'
+
+        # Save the current dictionary as a csv (could be log replacement)
+        with open(Results_Folder_Location + '\\' + File_Name_Code + '_' + dictionary_file, 'w', newline='') as Run_Var_File:
+            varWriter = csv.writer(Run_Var_File)
+            header = []
+            values = []
+            for k in current_run_dict.keys():
+                header.append(k)
+                values.append(current_run_dict[k])
+            varWriter.writerow(header)
+            varWriter.writerow(values)
 
         # Build the name log csv
         dicts = abbrev_dict, current_run_dict
@@ -297,13 +319,13 @@ for row in DOE_dict:
             print('mat prop in Automate Abaqus:', material_properties)
             if troubleshooting == 1:
                 print('Troubleshooting!!!!!!!!!!!!')
-                AnalogGenerateINP(material_properties, MaterialStartLine, LoadLine, LoadLineNo, [float(current_run_dict['CL_Strain']), float(current_run_dict['US_Strain']), float(current_run_dict['Para_Strain'])], DensityFactor[0], current_run_dict['Generic_File'], INPOutputFileName, current_run_dict['AVW_Width'], current_run_dict['AVW_Length'], float(current_run_dict['Apical_Shift']), RotationPoint, HiatusPoint, GIFillerPoint, float(current_run_dict['Hiatus_Size']), float(current_run_dict['Levator_Plate_PC1']), float(current_run_dict['Levator_Plate_PC2']), float(current_run_dict['ICM_PC1']), float(current_run_dict['ICM_PC2']), current_run_dict['Positive_CL_Point'], current_run_dict['Negative_CL_Point'], current_run_dict['Positive_US_Point'], current_run_dict['Negative_US_Point'], current_run_dict['Positive_PARA_Point'], current_run_dict['Negative_PARA_Point'], float(current_run_dict['Positive_CL_Remove_Percent']), float(current_run_dict['Negative_CL_Remove_Percent']), Results_Folder_Location)
+                AnalogGenerateINP(material_properties, MaterialStartLine, LoadLine, LoadLineNo, [float(current_run_dict['CL_Strain']), float(current_run_dict['US_Strain']), float(current_run_dict['Para_Strain'])], DensityFactor[0], current_run_dict['Generic_File'], INPOutputFileName, current_run_dict['AVW_Width'], current_run_dict['AVW_Length'], float(current_run_dict['Apical_Shift']), RotationPoint, HiatusPoint, GIFillerPoint, float(current_run_dict['Hiatus_Size']), float(current_run_dict['Levator_Plate_PC1']), float(current_run_dict['Levator_Plate_PC2']), float(current_run_dict['ICM_PC1']), float(current_run_dict['ICM_PC2']), current_run_dict['Positive_CL_Point'], current_run_dict['Negative_CL_Point'], current_run_dict['Positive_US_Point'], current_run_dict['Negative_US_Point'], current_run_dict['Positive_PARA_Point'], current_run_dict['Negative_PARA_Point'], float(current_run_dict['Positive_CL_Remove_Percent']), float(current_run_dict['Negative_CL_Remove_Percent']), float(current_run_dict['X_Mid']), float(current_run_dict['X_Threshold_From_Mid']), Generate_Scar_Tissue, Results_Folder_Location)
                 FinalINPOutputFileName = INPOutputFileName
                 INP_error = 0
             else:
                 try:
                     INP_error = 0
-                    AnalogGenerateINP(material_properties, MaterialStartLine, LoadLine, LoadLineNo, [float(current_run_dict['CL_Strain']), float(current_run_dict['US_Strain']), float(current_run_dict['Para_Strain'])], DensityFactor[0], current_run_dict['Generic_File'], INPOutputFileName, current_run_dict['AVW_Width'], current_run_dict['AVW_Length'], float(current_run_dict['Apical_Shift']), RotationPoint, HiatusPoint, GIFillerPoint, float(current_run_dict['Hiatus_Size']), float(current_run_dict['Levator_Plate_PC1']), float(current_run_dict['Levator_Plate_PC2']), float(current_run_dict['ICM_PC1']), float(current_run_dict['ICM_PC2']), current_run_dict['Positive_CL_Point'], current_run_dict['Negative_CL_Point'], current_run_dict['Positive_US_Point'], current_run_dict['Negative_US_Point'], current_run_dict['Positive_PARA_Point'], current_run_dict['Negative_PARA_Point'], float(current_run_dict['Positive_CL_Remove_Percent']), float(current_run_dict['Negative_CL_Remove_Percent']), Results_Folder_Location)
+                    AnalogGenerateINP(material_properties, MaterialStartLine, LoadLine, LoadLineNo, [float(current_run_dict['CL_Strain']), float(current_run_dict['US_Strain']), float(current_run_dict['Para_Strain'])], DensityFactor[0], current_run_dict['Generic_File'], INPOutputFileName, current_run_dict['AVW_Width'], current_run_dict['AVW_Length'], float(current_run_dict['Apical_Shift']), RotationPoint, HiatusPoint, GIFillerPoint, float(current_run_dict['Hiatus_Size']), float(current_run_dict['Levator_Plate_PC1']), float(current_run_dict['Levator_Plate_PC2']), float(current_run_dict['ICM_PC1']), float(current_run_dict['ICM_PC2']), current_run_dict['Positive_CL_Point'], current_run_dict['Negative_CL_Point'], current_run_dict['Positive_US_Point'], current_run_dict['Negative_US_Point'], current_run_dict['Positive_PARA_Point'], current_run_dict['Negative_PARA_Point'], float(current_run_dict['Positive_CL_Remove_Percent']), float(current_run_dict['Negative_CL_Remove_Percent']), float(current_run_dict['X_Mid']), float(current_run_dict['X_Threshold_From_Mid']), Generate_Scar_Tissue, Results_Folder_Location)
                     FinalINPOutputFileName = INPOutputFileName
                 except:
                     INP_error = 1
