@@ -115,8 +115,8 @@ def CurveFibersInINP(Part_Name1, Part_Name2, scale, inputFile, outputFile, dirVe
 #    print("Fibers = ", fibers)
 
     #Keeps track of the total connection points for the positive fibers
-    positive_connections = []
-    negative_connections = []
+    positive_connections = {}
+    negative_connections = {}
 
     for i, fiber in enumerate(fibers): #loop through each fiber
 #        print(fiber)
@@ -137,9 +137,9 @@ def CurveFibersInINP(Part_Name1, Part_Name2, scale, inputFile, outputFile, dirVe
 
         if Part_Name2 == "OPAL325_CL_v6":
             if avw_node.x < 0:
-                negative_connections.append(ending_node_index + 1)
+                negative_connections[ending_node_index + 1] = ending_p.z
             else:
-                positive_connections.append(ending_node_index + 1)
+                positive_connections[ending_node_index + 1] = ending_p.z
 
         #Find the length of the original fiber
         OriginalFiberLength = 0
@@ -246,11 +246,36 @@ def CurveFibersInINP(Part_Name1, Part_Name2, scale, inputFile, outputFile, dirVe
     write_part_to_inp(inputFile, outputFile, Part_Name2, ct)
 
     if Part_Name2 == "OPAL325_CL_v6":
-        # Remove the positive connections
-        remove_percent_fiber_connections(positive_connections, positiveConnectionRemovePercent, Part_Name2, outputFile)
-        # Remove the negative connections
-        remove_percent_fiber_connections(negative_connections, negativeConnectionRemovePercent, Part_Name2, outputFile)
+        configure_remove_connections(positive_connections, positiveConnectionRemovePercent, Part_Name2, outputFile)
+        configure_remove_connections(negative_connections, negativeConnectionRemovePercent, Part_Name2, outputFile)
+
     return
+
+
+'''
+Function: configure_remove_connections
+Takes in a list of nodes that correspond to connections involving the specified part, the percentage of those
+connections to be removed, and the INP file used. It is important to note that the percent given is the portion of
+the original connections to be removed, not the connections being kept. The nodes passed into the remove_connections
+function are those deleted from the INP file, so if you want more connections removed, make that passed in list larger.
+The nodes that have the largest Z value are removed first.
+
+For example (node list refers to the one passed to remove_connections):
+percent = 1.0: node list size matches the original
+percent = 0.7: node list size is 70% of the original
+percent = 0.5: node list size is half the original
+percent = 0.2: node list size is 20% of the original
+percent = 0.0: node list size is empty
+'''
+def configure_remove_connections(connections, removePercent, partName, output):
+    sorted_connections = []
+    # Sort the nodes by largest Z coordinates first to smallest
+    for i in sorted(connections, key=connections.get, reverse=True):
+        sorted_connections.append(i)
+    # Remove the positive connections
+    cutoff = int(round(len(sorted_connections) * removePercent))
+    remove_connections(sorted_connections[0:cutoff], partName, output)
+
 
 '''
 Function: configure_start_points
@@ -277,24 +302,6 @@ def configure_start_points(point):
         return Point(floatList[0], floatList[1], floatList[2])
     else:
         return None
-
-'''
-Function: remove_percent_fiber_connections
-Takes in a list of nodes that correspond to connections involving the specified part, the percentage of those
-connections to be removed, and the INP file used. It is important to note that the percent given is the portion of
-the original connections to be removed, not the connections being kept. The nodes passed into the remove_connections
-function are those deleted from the INP file, so if you want more connections removed, make that passed in list larger.
-
-For example (node list refers to the one passed to remove_connections):
-percent = 1.0: node list size matches the original
-percent = 0.7: node list size is 70% of the original
-percent = 0.5: node list size is half the original
-percent = 0.2: node list size is 20% of the original
-percent = 0.0: node list size is empty
-'''
-def remove_percent_fiber_connections(nodes, percent, partName, INPfile):
-    cutoff = int(round(len(nodes) * percent))
-    remove_connections(nodes[0:cutoff], partName, INPfile)
 
 
 '''

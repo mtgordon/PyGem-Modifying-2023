@@ -31,12 +31,14 @@ import re
 first_file_flag = True
 current_date = datetime.datetime.now()
 date_prefix = str(current_date.year) + '_' + str(current_date.month)  + '_' + str(current_date.day)
+Results_Folder = 'C:\\Users\\Elijah Brown\\Desktop\\Bio Research\\Results'
+csv_filename = Results_Folder + '\\' + date_prefix + '_intermediate.csv'
 
 object_list = ['Object2', 'Object8']
 obj_coords_list = []
 file_num = 0
 
-GENERATE_INTERMEDIATE_FLAG = True
+GENERATE_INTERMEDIATE_FLAG = False
 
 
 if GENERATE_INTERMEDIATE_FLAG:
@@ -51,8 +53,6 @@ if GENERATE_INTERMEDIATE_FLAG:
 
         # Get the pure file name that just has the material parameters
         file_params = int_log_name[0].split('\\')[-1]
-
-        csv_filename = date_prefix + '_intermediate.csv'
 
         # Get the changed material properties
         paren_pattern = re.compile(r'(?<=\().*?(?=\))') # find digits in parentheses
@@ -99,16 +99,18 @@ if GENERATE_INTERMEDIATE_FLAG:
 
 
 print('TESTING')
+
+
+
 # use the generated csv to get the 2 PC scores
-int_df = pd.read_csv(date_prefix + "_intermediate.csv", header=None)
-pc_df = int_df.iloc[:, 4:len(int_df.columns)]
-# int_df = pd.read_csv("intermediate_pc_data", header=None)
-total_result_PC, pca = PCA_data.PCA_(pc_df)
+def process_features(csv_file):
+    int_df = pd.read_csv(csv_file)
+    pc_df = int_df.iloc[:, 4:len(int_df.columns)]
+    # int_df = pd.read_csv("intermediate_pc_data", header=None)
+    total_result_PC, pca = PCA_data.PCA_(pc_df)
 
-PC_scores = total_result_PC[['principal component 1', 'principal component 2']]
-print(PC_scores)
+    PC_scores = total_result_PC[['principal component 1', 'principal component 2']]
+    print(PC_scores)
 
-final_df = pd.concat([int_df.iloc[:, 0:4], PC_scores], axis=1)
-
-final_df.to_csv(date_prefix + "_features.csv", index=False, header=False)
-
+    final_df = pd.concat([int_df.loc[:, ["File Name", "Apex", "E1", "E2"]], PC_scores], axis=1)
+    final_df.to_csv(Results_Folder + '\\' + date_prefix + "_features.csv", index=False)

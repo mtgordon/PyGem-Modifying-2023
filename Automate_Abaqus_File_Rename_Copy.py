@@ -441,11 +441,16 @@ for row in DOE_dict:
 #            print(error)
             pass
 
+        #TODO; Added the code from the email
         #If the load_search flag is off, then only run through the while loop once and do not search for specific load
         if load_search != 1:
             break
+        elif GetData != 1:
+            print("^^^^^^^^^^^^^^^^^^^^^^^^CANNOT DO LOAD SEARCH WITHOUT DOING POST PROCESSING^^^^^^^^^^^^^^")
+            print("Turn on get_data flag")
+            break
 
-        #TODO: ASSIGN CSV VALUE OF INTEREST HERE (FOR NOW)
+            #TODO: ASSIGN CSV VALUE OF INTEREST HERE (FOR NOW)
         csv_header = 'Aa_distance_relative'
 
         #TODO: If testing the load search without an abaqus system, use temporary csv file created below
