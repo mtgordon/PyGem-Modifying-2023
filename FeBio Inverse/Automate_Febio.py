@@ -10,6 +10,7 @@ import subprocess
 import xml.etree.ElementTree as ET
 import generate_int_csvs as gic
 import PostProcess_FeBio as proc
+import FEBio_post_process_driver as dr
 import pandas as pd
 import re
 import time
@@ -136,6 +137,7 @@ for row in DOE_dict:
     if new_check_normal_run(logFile):
         # Post process
         csv_row = []
+        csv_header = []
 
         # Get the changed material properties
         paren_pattern = re.compile(r'(?<=\().*?(?=\))')  # find digits in parentheses
@@ -161,9 +163,22 @@ for row in DOE_dict:
         csv_row.extend(prop_final)
         csv_row.extend(pc_points)  # the 30 pc coordinates
 
+
         if first_int_file_flag:
+            csv_header.append('File Name')
+            csv_header.append('Apex')
+            csv_header.append('E1')
+            csv_header.append('E2')
+            coord = 'x'
+            for i in range(2):
+                if i == 1:
+                    coord = 'y'
+                for j in range(15):
+                    csv_header.append(coord + str(j + 1))
+
             with open(csv_filename, 'w', newline='') as csvfile:
                 writer = csv.writer(csvfile)
+                writer.writerow(csv_header)
                 writer.writerow(csv_row)
                 first_int_file_flag = False
         else:
@@ -181,13 +196,4 @@ for row in DOE_dict:
         os.rename(workingInputFileName, os.path.splitext(workingInputFileName)[0] + '_error.feb')
 
 if final_csv_flag:
-    # use the generated csv to get the 2 PC scores
-    int_df = pd.read_csv(csv_filename, header=None)
-    pc_df = int_df.iloc[:, 4:len(int_df.columns)]
-    total_result_PC, pca = PCA_data.PCA_(pc_df)
-
-    PC_scores = total_result_PC[['principal component 1', 'principal component 2']]
-    print(PC_scores)
-
-    final_df = pd.concat([int_df.iloc[:, 0:4], PC_scores], axis=1)
-    final_df.to_csv(Results_Folder + '\\' + date_prefix + "_features.csv", index=False, header=False)
+    dr.process_features(csv_filename)

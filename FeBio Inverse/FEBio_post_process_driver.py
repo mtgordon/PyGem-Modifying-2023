@@ -31,15 +31,19 @@ import re
 first_file_flag = True
 current_date = datetime.datetime.now()
 date_prefix = str(current_date.year) + '_' + str(current_date.month)  + '_' + str(current_date.day)
+Results_Folder = 'C:\\Users\\Elijah Brown\\Desktop\\Bio Research\\Results'
+csv_filename = Results_Folder + '\\' + date_prefix + '_intermediate.csv'
+
 object_list = ['Object2', 'Object8']
 obj_coords_list = []
 file_num = 0
 
 GENERATE_INTERMEDIATE_FLAG = False
 
+
 if GENERATE_INTERMEDIATE_FLAG:
 
-    for feb_name in glob.glob("D:\\Gordon\\Automate FEB Runs\\2023_5_23 auto\\*.feb"):
+    for feb_name in glob.glob("C:\\Users\\Elijah Brown\\Desktop\\Bio Research\\Post Process\\*.feb"):
 
         int_log_name = feb_name.split(".f")
         int_log_name[1] = ".log"
@@ -50,8 +54,6 @@ if GENERATE_INTERMEDIATE_FLAG:
         # Get the pure file name that just has the material parameters
         file_params = int_log_name[0].split('\\')[-1]
 
-        csv_filename = date_prefix + '_intermediate.csv'
-
         # Get the changed material properties
         paren_pattern = re.compile(r'(?<=\().*?(?=\))') # find digits in parentheses
         prop_result = paren_pattern.findall(file_params)
@@ -60,6 +62,8 @@ if GENERATE_INTERMEDIATE_FLAG:
             prop = float(prop)
             if prop != 1.0:
                 prop_final.append(prop)
+
+
 
         # Get the coordinates for each object in list
         for obj in object_list:
@@ -72,6 +76,7 @@ if GENERATE_INTERMEDIATE_FLAG:
         # Begin building the row to be put into the intermediate csv
         csv_row.append(file_params) # file params
         csv_row.append(proc.find_apex(obj_coords_list[1])) # apex FIX
+
         csv_row.extend(prop_final)
         csv_row.extend(pc_points) # the 30 pc coordinates
 
@@ -86,6 +91,7 @@ if GENERATE_INTERMEDIATE_FLAG:
                 writer.writerow(csv_row)
 
         # sleep to give the file time to reach directory
+
         time.sleep(1)
         file_num += 1
         print(str(file_num) + ": " + file_params)
@@ -93,15 +99,18 @@ if GENERATE_INTERMEDIATE_FLAG:
 
 
 print('TESTING')
-# SWITCH THE ROW ORDER TO HAVE THE E's LAST
+
+
+
 # use the generated csv to get the 2 PC scores
-int_df = pd.read_csv("D:\\Gordon\\Automate FEB Runs\\Combo\\combo_intermediate.csv", header=None)
-pc_df = int_df.iloc[:, 4:len(int_df.columns)]
-# int_df = pd.read_csv("intermediate_pc_data", header=None)
-total_result_PC, pca = PCA_data.PCA_(pc_df)
+def process_features(csv_file):
+    int_df = pd.read_csv(csv_file)
+    pc_df = int_df.iloc[:, 4:len(int_df.columns)]
+    # int_df = pd.read_csv("intermediate_pc_data", header=None)
+    total_result_PC, pca = PCA_data.PCA_(pc_df)
 
-PC_scores = total_result_PC[['principal component 1', 'principal component 2']]
-print(PC_scores)
+    PC_scores = total_result_PC[['principal component 1', 'principal component 2']]
+    print(PC_scores)
 
-final_df = pd.concat([int_df.iloc[:, 0:4], PC_scores], axis=1)
-final_df.to_csv("combo" + "_features.csv", index=False, header=False)
+    final_df = pd.concat([int_df.loc[:, ["File Name", "Apex", "E1", "E2"]], PC_scores], axis=1)
+    final_df.to_csv(Results_Folder + '\\' + date_prefix + "_features.csv", index=False)
