@@ -35,11 +35,11 @@ object_list = ['Object2', 'Object8']
 obj_coords_list = []
 file_num = 0
 
-GENERATE_INTERMEDIATE_FLAG = True
+GENERATE_INTERMEDIATE_FLAG = False
 
 if GENERATE_INTERMEDIATE_FLAG:
 
-    for feb_name in glob.glob("D:\\Gordon\\Feb Runs in Use\\Weekend of 5_19th\\*.feb"):
+    for feb_name in glob.glob("D:\\Gordon\\Automate FEB Runs\\2023_5_23 auto\\*.feb"):
 
         int_log_name = feb_name.split(".f")
         int_log_name[1] = ".log"
@@ -93,8 +93,9 @@ if GENERATE_INTERMEDIATE_FLAG:
 
 
 print('TESTING')
+# SWITCH THE ROW ORDER TO HAVE THE E's LAST
 # use the generated csv to get the 2 PC scores
-int_df = pd.read_csv(date_prefix + "_intermediate.csv", header=None)
+int_df = pd.read_csv("D:\\Gordon\\Automate FEB Runs\\Combo\\combo_intermediate.csv", header=None)
 pc_df = int_df.iloc[:, 4:len(int_df.columns)]
 # int_df = pd.read_csv("intermediate_pc_data", header=None)
 total_result_PC, pca = PCA_data.PCA_(pc_df)
@@ -103,4 +104,4 @@ PC_scores = total_result_PC[['principal component 1', 'principal component 2']]
 print(PC_scores)
 
 final_df = pd.concat([int_df.iloc[:, 0:4], PC_scores], axis=1)
-final_df.to_csv(date_prefix + "_features.csv", index=False, header=False)
+final_df.to_csv("combo" + "_features.csv", index=False, header=False)

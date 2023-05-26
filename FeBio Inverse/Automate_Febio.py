@@ -74,7 +74,7 @@ def new_check_normal_run(log_file_path):
 # FeBio Variables
 dictionary_file = 'feb_variables.csv'
 FeBioLocation = 'C:\\Program Files\\FEBioStudio2\\bin\\febio4.exe'
-originalFebFilePath = 'C:\\Users\\Elijah Brown\\Desktop\\Bio Research\\Results\\Testing_high_modulus.feb'
+originalFebFilePath = 'D:\\Gordon\\Automate FEB Runs\\2023_5_23 auto\\Base File\\Curve_and_Flat_and_CL_and_Filler_meshed_v4_v2_log_included.feb'
 
 # Post Processing Variables
 current_date = datetime.datetime.now()
@@ -82,7 +82,7 @@ date_prefix = str(current_date.year) + '_' + str(current_date.month)  + '_' + st
 object_list = ['Object2', 'Object8']
 obj_coords_list = []
 file_num = 0
-Results_Folder = 'C:\\Users\\Elijah Brown\\Desktop\\Bio Research\\Results'
+Results_Folder = 'D:\\Gordon\\Automate FEB Runs\\2023_5_23 auto'
 csv_filename = Results_Folder + '\\' + date_prefix + '_intermediate.csv'
 
 # FLAGS
