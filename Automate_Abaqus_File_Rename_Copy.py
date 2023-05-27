@@ -114,7 +114,7 @@ abbrev_dict = {
         'LA_Material' : "PCM",
         'AVW_Material' : "AVW",
         'PM_Mid_Material' : "PMM",
-        'Generic_File' : "GF",
+        'Generic_File' : "Gen",
         'Hiatus_Size' : "HL",
         'Levator_Plate_PC1' : "FLP",
         'Levator_Plate_PC2' : "SLP",
@@ -289,25 +289,23 @@ for row in DOE_dict:
         File_Name_Code = Date + suffix
         # Gen_File_Code = current_run_dict['Generic_File'][0]
         # File_Name_Code = FileNamePrefix + '_D' + Date + '_Gen' + Gen_File_Code + CurrentParameters
-        INPOutputFileName = File_Name_Code +'.inp'
+        INPOutputFileName = Results_Folder_Location + '\\' + File_Name_Code + '.inp'
 
         # Save the current dictionary as a csv (could be log replacement)
         with open(Results_Folder_Location + '\\' + File_Name_Code + '_' + dictionary_file, 'w', newline='') as Run_Var_File:
             varWriter = csv.writer(Run_Var_File)
-            header = []
-            values = []
-            for k in current_run_dict.keys():
-                header.append(k)
-                values.append(current_run_dict[k])
-            varWriter.writerow(header)
-            varWriter.writerow(values)
+            varWriter.writerow(DOE_dict.fieldnames)
+            vals = []
+            for k in DOE_dict.fieldnames:
+                vals.append(row[k])
+            varWriter.writerow(vals)
 
         # Build the name log csv
         dicts = abbrev_dict, current_run_dict
 
-        with open(File_Name_Code + '_log.csv', 'w', newline='') as csv_file:
+        with open(Results_Folder_Location + '\\' + File_Name_Code + '_log.csv', 'w', newline='') as csv_file:
             writer = csv.writer(csv_file, delimiter=',')
-            writer.writerow(['Property', 'Abbreviation', 'Value'])
+            writer.writerow(['Property', 'Code', 'Value'])
             for key in current_run_dict.keys():
                 writer.writerow([key] + [d[key] for d in dicts])
 
