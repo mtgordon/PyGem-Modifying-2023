@@ -241,6 +241,7 @@ for row in DOE_dict:
     print('Row:', row)
 
     current_run_dict = default_dict.copy()
+    current_abbrev_dict = abbrev_dict.copy()
 #    print(DOE_dict.fieldnames)
     for key in DOE_dict.fieldnames:
         if key in default_dict.keys():
@@ -287,9 +288,14 @@ for row in DOE_dict:
         suffix = "_S" + str(suffixCount)
         suffixCount += 1
         File_Name_Code = Date + suffix
+
+        # ADD IN THE GEN FILE CODE TO THE ABBREV DICT
+        current_abbrev_dict['Generic_File'] = abbrev_dict['Generic_File'] + current_run_dict['Generic_File'][0]
+
         # Gen_File_Code = current_run_dict['Generic_File'][0]
         # File_Name_Code = FileNamePrefix + '_D' + Date + '_Gen' + Gen_File_Code + CurrentParameters
-        INPOutputFileName = Results_Folder_Location + '\\' + File_Name_Code + '.inp'
+        # Results_Folder_Location + '\\' +
+        INPOutputFileName = File_Name_Code + '.inp'
 
         # Save the current dictionary as a csv (could be log replacement)
         with open(Results_Folder_Location + '\\' + File_Name_Code + '_' + dictionary_file, 'w', newline='') as Run_Var_File:
@@ -301,9 +307,10 @@ for row in DOE_dict:
             varWriter.writerow(vals)
 
         # Build the name log csv
-        dicts = abbrev_dict, current_run_dict
+        dicts = current_abbrev_dict, current_run_dict
+        logFile = Results_Folder_Location + '\\' + File_Name_Code + '_log.csv'
 
-        with open(Results_Folder_Location + '\\' + File_Name_Code + '_log.csv', 'w', newline='') as csv_file:
+        with open(logFile, 'w', newline='') as csv_file:
             writer = csv.writer(csv_file, delimiter=',')
             writer.writerow(['Property', 'Code', 'Value'])
             for key in current_run_dict.keys():
