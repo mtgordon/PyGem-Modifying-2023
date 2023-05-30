@@ -1,9 +1,10 @@
 import numpy as np
 
-from lib.IOfunctions import extractPointsForPartFrom
 
 
 def get_points_x_from_mid(file_name, part_name, mid_x, threshold_x_from_mid):
+    from lib.IOfunctions import extractPointsForPartFrom
+
     """
     Get the points within a specified range of x values from the mid_x point in a given file and part.
 
@@ -70,6 +71,8 @@ Function: get_points_below
 
 
 def get_points_below(file_name, part_name, threshold_percentage):
+    from lib.IOfunctions import extractPointsForPartFrom
+
     """
     Retrieves the points below a specified threshold percentage along the z-axis from a given file and part.
 
