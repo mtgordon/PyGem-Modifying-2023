@@ -89,7 +89,7 @@ Function: levator_shape_analysis
 This function takes in the PCA scores given in the Generate_INP.py file 
 '''
 def levator_shape_analysis(PCA_1, PCA_2, isInitTest):
-    filename = 'LP_shape_analysis_FEA_input.csv'
+    filename = 'opal325_PCA_shape_data.csv'
 
     # # scale and angle for OPALX
     # scale = 1.0075
