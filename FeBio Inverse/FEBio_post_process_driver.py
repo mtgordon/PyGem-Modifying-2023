@@ -31,7 +31,7 @@ import re
 first_file_flag = True
 current_date = datetime.datetime.now()
 date_prefix = str(current_date.year) + '_' + str(current_date.month)  + '_' + str(current_date.day)
-Results_Folder = 'C:\\Users\\Elijah Brown\\Desktop\\Bio Research\\Results'
+Results_Folder = 'D:\\Gordon\\Automate FEB Runs\\2023_5_23 auto'
 csv_filename = Results_Folder + '\\' + date_prefix + '_intermediate.csv'
 
 object_list = ['Object2', 'Object8']
@@ -100,6 +100,7 @@ if GENERATE_INTERMEDIATE_FLAG:
 
 # use the generated csv to get the 2 PC scores
 def process_features(csv_file):
+
     int_df = pd.read_csv(csv_file)
     pc_df = int_df.iloc[:, 4:len(int_df.columns)]
     # int_df = pd.read_csv("intermediate_pc_data", header=None)
@@ -110,3 +111,4 @@ def process_features(csv_file):
 
     final_df = pd.concat([int_df.loc[:, ["File Name", "E1", "E2", "Apex"]], PC_scores], axis=1)
     final_df.to_csv(Results_Folder + '\\' + date_prefix + "_features.csv", index=False)
+
