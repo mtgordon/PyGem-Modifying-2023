@@ -134,7 +134,7 @@ abbrev_dict = {
 }
 
 
-Date = datetime.today().strftime('%Y%m%d')
+Date = datetime.today().strftime('D%Y%m%d_T%H%M%S')
 Output_File_Name =  'Post_Processing_File_' + Date + '.csv'
 
 GenerateINPFile = config.getint("FLAGS","GenerateINPFile") # flag for generating the INP files
@@ -220,6 +220,8 @@ except OSError:
 
 dictionary_file = 'Run_Variables.csv'
 
+#save a copy of run variables file to the results folder
+shutil.copy(dictionary_file, Results_Folder_Location + '\\D' + Date + '_' + dictionary_file)
 
 # Newer code (2/14)
 run_file = open(dictionary_file)
@@ -297,14 +299,14 @@ for row in DOE_dict:
         # Results_Folder_Location + '\\' +
         INPOutputFileName = File_Name_Code + '.inp'
 
-        # Save the current dictionary as a csv (could be log replacement)
-        with open(Results_Folder_Location + '\\' + File_Name_Code + '_' + dictionary_file, 'w', newline='') as Run_Var_File:
-            varWriter = csv.writer(Run_Var_File)
-            varWriter.writerow(DOE_dict.fieldnames)
-            vals = []
-            for k in DOE_dict.fieldnames:
-                vals.append(row[k])
-            varWriter.writerow(vals)
+        # # Save the current dictionary as a csv (could be log replacement)
+        # with open(Results_Folder_Location + '\\' + File_Name_Code + '_' + dictionary_file, 'w', newline='') as Run_Var_File:
+        #     varWriter = csv.writer(Run_Var_File)
+        #     varWriter.writerow(DOE_dict.fieldnames)
+        #     vals = []
+        #     for k in DOE_dict.fieldnames:
+        #         vals.append(row[k])
+        #     varWriter.writerow(vals)
 
         # Build the name log csv
         dicts = current_abbrev_dict, current_run_dict
