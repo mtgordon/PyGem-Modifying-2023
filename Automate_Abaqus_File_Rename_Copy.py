@@ -221,7 +221,7 @@ except OSError:
 dictionary_file = 'Run_Variables.csv'
 
 #save a copy of run variables file to the results folder
-shutil.copy(dictionary_file, Results_Folder_Location + '\\D' + Date + '_' + dictionary_file)
+shutil.copy(dictionary_file, Results_Folder_Location + '\\' + Date + '_' + dictionary_file)
 
 # Newer code (2/14)
 run_file = open(dictionary_file)
@@ -315,6 +315,8 @@ for row in DOE_dict:
         with open(logFile, 'w', newline='') as csv_file:
             writer = csv.writer(csv_file, delimiter=',')
             writer.writerow(['Property', 'Code', 'Value'])
+            #manual addition of the date for post processing
+            writer.writerow(['DateTime', 'D', Date])
             for key in current_run_dict.keys():
                 writer.writerow([key] + [d[key] for d in dicts])
 

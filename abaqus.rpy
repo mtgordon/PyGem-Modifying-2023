@@ -1,8 +1,8 @@
 # -*- coding: mbcs -*-
 #
-# Abaqus/CAE Release 2016 replay file
-# Internal Version: 2015_09_24-16.31.09 126547
-# Run by DeLancey on Fri May 12 12:03:48 2023
+# Abaqus/CAE Release 2023 replay file
+# Internal Version: 2022_09_28-11.11.55 183150
+# Run by EGRstudent on Mon Jun  5 11:58:13 2023
 #
 
 # from driverUtils import executeOnCaeGraphicsStartup
@@ -10,13 +10,13 @@
 #: Executing "onCaeGraphicsStartup()" in the site directory ...
 from abaqus import *
 from abaqusConstants import *
-session.Viewport(name='Viewport: 1', origin=(1.7625, 1.76667), width=259.44, 
-    height=175.253)
+session.Viewport(name='Viewport: 1', origin=(1.35156, 1.35), width=198.95, 
+    height=133.92)
 session.viewports['Viewport: 1'].makeCurrent()
 from driverUtils import executeOnCaeStartup
 executeOnCaeStartup()
 execfile('./lib/Get_Data_From_ODB_Testing.py', __main__.__dict__)
-#: Model: C:/POPSIM Results/troubleshooting/Working__D20230512_GenN_CL200_PARA100_PCM100_AVW100_CLSS0_AVWL1_HL35_AVWW1_AS0_FLP-5.371643982_SLP-0.66032807_FICM4.000975115_SICM-6.736577008_IAP0.00125.odb
+#: Model: D:/Gordon/Post Test/Working_D20230605_T115405_S0.odb
 #: Number of Assemblies:         1
 #: Number of Assembly instances: 0
 #: Number of Part instances:     11
