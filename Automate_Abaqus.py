@@ -240,7 +240,7 @@ for row in DOE_dict:
 
         # Create a string saying what the tissue values are
         # This will be used to create various filenames
-        CurrentParameters = '_CL'+ str(current_run_dict['CL_Material']) + '_PARA' + str(current_run_dict['Para_Material']) + '_PCM' + str(current_run_dict['LA_Material']) + '_AVW' + str(current_run_dict['AVW_Material']) + '_CLSS' + str(int(float(current_run_dict['CL_Strain'])*100)) + '_AVWL' + str(current_run_dict['AVW_Length']) + '_HL' + str(int(float(current_run_dict['Hiatus_Size']))) + '_AVWW' + str(current_run_dict['AVW_Width']) + '_AS' + str(current_run_dict['Apical_Shift']) + '_FLP' + str(current_run_dict['Levator_Plate_PC1']) + '_SLP' + str(current_run_dict['Levator_Plate_PC2']) + '_FICM' + str(current_run_dict['ICM_PC1'])  + '_SICM' + str(current_run_dict['ICM_PC2'] + '_IAP' + str(current_run_dict['Load_Value']))
+        CurrentParameters = '_CL' + str(current_run_dict['CL_Material']) + '_PARA' + str(current_run_dict['Para_Material']) + '_PCM' + str(current_run_dict['LA_Material']) + '_AVW' + str(current_run_dict['AVW_Material']) + '_CLSS' + str(int(float(current_run_dict['CL_Strain'])*100)) + '_AVWL' + str(current_run_dict['AVW_Length']) + '_HL' + str(int(float(current_run_dict['Hiatus_Size']))) + '_AVWW' + str(current_run_dict['AVW_Width']) + '_AS' + str(current_run_dict['Apical_Shift']) + '_FLP' + str(current_run_dict['Levator_Plate_PC1']) + '_SLP' + str(current_run_dict['Levator_Plate_PC2']) + '_FICM' + str(current_run_dict['ICM_PC1'])  + '_SICM' + str(current_run_dict['ICM_PC2'] + '_IAP' + str(current_run_dict['Load_Value']))
 
         Date = datetime.today().strftime('%Y%m%d')
         Gen_File_Code = current_run_dict['Generic_File'][0]

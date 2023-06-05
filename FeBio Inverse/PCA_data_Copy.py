@@ -4,9 +4,7 @@ Created on Tue Feb  4 20:32:40 2020
 
 @author: mgordon
 """
-from math import hypot
 
-from scipy.interpolate import interpolate
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 import pandas as pd
@@ -41,8 +39,7 @@ def PCA_(pca_trials_df):
     # print('first:', pca_trials_df)
     # pca_trials_data_df = pca_trials_df.drop(columns = non_pca_columns)
     #TODO: use the raw csv for right now as it is only the coordinate data
-    pca_trials_data_df = pca_trials_df.drop(columns = ["File Name","E1","E2","Apex"])
-
+    pca_trials_data_df = pca_trials_df
 
 
     # print('second:', pca_trials_data_df)
@@ -218,97 +215,3 @@ def PCA_and_Score(pca_trials_df, other_data_df):
 # test_df = pd.read_csv('intermediate_pc_data.csv')
 # result_PC, pca= PCA_(test_df)
 # result_PC.to_csv('test.csv', columns=['principal component 1', 'principal component 2'], index=False)
-
-#Recommended noise scale value = 0.05,(.01 is too close to original graph),(.1 is very jumpy with the values)
-# noise scale is the parameter that goes into the std param in the np.random.normal function used to add the noise
-def add_noise_to_spline(spline_ordered_list, dist_array, noise_scale):
-    xs = [i[0] for i in spline_ordered_list]
-    ys = [i[1] for i in spline_ordered_list]
-
-    curve_x = interpolate.UnivariateSpline(dist_array, xs, k=5)
-    curve_y = interpolate.UnivariateSpline(dist_array, ys, k=5)
-    spaced_distance_array = np.linspace(0, dist_array[-1], 15)
-
-    #The code above fits a spline of 15 points through the original xs and ys. The end result is a spline curve of
-    # 15 points.
-
-    new_distance = 0
-    new_distance_array = [0]
-    previous_x = curve_x(0)
-    previous_y = curve_y(0)
-    new_xs = [previous_x]
-    new_ys = [previous_y]
-
-    for i in range(1, len(spaced_distance_array)):
-        new_xs.append(float(curve_x(spaced_distance_array[i])))
-        new_ys.append(float(curve_y(spaced_distance_array[i])))
-
-    #Once we have the 15 points in a spline, the next block of code adds noise to that spline and appends the new points
-    #onto two lists, one for x coordinates and one with y coordinates. After that we run through the same process of
-    #adding a spline to it and then graphing the noisy coordinates' spline.
-
-    noise_x = new_xs + np.random.normal(0, noise_scale, len(new_xs))
-    noise_y = new_ys + np.random.normal(0, noise_scale, len(new_ys))
-
-
-    return noise_x, noise_y
-
-def get_noise_spline(xs, ys):
-    middle_nodes = []
-    minimum_x = np.inf
-    for index, x in enumerate(xs):
-        middle_nodes.append((x, ys[index]))
-        if x < minimum_x:
-            minimum_x = x
-            start = (x, ys[index])
-
-    noise_spline = [start]
-    # Iteratively add points to the spline_ordered list based on minimum distance
-    while len(middle_nodes) > 0:
-        distances = np.array([hypot(noise_spline[-1][0] - point[0], noise_spline[-1][1] - point[1])
-                              for point in middle_nodes])
-        # Find the index of the point with the minimum distance
-        minimum_index = np.argmin(distances)
-
-        # Add the point with the minimum distance to the spline_ordered list
-        noise_spline.append(middle_nodes[minimum_index])
-
-        # Remove the selected point from the middle_nodes list
-        middle_nodes.pop(minimum_index)
-
-    # Remove the first coordinate pair because it was just the starting one
-    noise_spline.pop(0)
-
-    if noise_spline[0][0] < noise_spline[-1][0]:
-        noise_spline = list(reversed(noise_spline))
-
-    noise_distance_array = [0]
-    for i in range(1, len(noise_spline)):
-        noise_distance_array.append(
-            hypot(noise_spline[i][0] - noise_spline[i - 1][0],
-                  noise_spline[i][1] - noise_spline[i - 1][1]) + noise_distance_array[-1])
-
-    spline_xs = [i[0] for i in noise_spline]
-    spline_ys = [i[1] for i in noise_spline]
-
-    curve_x = interpolate.UnivariateSpline(noise_distance_array, spline_xs, k=5)
-    curve_y = interpolate.UnivariateSpline(noise_distance_array, spline_ys, k=5)
-
-    noise_spaced_distance_array = np.linspace(0, noise_distance_array[-1], 15)
-    new_distance = 0
-    new_distance_array = [0]
-    previous_noise_x = curve_x(0)
-    previous_noise_y = curve_y(0)
-    new_noise_xs = [previous_noise_x]
-    new_noise_ys = [previous_noise_y]
-
-    for i in range(1, len(noise_spaced_distance_array)):
-        new_noise_xs.append(float(curve_x(noise_spaced_distance_array[i])))
-        new_noise_ys.append(float(curve_y(noise_spaced_distance_array[i])))
-
-    return new_noise_xs, new_noise_ys
-
-
-
-
-
