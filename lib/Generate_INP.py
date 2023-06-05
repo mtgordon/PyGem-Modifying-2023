@@ -32,10 +32,11 @@ import pandas as pd
 Function: same_geometry_file
 '''
 def same_geometry_file(OutputINPFile, Results_Folder_Location):
-    logFile = Results_Folder_Location + '\\' + os.path.splitext(OutputINPFile)[0] + '_log.csv'
-    log_df = pd.read_csv(logFile)
-    log_df = log_df.set_index('Property')
-    log_df_codes = log_df.set_index('Code')
+    #TODO: Below chunk is used for rename file
+    # logFile = Results_Folder_Location + '\\' + os.path.splitext(OutputINPFile)[0] + '_log.csv'
+    # log_df = pd.read_csv(logFile)
+    # log_df = log_df.set_index('Property')
+    # log_df_codes = log_df.set_index('Code')
 
     current_file_name = OutputINPFile
     location = Results_Folder_Location
@@ -47,37 +48,40 @@ def same_geometry_file(OutputINPFile, Results_Folder_Location):
 
     Geometry_Codes = ['CLSS', 'AVWL', 'HL', 'AVWW', 'AS', 'FLP', 'SLP', 'FICM', 'SICM']
 
-    # Orig_GenericFileCode = current_file_name.split('Gen')[1][0]
-    Orig_GenericFileCode = log_df.loc['Generic_File', 'Code']
+    Orig_GenericFileCode = current_file_name.split('Gen')[1][0]
+    #TODO: Used for file rename
+    # Orig_GenericFileCode = log_df.loc['Generic_File', 'Code']
     same_geometry_file = ''
 
     for file in glob.glob(location + '\*.inp'):
         try:
-            # file_name = os.path.split(file)[1]
-            # new_GenericFileCode = file_name.split('Gen')[1][0]
-            # Split_Array = re.split('(\d+\.\d+|-?\d+)|_|-', file_name)
-            # new_file_array = [i for i in Split_Array if i]
+            file_name = os.path.split(file)[1]
+            new_GenericFileCode = file_name.split('Gen')[1][0]
+            Split_Array = re.split('(\d+\.\d+|-?\d+)|_|-', file_name)
+            new_file_array = [i for i in Split_Array if i]
 
-            current_log = os.path.splitext(file)[0] + '_log.csv'
-            current_df = pd.read_csv(current_log)
-            current_df = current_df.set_index('Property')
-            new_GenericFileCode = current_df.loc['Generic_File', 'Code']
-            current_df_codes = current_df.set_index('Code')
+            #TODO: used for file rename
+            # current_log = os.path.splitext(file)[0] + '_log.csv'
+            # current_df = pd.read_csv(current_log)
+            # current_df = current_df.set_index('Property')
+            # new_GenericFileCode = current_df.loc['Generic_File', 'Code']
+            # current_df_codes = current_df.set_index('Code')
 
             if Orig_GenericFileCode == new_GenericFileCode:
                 match = 1
             else:
                 match = 0
             for code in Geometry_Codes:
-                # Header_Index = original_file_array.index(code)
-                # Data_Index = Header_Index + 1
-                # original_geometry = original_file_array[Data_Index]
-                # Header_Index = new_file_array.index(code)
-                # Data_Index = Header_Index + 1
-                # new_geometry = new_file_array[Data_Index]
+                Header_Index = original_file_array.index(code)
+                Data_Index = Header_Index + 1
+                original_geometry = original_file_array[Data_Index]
+                Header_Index = new_file_array.index(code)
+                Data_Index = Header_Index + 1
+                new_geometry = new_file_array[Data_Index]
 
-                original_geometry = float(log_df_codes.loc[code, 'Value'])
-                new_geometry = float(current_df_codes.loc[code, 'Value'])
+                #TODO: used for file rename
+                # original_geometry = float(log_df_codes.loc[code, 'Value'])
+                # new_geometry = float(current_df_codes.loc[code, 'Value'])
 
                 if new_geometry == original_geometry:
                     pass
