@@ -2,3 +2,5 @@ Abaqus Error: License for explicit with cpus=4 is not available.
 Abaqus/Analysis exited with error(s).
 Abaqus Error: License for explicit with cpus=4 is not available.
 Abaqus/Analysis exited with error(s).
+Abaqus Error: License for explicit with cpus=4 is not available.
+Abaqus/Analysis exited with error(s).

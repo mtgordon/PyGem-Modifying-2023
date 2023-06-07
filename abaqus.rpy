@@ -2,7 +2,7 @@
 #
 # Abaqus/CAE Release 2023 replay file
 # Internal Version: 2022_09_28-11.11.55 183150
-# Run by EGRstudent on Mon Jun  5 11:58:13 2023
+# Run by EGRstudent on Mon Jun  5 13:23:54 2023
 #
 
 # from driverUtils import executeOnCaeGraphicsStartup
@@ -16,7 +16,7 @@ session.viewports['Viewport: 1'].makeCurrent()
 from driverUtils import executeOnCaeStartup
 executeOnCaeStartup()
 execfile('./lib/Get_Data_From_ODB_Testing.py', __main__.__dict__)
-#: Model: D:/Gordon/Post Test/Working_D20230605_T115405_S0.odb
+#: Model: D:/Gordon/Post Test/Working_D20230605_T131923_S0.odb
 #: Number of Assemblies:         1
 #: Number of Assembly instances: 0
 #: Number of Part instances:     11
