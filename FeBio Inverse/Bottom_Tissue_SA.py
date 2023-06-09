@@ -22,7 +22,7 @@ import seaborn as sns
 import numpy as np
 import csv
 import glob
-import generate_int_csvs as gic
+import generate_pca_points_AVW as gic
 import PostProcess_FeBio as proc
 import PCA_data as pcd
 import pandas as pd

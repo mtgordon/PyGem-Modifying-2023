@@ -23,7 +23,7 @@ import PCA_and_Graphs_test as pag
 import PCA_data_Copy
 import csv
 import glob
-import generate_int_csvs as gic
+import generate_pca_points_AVW as gic
 import PostProcess_FeBio as proc
 import PCA_data as pdd
 import pandas as pd

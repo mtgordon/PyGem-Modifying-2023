@@ -22,7 +22,7 @@ import seaborn as sns
 import numpy as np
 import csv
 import glob
-import generate_int_csvs as gic
+import generate_pca_points_AVW as gic
 import PostProcess_FeBio as proc
 import PCA_data as pcd
 import pandas as pd
@@ -60,7 +60,7 @@ def get_bottom_tissue_midline(xs, ys, zs):
     middle_nodes = []
     min_x = np.inf
     for index, zval in enumerate(zs):
-        if abs(slice_z_value - zval) < THRESHOLD:
+        if (abs(slice_z_value) - abs(zval)) < THRESHOLD:
             middle_nodes.append((xs[index], ys[index]))
             if xs[index] < min_x:
                 min_x = xs[index]
