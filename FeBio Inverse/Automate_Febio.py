@@ -73,9 +73,9 @@ def new_check_normal_run(log_file_path):
 
 
 # FeBio Variables
-dictionary_file = 'test_variables.csv'
+dictionary_file = 'feb_variables.csv'
 FeBioLocation = 'C:\\Program Files\\FEBioStudio2\\bin\\febio4.exe'
-originalFebFilePath = "C:\\Users\\phine\\Downloads\\Curve_and_Flat_and_CL_and_Filler_meshed_v4_v2_log_included.feb"
+originalFebFilePath = 'D:\\Gordon\\Automate FEB Runs\\2023_5_23 auto\\Base File\\Curve_and_Flat_and_CL_and_Filler_meshed_v4_v2_log_included.feb'
 
 # Post Processing Variables
 current_date = datetime.datetime.now()
@@ -83,12 +83,12 @@ date_prefix = str(current_date.year) + '_' + str(current_date.month)  + '_' + st
 object_list = ['Object2', 'Object8','Object16']
 obj_coords_list = []
 file_num = 0
-Results_Folder = "C:\\Users\\phine\\OneDrive\\Desktop\\FEBio files\\Pycharm Results"
+Results_Folder = 'D:\\Gordon\\Automate FEB Runs\\2023_6_9_auto'
 csv_filename = Results_Folder + '\\' + date_prefix + '_intermediate.csv'
 
 # FLAGS
 first_int_file_flag = True
-final_csv_flag = True
+final_csv_flag = False
 GENERATE_INTERMEDIATE_FLAG = True
 
 #Get data from the Run_Variables file

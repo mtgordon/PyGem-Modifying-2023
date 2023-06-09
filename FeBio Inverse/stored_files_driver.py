@@ -1,26 +1,4 @@
 import datetime
-
-import dateutil.utils
-from sklearn.preprocessing import StandardScaler
-import xml.etree.ElementTree as ET
-from sklearn.decomposition import PCA
-import pandas as pd
-import matplotlib.pyplot as plt
-from matplotlib.patches import Ellipse
-from scipy.stats import ttest_ind
-import numpy as np
-import itertools
-from math import cos, radians, sin, hypot
-from copy import copy
-from PIL import Image, ImageFilter, ImageEnhance, ImageOps
-#import cv2
-from scipy import interpolate
-from subprocess import call
-import re
-import time
-import seaborn as sns
-import numpy as np
-import csv
 import glob
 import generate_pca_points_AVW as gic
 import PostProcess_FeBio as proc
