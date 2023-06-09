@@ -10,7 +10,7 @@ import subprocess
 import xml.etree.ElementTree as ET
 import generate_int_csvs as gic
 import PostProcess_FeBio as proc
-import FEBio_post_process_driver as dr
+import FEBio_post_process_driver_as_a_function as dr
 import pandas as pd
 import re
 import time
@@ -73,7 +73,7 @@ def new_check_normal_run(log_file_path):
 
 
 # FeBio Variables
-dictionary_file = 'feb_variables.csv'
+dictionary_file ='test_variables.csv' #'feb_variables.csv'
 FeBioLocation = 'C:\\Program Files\\FEBioStudio2\\bin\\febio4.exe'
 originalFebFilePath = 'D:\\Gordon\\Automate FEB Runs\\2023_5_23 auto\\Base File\\Curve_and_Flat_and_CL_and_Filler_meshed_v4_v2_log_included.feb'
 
@@ -88,6 +88,7 @@ csv_filename = Results_Folder + '\\' + date_prefix + '_intermediate.csv'
 
 # FLAGS
 first_int_file_flag = True
+
 final_csv_flag = True
 GENERATE_INTERMEDIATE_FLAG = True
 
@@ -107,93 +108,94 @@ default_dict = {
 
 current_run_dict = default_dict.copy()
 
-# Run the FEB files for each sat of variables in the run_variables csv
-for row in DOE_dict:
-    print('Row:', row)
+if GENERATE_INTERMEDIATE_FLAG:
+    # Run the FEB files for each sat of variables in the run_variables csv
+    for row in DOE_dict:
+        print('Row:', row)
 
-    # Initialize current run dictionary
-    for key in DOE_dict.fieldnames:
-        if key in default_dict.keys():
-            current_run_dict[key] = row[key]
+        # Initialize current run dictionary
+        for key in DOE_dict.fieldnames:
+            if key in default_dict.keys():
+                current_run_dict[key] = row[key]
+            else:
+                if key != 'Run Number':
+                    print(key, 'is an invalid entry')
+                    sys.exit()
+
+        #generation of current run file template based on attributes
+        fileTemplate = ''
+        for key in current_run_dict:
+            param = '_' + str(key) + '(' + str(current_run_dict[key]) + ')'
+            fileTemplate += param
+
+        #Update properties, create new input file
+        workingInputFileName = updateProperties(originalFebFilePath, fileTemplate)
+
+        # TODO: to easily get input files from anywhere, do the shutil move to working directory
+        logFile = Results_Folder + '\\' + fileTemplate + '.log'
+        RunFEBinFeBio(workingInputFileName, FeBioLocation, logFile)
+
+        # Check for success of the feb run
+        if new_check_normal_run(logFile):
+            # Post process
+            csv_row = []
+            csv_header = []
+
+            # Get the changed material properties
+            paren_pattern = re.compile(r'(?<=\().*?(?=\))')  # find digits in parentheses
+            prop_result = paren_pattern.findall(fileTemplate)
+            prop_final = []
+            for prop in prop_result:
+                prop = float(prop)
+                if prop != 1.0:
+                    prop_final.append(prop)
+
+            # Get the coordinates for each object in list
+            for obj in object_list:
+                obj_coords_list.append(gic.extract_coordinates_from_final_step(logFile, workingInputFileName, obj))
+                print('Extracting... ' + obj + ' for ' + fileTemplate)
+
+            # Get the PC points for Object2
+            pc_points = gic.generate_2d_coords_for_pca(obj_coords_list[0])
+
+            # Begin building the row to be put into the intermediate csv
+            csv_row.append(fileTemplate)  # file params
+            csv_row.extend(prop_final)
+            apex = proc.find_apex(obj_coords_list[1])
+            csv_row.append(apex)  # apex FIX
+            csv_row.extend(pc_points)  # the 30 pc coordinates
+
+
+            if first_int_file_flag:
+                csv_header.append('File Name')
+                csv_header.append('E1')
+                csv_header.append('E2')
+                csv_header.append('Apex')
+                coord = 'x'
+                for i in range(2):
+                    if i == 1:
+                        coord = 'y'
+                    for j in range(15):
+                        csv_header.append(coord + str(j + 1))
+
+                with open(csv_filename, 'w', newline='') as csvfile:
+                    writer = csv.writer(csvfile)
+                    writer.writerow(csv_header)
+                    writer.writerow(csv_row)
+                    first_int_file_flag = False
+            else:
+                with open(csv_filename, 'a', newline='') as csvfile:
+                    writer = csv.writer(csvfile)
+                    writer.writerow(csv_row)
+
+            # sleep to give the file time to reach directory
+            time.sleep(1)
+            file_num += 1
+            print('Completed Iteration ' + str(file_num) + ": " + fileTemplate)
+            obj_coords_list = []
+
         else:
-            if key != 'Run Number':
-                print(key, 'is an invalid entry')
-                sys.exit()
-
-    #generation of current run file template based on attributes
-    fileTemplate = ''
-    for key in current_run_dict:
-        param = '_' + str(key) + '(' + str(current_run_dict[key]) + ')'
-        fileTemplate += param
-
-    #Update properties, create new input file
-    workingInputFileName = updateProperties(originalFebFilePath, fileTemplate)
-
-    # TODO: to easily get input files from anywhere, do the shutil move to working directory
-    logFile = Results_Folder + '\\' + fileTemplate + '.log'
-    RunFEBinFeBio(workingInputFileName, FeBioLocation, logFile)
-
-    # Check for success of the feb run
-    if new_check_normal_run(logFile):
-        # Post process
-        csv_row = []
-        csv_header = []
-
-        # Get the changed material properties
-        paren_pattern = re.compile(r'(?<=\().*?(?=\))')  # find digits in parentheses
-        prop_result = paren_pattern.findall(fileTemplate)
-        prop_final = []
-        for prop in prop_result:
-            prop = float(prop)
-            if prop != 1.0:
-                prop_final.append(prop)
-
-        # Get the coordinates for each object in list
-        for obj in object_list:
-            obj_coords_list.append(gic.extract_coordinates_from_final_step(logFile, workingInputFileName, obj))
-            print('Extracting... ' + obj + ' for ' + fileTemplate)
-
-        # Get the PC points for Object2
-        pc_points = gic.generate_2d_coords_for_pca(obj_coords_list[0])
-
-        # Begin building the row to be put into the intermediate csv
-        csv_row.append(fileTemplate)  # file params
-        csv_row.extend(prop_final)
-        apex = proc.find_apex(obj_coords_list[1])
-        csv_row.append(apex)  # apex FIX
-        csv_row.extend(pc_points)  # the 30 pc coordinates
-
-
-        if first_int_file_flag:
-            csv_header.append('File Name')
-            csv_header.append('E1')
-            csv_header.append('E2')
-            csv_header.append('Apex')
-            coord = 'x'
-            for i in range(2):
-                if i == 1:
-                    coord = 'y'
-                for j in range(15):
-                    csv_header.append(coord + str(j + 1))
-
-            with open(csv_filename, 'w', newline='') as csvfile:
-                writer = csv.writer(csvfile)
-                writer.writerow(csv_header)
-                writer.writerow(csv_row)
-                first_int_file_flag = False
-        else:
-            with open(csv_filename, 'a', newline='') as csvfile:
-                writer = csv.writer(csvfile)
-                writer.writerow(csv_row)
-
-        # sleep to give the file time to reach directory
-        time.sleep(1)
-        file_num += 1
-        print('Completed Iteration ' + str(file_num) + ": " + fileTemplate)
-        obj_coords_list = []
-
-    else:
-        os.rename(workingInputFileName, os.path.splitext(workingInputFileName)[0] + '_error.feb')
+            os.rename(workingInputFileName, os.path.splitext(workingInputFileName)[0] + '_error.feb')
 
 if final_csv_flag:
-    dr.process_features(csv_filename)
+    dr.process_features(csv_filename,date_prefix)
