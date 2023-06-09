@@ -27,23 +27,24 @@ import PostProcess_FeBio as proc
 import PCA_data
 import pandas as pd
 import re
+import Bottom_Tissue_SA_Final as bts
 
 first_file_flag = True
 current_date = datetime.datetime.now()
 date_prefix = str(current_date.year) + '_' + str(current_date.month)  + '_' + str(current_date.day)
-Results_Folder = 'C:\\Users\\Elijah Brown\\Desktop\\Bio Research\\Results'
+Results_Folder = "C:\\Users\\phine\\OneDrive\\Desktop\\FEBio files\\Pycharm Results"
 csv_filename = Results_Folder + '\\' + date_prefix + '_intermediate.csv'
 
-object_list = ['Object2', 'Object8']
+object_list = ['Object2', 'Object8'] #,'Object16'
 obj_coords_list = []
 file_num = 0
 
-GENERATE_INTERMEDIATE_FLAG = False
+GENERATE_INTERMEDIATE_FLAG =True
 
 
 if GENERATE_INTERMEDIATE_FLAG:
 
-    for feb_name in glob.glob("C:\\Users\\Elijah Brown\\Desktop\\Bio Research\\Post Process\\*.feb"):
+    for feb_name in glob.glob("C:\\Users\\phine\\OneDrive\\Desktop\\FEBio files\\Test_post_process_driver\\*.feb"):
 
         int_log_name = feb_name.split(".f")
         int_log_name[1] = ".log"
@@ -99,8 +100,6 @@ if GENERATE_INTERMEDIATE_FLAG:
 
 
 print('TESTING')
-
-
 
 # use the generated csv to get the 2 PC scores
 def process_features(csv_file):

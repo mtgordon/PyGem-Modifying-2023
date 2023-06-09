@@ -35,15 +35,17 @@ def PCA_(pca_trials_df):
     pca_df is the pca_trials_df PLUS the results of the pca
     '''
 
-    # headers = pca_trials_df.head()
+    # headers = pca_trials_df.columns
     # non_pca_columns = [x for x in headers if not re.match('[x|y]\\d+', x)]
-
+    #
     # print('first:', pca_trials_df)
     # pca_trials_data_df = pca_trials_df.drop(columns = non_pca_columns)
     #TODO: use the raw csv for right now as it is only the coordinate data
-    pca_trials_data_df = pca_trials_df.drop(columns = ["File Name","E1","E2","Apex"])
-
-
+    #pca_trials_data_df = pca_trials_df.drop(columns = ["File Name","E1","E2","E3","Apex"])
+    if isinstance(pca_trials_df, list):
+        pca_trials_data_df = pca_trials_df[0]
+    else:
+        pca_trials_data_df = pca_trials_df
 
     # print('second:', pca_trials_data_df)
     x = StandardScaler(with_std = False).fit_transform(pca_trials_data_df)
@@ -67,12 +69,12 @@ def PCA_(pca_trials_df):
     if PCA_components == 2:
         pc_df = pd.concat([pd.DataFrame(IDs, columns = ['SubjectID']), pd.DataFrame(principalComponents, columns = ['principal component 1', 'principal component 2'])], axis = 1)
         pc_df.set_index('SubjectID', inplace=True)
-        pca_df = pd.concat([pca_trials_df, pc_df], axis = 1)
+        pca_df = pd.concat([pca_trials_data_df, pc_df], axis = 1)
 
     elif PCA_components == 3:
         pc_df = pd.concat([pd.DataFrame(IDs, columns = ['SubjectID']), pd.DataFrame(principalComponents, columns = ['principal component 1', 'principal component 2', 'principal component 3'])], axis = 1)
         pc_df.set_index('SubjectID', inplace=True)
-        pca_df = pd.concat([pca_trials_df, pc_df], axis = 1)
+        pca_df = pd.concat([pca_trials_data_df, pc_df], axis = 1)
 
     return(pca_df, pca)
 

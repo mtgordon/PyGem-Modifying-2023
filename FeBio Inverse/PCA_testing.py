@@ -27,14 +27,14 @@ import generate_int_csvs as gic
 import PostProcess_FeBio as proc
 import PCA_data as pdd
 import pandas as pd
-import re
+from PCA_and_Graphs_test import do_PCA_and_basic_graphs
 
 
 plot_df = pd.read_csv("C:\\Users\\phine\\Downloads\\combo_intermediate_as_of_5_26.csv")
-#pag.data_plot_v2(plot_df, 15, 1)
+print(plot_df)
 
-final_df, pca = pdd.PCA_(plot_df)
+no_points = 15
+do_PCA_and_basic_graphs(plot_df, no_points)
 
-pag.mode_shape_graphs(pca,final_df)
 
 
