@@ -125,7 +125,7 @@ def slice_value(coord_list):
   return mid_value
 
 def get_AVW_midline(xs, ys, zs):
-    THRESHOLD = 0.3  # Max Distance point can be from Z axis
+    THRESHOLD = 0.3  # Max Distance point can be from Z axis was 0.3
     slice_z_value = slice_value(zs)
 
     # Getting the middle nodes and finding the one with the largest z coordinate
