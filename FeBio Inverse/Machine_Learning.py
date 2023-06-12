@@ -3,20 +3,8 @@ import PostProcess_FeBio as pp
 
 import random
 
-old_data = 'combo_features (1).csv'
 
-train_data = 'combo_features (1).csv'
-test_data = 'updated_order_features_5_30.csv'
-# model_path = 'Models\\real_y2el_50009_c36_x1x2'
-epochs = 300
-epochs_start = 100
-layers = 9
-capacity = 36
-patience = 50
-squared = False
-random.seed(33)
-
-pf.machine_learning_save_predict(train_data, test_data)
+# pf.machine_learning_save_predict(train_data, test_data)
 
 
 def machine_learning_all(epochs, epochs_start, layers, capacity, patience, squared, data=None):
@@ -30,10 +18,10 @@ def machine_learning_all(epochs, epochs_start, layers, capacity, patience, squar
 
     # TODO: STEP 3
     # Generate new PCs based on the train file
-    Results_Folder = '2023_6_12_auto'
-    pp.process_features(train_data_path, Results_Folder, 1)
+    Results_Folder = '2023_6_9_auto'
+    mod_train_path = pp.process_features(train_data_path, Results_Folder, "june, 12")
 
-    pc_csv_path = pf.generate_PC_csv_file_from(train_data_path, [5, 6, 7, 8])
+    pc_csv_path = pf.generate_PC_csv_file_from(mod_train_path, [5, 6, 7, 8])
 
     model_path = pf.fit_model_save_best_and_curve(train_data_path, epochs, layers, capacity, patience, epochs_start, squared)
 
@@ -57,5 +45,28 @@ def machine_learning_all(epochs, epochs_start, layers, capacity, patience, squar
     # print("output learning curve: ", output_image.title())
     print("output train data: ", train_data_path)
     print("output test data: ", test_data_path)
+    print("Modified test data: ", mod_train_path)
     print("PCs data: ", pc_csv_path)
     print("Saved best model name: ", model_path)
+
+
+
+
+old_data = 'combo_features (1).csv'
+
+train_data = 'combo_features (1).csv'
+test_data = 'updated_order_features_5_30.csv'
+# model_path = 'Models\\real_y2el_50009_c36_x1x2'
+epochs = 8000
+epochs_start = 1000
+layers = 9
+capacity = 36
+patience = 500
+squared = False
+random.seed(33)
+data = "D:\\Gordon\\Automate FEB Runs\\2023_6_9_auto\\2023_6_9_intermediate.csv"
+
+machine_learning_all(epochs, epochs_start, layers, capacity, patience, squared, data)
+
+
+

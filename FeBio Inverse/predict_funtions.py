@@ -620,13 +620,13 @@ def generate_train_test_csv_path_from(file_path):
 
     # Determine the file name
     suffix = 1
-    output_train = os.path.join('csv_test', f"{file_name}train_{suffix}.csv")
-    output_test = os.path.join('csv_test', f"{file_name}test_{suffix}.csv")
+    output_train = os.path.join('csv_test', f"{file_name}_train_{suffix}.csv")
+    output_test = os.path.join('csv_test', f"{file_name}_test_{suffix}.csv")
 
     while os.path.exists(output_train) or os.path.exists(output_test):
         suffix += 1
-        output_train = os.path.join('csv_test', f"{file_name}train_{suffix}.csv")
-        output_test = os.path.join('csv_test', f"{file_name}test_{suffix}.csv")
+        output_train = os.path.join('csv_test', f"{file_name}_train_{suffix}.csv")
+        output_test = os.path.join('csv_test', f"{file_name}_test_{suffix}.csv")
 
     return output_train, output_test
 
@@ -695,19 +695,21 @@ def generate_PC_csv_path_from(file_path):
         - The file name of the PC CSV file includes the original file name and a suffix indicating the version.
         - The suffix is incremented if a file with the same name already exists.
     """
+
+    directory = 'PCA Models and PCs csv'
     # Create the directory if it doesn't exist
-    if not os.path.exists('csv_test'):
-        os.makedirs('csv_test')
+    if not os.path.exists(directory):
+        os.makedirs(directory)
 
     file_name = get_file_name(file_path)
 
     # Determine the file name
     suffix = 1
-    pc_path = os.path.join('csv_test', f"{file_name}_pc_{suffix}.csv")
+    pc_path = os.path.join(directory, f"{file_name}_pc_{suffix}.csv")
 
     while os.path.exists(pc_path):
         suffix += 1
-        pc_path = os.path.join('csv_test', f"{file_name}_pc_{suffix}.csv")
+        pc_path = os.path.join(directory, f"{file_name}_pc_{suffix}.csv")
 
     return pc_path
 

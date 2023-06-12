@@ -30,18 +30,19 @@ def do_PCA_get_data(pca_trials_df, PS_point, no_points, fig_file_prefix, results
 
 
 def generate_PCA_Model_path(pca):
+    directory = 'PCA Models and PCs csv'
 
     # Create the directory if it doesn't exist
-    if not os.path.exists('PCA Models and csv'):
-        os.makedirs('PCA Models and csv')
+    if not os.path.exists(directory):
+        os.makedirs(directory)
 
     # Determine the file name
     suffix = 1
-    pca_path = os.path.join('PCA Models and csv', f"{pca}_{suffix}.csv")
+    pca_path = os.path.join(directory, f"{pca}_M_{suffix}")
 
     while os.path.exists(pca_path):
         suffix += 1
-        pca_path = os.path.join('PCA Models and csv', f"{pca}_{suffix}.csv")
+        pca_path = os.path.join(directory, f"{pca}_M_{suffix}")
 
     return pca_path
 

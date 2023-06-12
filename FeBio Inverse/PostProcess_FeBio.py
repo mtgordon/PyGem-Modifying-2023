@@ -12,6 +12,8 @@ import time
 import csv
 import pandas as pd
 import PCA_data
+import os
+
 def process_features(csv_file, Results_Folder, date_prefix):
     int_df = pd.read_csv(csv_file)
     pc1_df = int_df.iloc[:, 5:35]
@@ -27,11 +29,18 @@ def process_features(csv_file, Results_Folder, date_prefix):
     print(PC_scores_bottom)
 
     PC_scores = PC_scores.rename(columns = {'principal component 1': 'principal component 1 AVW','principal component 2':'principal component 2 AVW'})
-    PC_scores_bottom = PC_scores_bottom.rename(columns={'principal component 1': 'principal component 1 Bottom Tissue',
+    PC_scores_bottom  = PC_scores_bottom.rename(columns={'principal component 1': 'principal component 1 Bottom Tissue',
                                           'principal component 2': 'principal component 2 Bottom Tissue'})
 
     final_df = pd.concat([int_df.loc[:, ["File Name", "E1", "E2","E3","Apex"]], PC_scores, PC_scores_bottom], axis=1)
-    final_df.to_csv(Results_Folder + '\\' + date_prefix + "_features.csv", index=False)
+    if not os.path.exists(Results_Folder):
+        os.makedirs(Results_Folder)
+
+    file_path = Results_Folder + '\\' + date_prefix + "_features.csv"
+
+    final_df.to_csv(file_path, index=False)
+    return file_path
+
 def find_apex(coordList):
     min_y = coordList[0][1][1]
     for coord in coordList:

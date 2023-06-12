@@ -22,7 +22,7 @@ import pandas
 from datetime import datetime
 
 #The location of the generated files, in which they will be extracted from
-target_path = 'D:\\Gordon\\Target_test\\*'
+target_path = "D:\\Gordon\\Automate FEB Runs\\2023_6_9_auto\\*" #'D:\\Gordon\\Target_test\\*'
 
 #The location of the folder where the files will be moved, and the already_ran_feb_variables.csv
 Results_Folder = 'D:\\Gordon\\Location_test'
@@ -33,7 +33,7 @@ final_folder = Results_Folder + '\\' + date
 os.mkdir(final_folder)
 
 #Get the current run_variables from the feb_variables.csv
-current_vars = pandas.read_csv('test_variables.csv')
+current_vars = pandas.read_csv('feb_variables.csv')
 changed_vars_header = []
 for col in current_vars.columns:
     changed_vars_header.append(col)
@@ -70,4 +70,4 @@ already_ran_df.to_csv(final_folder + '\\' + date + '_already_ran_variables.csv',
 updated_vars = pandas.concat([already_ran_df, current_vars], ignore_index=True)
 updated_vars.drop_duplicates(keep=False, inplace=True)
 print(updated_vars)
-updated_vars.to_csv('test_variables.csv', index=False)
+updated_vars.to_csv('feb_variables.csv', index=False)
