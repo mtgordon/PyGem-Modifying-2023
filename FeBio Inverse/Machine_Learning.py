@@ -1,5 +1,6 @@
 import predict_funtions as pf
 import PostProcess_FeBio as pp
+import PCA_data as pd
 
 import random
 
@@ -19,19 +20,20 @@ def machine_learning_all(epochs, epochs_start, layers, capacity, patience, squar
     # TODO: STEP 3
     # Generate new PCs based on the train file
     Results_Folder = '2023_6_9_auto'
-    mod_train_path = pp.process_features(train_data_path, Results_Folder, "june, 12")
-
-    pc_csv_path = pf.generate_PC_csv_file_from(mod_train_path, [5, 6, 7, 8])
-
-    model_path = pf.fit_model_save_best_and_curve(train_data_path, epochs, layers, capacity, patience, epochs_start, squared)
+    # mod_train_path = pp.process_features(train_data_path, Results_Folder, "june, 12")
+    #
+    # pc_csv_path = pf.generate_PC_csv_file_from(mod_train_path, [5, 6, 7, 8])
+    #
+    # model_path = pf.fit_model_save_best_and_curve(train_data_path, epochs, layers, capacity, patience, epochs_start, squared)
 
     # Save PCs and save the PCA Model
 
     # TODO: Step 4
     # Function to add noice to test file and other features
+    mod_test_path = pd.add_noise_to_csv(test_data_path, Results_Folder)
 
     # TODO: Step 5
-    # Use the train model before to predect the test file above
+    # Use the train model before to predict the test file above
     # pf.load_model_to_predict_analysis_plot(...)
 
     # TODO: Step 6
@@ -45,9 +47,10 @@ def machine_learning_all(epochs, epochs_start, layers, capacity, patience, squar
     # print("output learning curve: ", output_image.title())
     print("output train data: ", train_data_path)
     print("output test data: ", test_data_path)
-    print("Modified test data: ", mod_train_path)
-    print("PCs data: ", pc_csv_path)
-    print("Saved best model name: ", model_path)
+    # print("Modified train data: ", mod_train_path)
+    print("Modified test data: ", mod_test_path)
+    # print("PCs data: ", pc_csv_path)
+    # print("Saved best model name: ", model_path)
 
 
 
