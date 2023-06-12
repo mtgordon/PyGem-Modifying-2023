@@ -13,6 +13,8 @@ import pandas as pd
 from scipy.stats import ttest_ind
 import numpy as np
 import re
+import pickle
+import os
 
 def do_PCA_get_data(pca_trials_df, PS_point, no_points, fig_file_prefix, results_folder, group_category, groups):
     pca_df, pca = PCA_(pca_trials_df)
@@ -25,6 +27,53 @@ def do_PCA_get_data(pca_trials_df, PS_point, no_points, fig_file_prefix, results
 ####################################################
 ########## Do the PCA ##############################
 ####################################################
+
+
+def generate_PCA_Model_path(pca):
+
+    # Create the directory if it doesn't exist
+    if not os.path.exists('PCA Models and csv'):
+        os.makedirs('PCA Models and csv')
+
+    # Determine the file name
+    suffix = 1
+    pca_path = os.path.join('PCA Models and csv', f"{pca}_{suffix}.csv")
+
+    while os.path.exists(pca_path):
+        suffix += 1
+        pca_path = os.path.join('PCA Models and csv', f"{pca}_{suffix}.csv")
+
+    return pca_path
+
+
+def save_pca_model(pca, file_path):
+    """
+    Saves the PCA model to a file using pickle serialization.
+
+    Args:
+        pca (sklearn.decomposition.PCA): The PCA model object.
+        file_name (str): The name of the file to save the PCA model.
+
+    Returns:
+        None
+    """
+    with open(file_path, 'wb') as file:
+        pickle.dump(pca, file)
+
+def load_pca_model(file_path):
+    """
+    Loads a PCA model from a file.
+
+    Args:
+        file_name (str): The name of the file containing the PCA model.
+
+    Returns:
+        sklearn.decomposition.PCA: The loaded PCA model.
+    """
+    with open(file_path, 'rb') as file:
+        pca = pickle.load(file)
+    return pca
+
 
 def PCA_(pca_trials_df):
     ### Notes
@@ -76,6 +125,8 @@ def PCA_(pca_trials_df):
         pc_df.set_index('SubjectID', inplace=True)
         pca_df = pd.concat([pca_trials_data_df, pc_df], axis = 1)
 
+    pca_path = generate_PCA_Model_path(pca)
+    save_pca_model(pca, pca_path)
     return(pca_df, pca)
 
 

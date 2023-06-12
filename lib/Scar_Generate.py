@@ -1,6 +1,11 @@
 import numpy as np
 
 
+# Author: Yutian Yang
+# Created: 5/26/2023
+# Description: This is a file of all the interaction functions with points that treat a scar
+# Version: 1.0
+# Email: yyt542985333@gmail.com
 
 def get_points_x_from_mid(file_name, part_name, mid_x, threshold_x_from_mid):
     from lib.IOfunctions import extractPointsForPartFrom
@@ -15,10 +20,9 @@ def get_points_x_from_mid(file_name, part_name, mid_x, threshold_x_from_mid):
         threshold_x_from_mid (float): The threshold distance from the mid-point in the x-direction.
 
     Returns:
-        tuple: A tuple containing:
-            - filtered_points (list): The filtered points within the specified range.
-            - filtered_count (int): The count of filtered points.
-            - total_count (int): The total count of all points in the part.
+        filtered_points (list): The filtered points within the specified range.
+        filtered_count (int): The count of filtered points.
+        total_count (int): The total count of all points in the part.
 
     Description:
         This function reads the points from the specified file and part, and filters out the points that fall within

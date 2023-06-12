@@ -107,3 +107,5 @@ def generate_int_csvs(file_params,object_list,log_name,feb_name,first_int_file_f
     # sleep to give the file time to reach directory
     time.sleep(1)
 
+    return csv_filename
+
