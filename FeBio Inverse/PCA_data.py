@@ -270,6 +270,9 @@ def add_noise_to_csv(csv_filename, noise_scale):
         splined_avw_xs, splined_avw_ys = get_noise_spline(noise_avw_xs, noise_avw_ys)
         splined_bottom_xs , splined_bottom_ys = get_noise_spline(noise_bottom_xs, noise_bottom_ys)
 
+        apex = min(splined_avw_ys)
+
+        file_and_e_values[-1] = apex
 
         pc_rows.extend(file_and_e_values)
         pc_rows.extend(splined_avw_xs)
