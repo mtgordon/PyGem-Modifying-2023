@@ -10,6 +10,7 @@ from scipy.interpolate import interpolate
 from scipy.interpolate import UnivariateSpline
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
+from predict_funtions import get_file_name
 import pandas as pd
 from scipy.stats import ttest_ind
 import numpy as np
@@ -278,8 +279,10 @@ def PCA_and_Score(pca_trials_df, other_data_df):
 def add_noise_to_csv(csv_filename, results_folder, noise_scale=0.5):
     # Results_Folder = "C:\\Users\\phine\\OneDrive\\Desktop\\FEBio files\\Pycharm Results"
     Results_Folder = results_folder
-    current_date = datetime.datetime.now()
-    date_prefix = str(current_date.year) + '_' + str(current_date.month) + '_' + str(current_date.day)
+
+    if not os.path.exists(Results_Folder):
+        os.makedirs(Results_Folder)
+
     data_df = pd.read_csv(csv_filename)
     first_row = True
     pc_header = []
@@ -347,7 +350,7 @@ def add_noise_to_csv(csv_filename, results_folder, noise_scale=0.5):
                                                         'principal component 2': 'principal component 2 Bottom Tissue'})
 
     final_df = pd.concat([pc_df.loc[:, ["File Name", "E1", "E2", "E3", "Apex"]], PC_scores, PC_scores_bottom], axis=1)
-    file_path = Results_Folder + '\\' + date_prefix + "_modified_test.csv"
+    file_path = Results_Folder + '\\' + "_modified_test.csv"
     final_df.to_csv(file_path, index=False)
 
     return file_path

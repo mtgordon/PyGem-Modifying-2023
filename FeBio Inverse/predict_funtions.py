@@ -490,24 +490,10 @@ def plot_learning_curves(history, results, layers, capacity, patience, save_path
 
 
 def write_predicted_y_analysed_to_csv(output_csv_path, predicted_y, new_y):
-    """
-    Write the predicted values, actual values, difference, and percentage difference to a CSV file.
-
-    Parameters:
-        output_csv_path (str): The path to save the output CSV file.
-        predicted_y (numpy.ndarray): The predicted values.
-        new_y (numpy.ndarray): The actual values.
-
-    Returns:
-        None
-
-    Example:
-        >>> predicted_y = np.array([1.2, 2.3, 3.4])
-        >>> new_y = np.array([1.1, 2.5, 3.0])
-        >>> output_csv_path = "analysis_results.csv"
-        >>> write_predicted_y_analysed_to_csv(output_csv_path, predicted_y, new_y)
-
-    """
+    if new_y.shape[1] == predicted_y.shape[1]:
+        num_columns = new_y.shape[1]
+    else:
+        return "Error: the test file has different format with the predicted data"
     dif_y = predicted_y - new_y
     percent_y = dif_y / new_y
     percent_y_formatted = np.array(["{:.2f}%".format(value * 100) for value in percent_y.flat])
@@ -518,8 +504,11 @@ def write_predicted_y_analysed_to_csv(output_csv_path, predicted_y, new_y):
     combined_data = np.concatenate(
         (predicted_y, empty_column, new_y, empty_column, dif_y, empty_column, percent_y_formatted),
         axis=1)
+    empty_header = ''
+    for i in range(0, num_columns):
+        empty_header += f", ''"
 
-    headers = ['predicted_y', '', '', 'new_y', '', '', 'dif_y', '', '', 'percent_y']
+    headers = ['predicted_y', empty_header, 'new_y', empty_header, 'dif_y', empty_header, 'percent_y']
     header_row = ",".join(headers)
     with open(output_csv_path, 'w') as file:
         file.write(header_row + "\n")
@@ -826,70 +815,45 @@ def get_data_sole(file_path, column):
     return data_numeric
 
 
-def get_rid_of_edge(data_x, data_y, threshold_fraction, dif_x, dif_y, p_x, p_y):
-    """
-    Filter the data points based on percentiles of their x and y coordinates.
-
-    Parameters:
-        data_x (Series): The x-coordinate data.
-        data_y (Series): The y-coordinate data.
-        threshold_fraction (float): The fraction of data points to be retained. Should be between 0 and 1.
-        dif_x (Series): The x-coordinate differences.
-        dif_y (Series): The y-coordinate differences.
-        p_x (Series): The x-coordinate percentage values.
-        p_y (Series): The y-coordinate percentage values.
-
-    Returns:
-        filtered_data_x (Series): The filtered x-coordinate data.
-        filtered_data_y (Series): The filtered y-coordinate data.
-        filtered_dif_x (Series): The filtered x-coordinate differences.
-        filtered_dif_y (Series): The filtered y-coordinate differences.
-        filtered_p_x (Series): The filtered x-coordinate percentage values.
-        filtered_p_y (Series): The filtered y-coordinate percentage values.
-
-    Example:
-        >>> threshold = 0.1
-        >>> filtered_data_x, filtered_data_y, filtered_dif_x, filtered_dif_y, filtered_p_x, filtered_p_y = get_rid_of_edge(
-                data_x, data_y, threshold, dif_x, dif_y, p_x, p_y)
-
-    Notes:
-        - This function filters the data points based on the percentiles of their x and y coordinates.
-        - The fraction specified by 'threshold_fraction' determines the range of data points to be retained.
-          For example, if threshold_fraction = 0.1, the function retains the middle 80% of data points (10th to 90th percentile).
-        - The 'data_x' and 'data_y' parameters should be Pandas Series objects representing the x and y coordinates of the data points.
-        - The 'threshold_fraction' should be a float between 0 and 1.
-        - The 'dif_x', 'dif_y', 'p_x', and 'p_y' parameters should be Pandas Series objects representing additional data associated with each data point.
-        - The function returns the filtered x and y coordinate data, as well as the corresponding filtered differences and percentage values.
-    """
+def get_rid_of_edge(data_1, data_2, data_3, threshold_fraction, dif_1, dif_2, dif_3, p_1, p_2, p_3):
     threshold = threshold_fraction
 
     # Calculate the 10th and 90th percentiles for each coordinate
-    lower_percentile_x = data_x.quantile(threshold / 2)
-    upper_percentile_x = data_x.quantile(1 - (threshold / 2))
-    print("x", threshold / 2, 1 - threshold / 2, lower_percentile_x, upper_percentile_x)
+    lower_percentile_1 = data_1.quantile(threshold / 2)
+    upper_percentile_1 = data_1.quantile(1 - (threshold / 2))
+    print("data1", threshold / 2, 1 - threshold / 2, lower_percentile_1, upper_percentile_1)
 
-    lower_percentile_y = data_y.quantile(threshold / 2)
-    upper_percentile_y = data_y.quantile(1 - (threshold / 2))
-    print("y", lower_percentile_y, upper_percentile_y)
+    lower_percentile_2 = data_2.quantile(threshold / 2)
+    upper_percentile_2 = data_2.quantile(1 - (threshold / 2))
+    print("data2", lower_percentile_2, upper_percentile_2)
+
+    lower_percentile_3 = data_3.quantile(threshold / 2)
+    upper_percentile_3 = data_3.quantile(1 - (threshold / 2))
+    print("data3", lower_percentile_3, upper_percentile_3)
 
     # Filter the data based on percentiles for each coordinate
-    filtered_data_x = data_x[(data_x >= lower_percentile_x) & (data_x <= upper_percentile_x)]
-    print(filtered_data_x)
-    filtered_data_y = data_y[(data_y >= lower_percentile_y) & (data_y <= upper_percentile_y)]
+    filtered_data_1 = data_1[(data_1 >= lower_percentile_1) & (data_1 <= upper_percentile_1)]
+
+    filtered_data_2 = data_2[(data_2 >= lower_percentile_2) & (data_2 <= upper_percentile_2)]
+
+    filtered_data_3 = data_3[(data_3 >= lower_percentile_3) & (data_3 <= upper_percentile_3)]
 
     # Get the joined index of all three data sets
-    common_index = filtered_data_x.index.intersection(filtered_data_y.index)
+    common_index = filtered_data_1.index.intersection(filtered_data_2.index).intersection(filtered_data_3.index)
 
-    filtered_data_x = filtered_data_x.loc[common_index]
-    filtered_data_y = filtered_data_y.loc[common_index]
+    filtered_data_1 = filtered_data_1.loc[common_index]
+    filtered_data_2 = filtered_data_2.loc[common_index]
+    filtered_data_3 = filtered_data_3.loc[common_index]
 
-    filtered_dif_x = dif_x.loc[common_index]
-    filtered_dif_y = dif_y.loc[common_index]
-    #
-    filtered_p_x = p_x.loc[common_index]
-    filtered_p_y = p_y.loc[common_index]
+    filtered_dif_1 = dif_1.loc[common_index]
+    filtered_dif_2 = dif_2.loc[common_index]
+    filtered_dif_3 = dif_3.loc[common_index]
 
-    return filtered_data_x, filtered_data_y, filtered_dif_x, filtered_dif_y, filtered_p_x, filtered_p_y
+    filtered_p_1 = p_1.loc[common_index]
+    filtered_p_2 = p_2.loc[common_index]
+    filtered_p_3 = p_3.loc[common_index]
+
+    return filtered_data_1, filtered_data_2, filtered_data_3, filtered_dif_1, filtered_dif_2, filtered_dif_3, filtered_p_1, filtered_p_2, filtered_p_3
 
 
 def plot_hist(data, save_path, bin, square, type):
@@ -973,52 +937,32 @@ def generate_hist_png_path(file_name, bin, type, square):
 
 
 def get_data_corresponding(file_name, column):
-    """
-    Retrieve the corresponding data columns from a file based on the specified column.
 
-    Parameters:
-        file_name (str): The path or name of the file containing the data.
-        column (str): The column identifier or label.
-
-    Returns:
-        data_x (Series): The data column corresponding to the specified column.
-        data_y (Series): The data column following the specified column.
-        data_dif_x (Series): The data column three positions after the specified column.
-        data_dif_y (Series): The data column following the column three positions after the specified column.
-        data_percent_x (Series): The data column six positions after the specified column, representing percentages.
-        data_percent_y (Series): The data column following the column six positions after the specified column, representing percentages.
-
-    Example:
-        >>> get_data_corresponding(file_name, column='A')
-
-    Notes:
-        - This function retrieves the columns of data corresponding to the specified column from a file.
-        - The 'file_name' parameter should be a string representing the path or name of the file containing the data.
-        - The 'column' parameter should be a string representing the column identifier or label.
-        - The function assumes that the data file has a specific structure with columns arranged in a certain order.
-        - The function returns the data columns corresponding to the specified column, as well as additional related columns.
-    """
     original_numeric_value = ord(column) - ord('A')
 
-    dif_numeric_value = original_numeric_value + 3
-    percent_numeric_value = original_numeric_value + 6
+    dif_numeric_value = original_numeric_value + 4
+    percent_numeric_value = original_numeric_value + 8
 
     file = read_csv(file_name, skiprows=1)
-    data_x = file.iloc[:, original_numeric_value]
-    data_y = file.iloc[:, original_numeric_value + 1]
-    print("data_x", data_x)
-    data_dif_x = file.iloc[:, dif_numeric_value]
-    data_dif_y = file.iloc[:, dif_numeric_value + 1]
+    data_1 = file.iloc[:, original_numeric_value]
+    data_2 = file.iloc[:, original_numeric_value + 1]
+    data_3 = file.iloc[:, original_numeric_value + 2]
+    print("data_1", data_1)
+    data_dif_1 = file.iloc[:, dif_numeric_value]
+    data_dif_2 = file.iloc[:, dif_numeric_value + 1]
+    data_dif_3 = file.iloc[:, dif_numeric_value + 2]
 
-    data_percent_x = file.iloc[:, percent_numeric_value]
-    data_percent_y = file.iloc[:, percent_numeric_value + 1]
+    data_percent_1 = file.iloc[:, percent_numeric_value]
+    data_percent_2 = file.iloc[:, percent_numeric_value + 1]
+    data_percent_3 = file.iloc[:, percent_numeric_value + 2]
 
     # Remove the percentage symbol (%) and convert to numeric type
-    data_percent_x = data_percent_x.str.rstrip('%').astype(float) / 100.0
-    data_percent_y = data_percent_y.str.rstrip('%').astype(float) / 100.0
+    data_percent_1 = data_percent_1.str.rstrip('%').astype(float) / 100.0
+    data_percent_2 = data_percent_2.str.rstrip('%').astype(float) / 100.0
+    data_percent_3 = data_percent_3.str.rstrip('%').astype(float) / 100.0
 
-    # return data_x, data_y, data_z, data_dif_x, data_dif_y, data_dif_z
-    return data_x, data_y, data_dif_x, data_dif_y, data_percent_x, data_percent_y
+    # return data_1, data_2, data_z, data_dif_1, data_dif_y, data_dif_z
+    return data_1, data_2, data_3, data_dif_1, data_dif_2, data_dif_3, data_percent_1, data_percent_2, data_percent_3
 
 
 def plot_scatter(save_path, data, data_dif, value, type, threshold):
@@ -1101,7 +1045,7 @@ def generate_scatter_png_path(file_path, value, type, threshold):
     return plot_path
 
 
-def plot_2_outputs(data_1, data_2, threshold_fraction, data_dif_1, data_dif_2, data_p_1, data_p_2, file_path, type_dif, type_percent, directory):
+def plot_2_outputs(data_1, data_2, data_3, threshold_fraction, data_dif_1, data_dif_2, data_dif_3, data_p_1, data_p_2, data_p_3, file_path, type_dif, type_percent, directory):
     """
     Plot scatter plots for two outputs.
 
@@ -1133,8 +1077,8 @@ def plot_2_outputs(data_1, data_2, threshold_fraction, data_dif_1, data_dif_2, d
         - The function removes data points at the edges based on the 'threshold_fraction' parameter before plotting the scatter plots.
         - The scatter plots are saved in the specified directory.
     """
-    data_1, data_2, data_dif_1, data_dif_2, data_p_1, data_p_2 = \
-        get_rid_of_edge(data_1, data_2, threshold_fraction, data_dif_1, data_dif_2, data_p_1, data_p_2)
+    data_1, data_2, data_3, data_dif_1, data_dif_2, data_dif_3, data_p_1, data_p_2. data_p_3 = \
+        get_rid_of_edge(data_1, data_2, data_3, threshold_fraction, data_dif_1, data_dif_2, data_dif_3, data_p_1, data_p_2, data_p_3)
 
     # Create the directory if it doesn't exist
     if not os.path.exists(directory):
@@ -1156,6 +1100,14 @@ def plot_2_outputs(data_1, data_2, threshold_fraction, data_dif_1, data_dif_2, d
     print(save_path_p2)
     plot_scatter(save_path_p2, data_2, data_p_2, "y2", type_percent, threshold_fraction)
 
+    save_path_d3 = os.path.join(directory, generate_scatter_png_path(file_path, "y3", type_dif, threshold_fraction))
+    print(save_path_d3)
+    plot_scatter(save_path_d3, data_3, data_dif_3, "y3", type_dif, threshold_fraction)
+
+    save_path_p3 = os.path.join(directory, generate_scatter_png_path(file_path, "y3", type_percent, threshold_fraction))
+    print(save_path_p3)
+    plot_scatter(save_path_p3, data_3, data_p_3, "y3", type_percent, threshold_fraction)
+
 
 
 
@@ -1164,60 +1116,31 @@ def plot_2_outputs(data_1, data_2, threshold_fraction, data_dif_1, data_dif_2, d
 # ***************************************** Learning And Predicting *********************************** #
 # ***************************************** Learning And Predicting *********************************** #
 
-def fit_model_save_best_and_curve(data, epochs, layers, capacity, patience, epochs_start, squared=False):
-    model_path, learning_curve_path = generate_sequential_model_and_curve_path(data, epochs, layers, capacity, patience, squared)
-    """
-    Fit a sequential model, save the best model, and plot the learning curves.
-
-    Parameters:
-        data (str): File path of the dataset.
-        epochs (int): Number of epochs for training the model.
-        layers (int): Number of layers in the model.
-        capacity (int): Capacity of each layer.
-        patience (int): Number of epochs with no improvement after which training will be stopped.
-        epochs_start (int): Starting epoch number for plotting the learning curves.
-        squared (bool): Whether to square the loss values for plotting (default is False).
-
-    Returns:
-        str: File path of the saved best model.
-
-    Example:
-        >>> fit_model_save_best_and_curve(data='dataset.csv', epochs=100, layers=3, capacity=64,
-                                          patience=10, epochs_start=1, squared=False)
-
-    Notes:
-        - This function fits a sequential model to the given dataset.
-        - The best model based on the validation loss is saved.
-        - Learning curves showing the training and validation loss are plotted and saved.
-        - The file paths for the best model and the learning curves are returned.
-        - The 'data' parameter should be a string representing the file path of the dataset.
-        - The 'epochs' parameter should be an integer representing the number of epochs for training the model.
-        - The 'layers' parameter should be an integer representing the number of layers in the model.
-        - The 'capacity' parameter should be an integer representing the capacity of each layer.
-        - The 'patience' parameter should be an integer representing the number of epochs with no improvement after which training will be stopped.
-        - The 'epochs_start' parameter should be an integer representing the starting epoch number for plotting the learning curves.
-        - The 'squared' parameter should be a boolean indicating whether to square the loss values for plotting (default is False).
-        - The function assumes the availability of GPU for model training.
-    """
+def fit_model_save_best_and_curve(data, epochs, layers, capacity, patience, epochs_start, squared=False, print_path=False):
     # load dataset
     x, y = get_dataset(data)
-    print("Input X: \n", x, "\n Output y: \n", y)
+    if print_path:
+        print("Training input x: \n", x, "\nTraining output y: \n", y)
 
     set_up_gpu()
+
+    model_path, learning_curve_path = generate_sequential_model_and_curve_path(data, epochs, layers, capacity, patience, squared)
 
     # evaluate model
     results, model, history = evaluate_model(x, y, 2, layers, capacity, epochs, patience, model_path)
 
-    print(model_path)
+    if print_path:
+        print("Successfully trained and saved model! \nModel_path: ", model_path)
 
     # mean, std = cal_result(results)
     # # summarize performance
     # print('MAE: %.3f (%.3f)' % (mean(results), std(results)))
 
     plot_learning_curves(history, results, layers, capacity, patience, learning_curve_path, epochs_start, squared)
-    print("learning curve path: ", learning_curve_path)
+    if print_path:
+        print("Successfully plotted learning curv! \nLearning curve path: ", learning_curve_path)
 
-    return model_path
+    return model_path, learning_curve_path
 
 
 def load_model_to_predict_analysis_plot(model_path, data, old_data ='', type_dif="dif", type_percent="percent", threshold_start=0,
@@ -1229,6 +1152,7 @@ def load_model_to_predict_analysis_plot(model_path, data, old_data ='', type_dif
 
     # get the result of the predicted output y
     predicted_y = loaded_model.predict(new_x)
+
 
     print(predicted_y)
 
@@ -1242,23 +1166,22 @@ def load_model_to_predict_analysis_plot(model_path, data, old_data ='', type_dif
     write_predicted_y_to_csv(predicted_path, predicted_y)
     write_predicted_y_analysed_to_csv(analysis_path, predicted_y, new_y)
 
-    data_x, data_y, data_dif_x, data_dif_y, data_p_x, data_p_y = get_data_corresponding(analysis_path, "D")
+    data_1, data_2, data_3, data_dif_1, data_dif_2, data_dif_3, data_p_1, data_p_2, data_p_3 = get_data_corresponding(analysis_path, 'E')
 
     analysis_name = get_file_name(analysis_path)
 
     for i in range(0, threshold_range):
-        plot_2_outputs(data_x, data_y, threshold_start, data_dif_x, data_dif_y, data_p_x, data_p_y, analysis_name, type_dif, type_percent, directory)
+        plot_2_outputs(data_1, data_2, threshold_start, data_dif_1, data_dif_2, data_p_1, data_p_2, analysis_name, type_dif, type_percent, directory)
         threshold_start += threshold_step
 
-    return directory
-
+    return directory, predicted_path, analysis_path
 
 def machine_learning_save_predict(train_data, test_data, epochs=5000, layers=9, capacity=32, patience=500, epochs_start=1000):
-    model_path = fit_model_save_best_and_curve(train_data, epochs, layers, capacity, patience, epochs_start)
-    directory = load_model_to_predict_analysis_plot(model_path, test_data)
+    model_path, learning_curve_path = fit_model_save_best_and_curve(train_data, epochs, layers, capacity, patience, epochs_start)
+    directory, predicted_path, analysis_path = load_model_to_predict_analysis_plot(model_path, test_data)
     print("Model Path: ", model_path, "\nPredicted Data: ", directory)
 
-    return model_path, directory
+    return model_path, learning_curve_path, directory, predicted_path, analysis_path
 
 
 
