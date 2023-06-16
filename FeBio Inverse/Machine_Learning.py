@@ -21,12 +21,15 @@ def machine_learning_all(epochs, epochs_start, layers, capacity, patience, squar
     Results_Folder = '2023_6_9_auto'
     mod_train_path = pp.process_features(train_data_path, Results_Folder, "june, 12")
 
+
+
     # Save PCs and save the PCA Model
     pc_csv_path = pf.generate_PC_csv_file_from(mod_train_path, [5, 6, 7, 8])
 
     # add noise to test file
     mod_test_path = pd.add_noise_to_csv(test_data_path, Results_Folder)
-
+    # TEST USE!!!
+    # test = pf.generate_train_test_csvs_files_from(mod_test_path)[1]
 
     # TODO: Step 5
 
@@ -49,7 +52,7 @@ def machine_learning_all(epochs, epochs_start, layers, capacity, patience, squar
     print("output train data: ", train_data_path)
     print("output test data: ", test_data_path)
     print("Modified train data: ", mod_train_path)
-    print("Modified test data: ", mod_test_path)
+    # print("Modified test data: ", mod_test_path)
     print("Saved PCs data: ", pc_csv_path)
     print("Saved best model name: ", model_path)
     print("Model learning curve: ", learning_curve_path)
@@ -64,14 +67,14 @@ old_data = 'combo_features (1).csv'
 train_data = 'combo_features (1).csv'
 test_data = 'updated_order_features_5_30.csv'
 # model_path = 'Models\\real_y2el_50009_c36_x1x2'
-epochs = 100
+epochs = 10000
 epochs_start = 10
-layers = 9
+layers = 3
 capacity = 36
-patience = 10
+patience = 50
 squared = False
 random.seed(33)
-data = "csv_test\\2023_6_9_intermediatetrain_1.csv"
+data = "D:\\Gordon\\Automate FEB Runs\\2023_6_9_auto\\2023_6_13_intermediate.csv"
 
 machine_learning_all(epochs, epochs_start, layers, capacity, patience, squared, data)
 # pf.machine_learning_save_predict(train_data, test_data)

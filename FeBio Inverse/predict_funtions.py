@@ -53,6 +53,7 @@ def get_available_gpus():
         print("No GPUs available.")
     return gpu_names
 
+
 def set_up_gpu():
     """
     Set up GPU memory allocation for TensorFlow.
@@ -214,10 +215,16 @@ def generate_sequential_model(n_inputs, n_outputs, layers, capacity):
     # Specify the device placement for the model
     with tf.device(device_name):
         model = Sequential()
-        for i in range(0, layers):
-            model.add(Dense(capacity, input_dim=n_inputs, kernel_initializer='he_uniform', activation='relu'))
 
-        model.add(Activation('relu'))
+        for i in range(layers):
+            if i == 0:
+                model.add(Dense(capacity, input_dim=n_inputs, kernel_initializer='he_uniform', activation='relu'))
+            else:
+                model.add(Dense(capacity, kernel_initializer='he_uniform', activation='relu'))
+
+            # model.add(BatchNormalization())
+
+            model.add(Dropout(0.1))
 
         model.add(Dense(n_outputs))
         model.compile(loss='mae', optimizer='adam')
@@ -239,7 +246,6 @@ def get_sequential_other_model(n_inputs, n_outputs, layers, capacity):
     model.add(Dense(n_outputs))
     model.compile(loss='mae', optimizer='adam')
     return model
-
 
 
 def train_val_test_split(X, y, val_size=0.2, test_size=0.1, random_state=1, split2_only=False):
@@ -505,7 +511,7 @@ def write_predicted_y_analysed_to_csv(output_csv_path, predicted_y, new_y):
         (predicted_y, empty_column, new_y, empty_column, dif_y, empty_column, percent_y_formatted),
         axis=1)
     empty_header = ''
-    for i in range(0, num_columns):
+    for i in range(0, num_columns - 1):
         empty_header += f", ''"
 
     headers = ['predicted_y', empty_header, 'new_y', empty_header, 'dif_y', empty_header, 'percent_y']
@@ -534,6 +540,9 @@ def write_predicted_y_to_csv(output_csv_path, predicted_y):
         >>> write_predicted_y_to_csv(output_csv_path, predicted_y)
 
     """
+    directory = os.path.dirname(output_csv_path)
+    os.makedirs(directory, exist_ok=True)  # Create the directory if it does not exist
+
     with open(output_csv_path, 'w') as file:
         for row in predicted_y:
             formatted_row = ",".join("{:.18e}".format(value) for value in row)
@@ -541,25 +550,6 @@ def write_predicted_y_to_csv(output_csv_path, predicted_y):
 
 
 def generate_predicted_analysis_csv_paths(model_path, new_data_path, old_data=''):
-    """
-    Generate the paths for the predicted and analysis CSV files.
-
-    Parameters:
-        model_path (str): The path to the model file.
-        new_data_path (str): The path to the new data file.
-        old_data (str): Optional path to the old data file.
-
-    Returns:
-        predicted_path (str): The path for the predicted CSV file.
-        analysis_path (str): The path for the analysis CSV file.
-
-    Example:
-        >>> model_path = "model.h5"
-        >>> new_data_path = "new_data.csv"
-        >>> predicted_path, analysis_path = generate_predicted_analysis_csv_paths(model_path, new_data_path)
-
-    """
-
     # Create the directory if it doesn't exist
     if not os.path.exists('PredictedData'):
         os.makedirs('PredictedData')
@@ -718,8 +708,6 @@ def generate_PC_csv_file_from(file_path, columns):
     return pc_path
 
 
-
-
 def generate_sequential_model_and_curve_path(data, epochs, layers, capacity, patience, squared):
     """
     Generate and return the paths for the sequential model and learning curve image.
@@ -761,17 +749,17 @@ def generate_sequential_model_and_curve_path(data, epochs, layers, capacity, pat
     # Determine the model name
     suffix = 1
     model_path = os.path.join("Models", f"{data_name}_{suffix}el{int(epochs)}{int(layers)}pat{patience}_c{capacity}")
-    curve_path = os.path.join('Models', f"{data_name}_loss{suffix}el{int(epochs)}{int(layers)}pat{patience}s{squared}.png")
+    curve_path = os.path.join('Models',
+                              f"{data_name}_loss{suffix}el{int(epochs)}{int(layers)}pat{patience}s{squared}.png")
 
     while os.path.exists(model_path):
         suffix += 1
-        model_path = os.path.join("Models", f"{data_name}_{suffix}el{int(epochs)}{int(layers)}pat{patience}_c{capacity}")
+        model_path = os.path.join("Models",
+                                  f"{data_name}_{suffix}el{int(epochs)}{int(layers)}pat{patience}_c{capacity}")
         curve_path = os.path.join('Models',
-                                    f"{data_name}_loss{suffix}el{int(epochs)}{int(layers)}pat{patience}s{squared}.png")
+                                  f"{data_name}_loss{suffix}el{int(epochs)}{int(layers)}pat{patience}s{squared}.png")
 
     return model_path, curve_path
-
-
 
 
 # *****************************PLOTING FUNCIONS********************************** #
@@ -937,7 +925,6 @@ def generate_hist_png_path(file_name, bin, type, square):
 
 
 def get_data_corresponding(file_name, column):
-
     original_numeric_value = ord(column) - ord('A')
 
     dif_numeric_value = original_numeric_value + 4
@@ -965,32 +952,7 @@ def get_data_corresponding(file_name, column):
     return data_1, data_2, data_3, data_dif_1, data_dif_2, data_dif_3, data_percent_1, data_percent_2, data_percent_3
 
 
-def plot_scatter(save_path, data, data_dif, value, type, threshold):
-    """
-    Create a scatter plot of two data columns.
-
-    Parameters:
-        save_path (str): The file path to save the plot.
-        data (Series): The data column for the x-axis.
-        data_dif (Series): The data column for the y-axis.
-        value (str): The label for the x-axis.
-        type (str): The label for the y-axis.
-        threshold (float): The threshold value for filtering the data.
-
-    Returns:
-        None
-
-    Example:
-        >>> plot_scatter(save_path, data, data_dif, value='X', type='Difference', threshold=0.2)
-
-    Notes:
-        - This function creates a scatter plot of two data columns.
-        - The 'save_path' parameter should be a string representing the file path to save the plot.
-        - The 'data' and 'data_dif' parameters should be pandas Series objects representing the data columns.
-        - The 'value' and 'type' parameters should be strings representing the labels for the x-axis and y-axis, respectively.
-        - The 'threshold' parameter should be a float representing the threshold value for filtering the data.
-        - The function saves the plot to the specified file path.
-    """
+def plot_scatter(save_path, data, data_dif, value, type, threshold, show=False):
     plt.figure(figsize=(16, 9))
 
     plt.scatter(data, data_dif)
@@ -1003,8 +965,8 @@ def plot_scatter(save_path, data, data_dif, value, type, threshold):
                  fontsize=14)
 
     plt.savefig(save_path, dpi=800)
-
-    plt.show()
+    if show:
+        plt.show()
 
 
 def generate_scatter_png_path(file_path, value, type, threshold):
@@ -1045,40 +1007,11 @@ def generate_scatter_png_path(file_path, value, type, threshold):
     return plot_path
 
 
-def plot_2_outputs(data_1, data_2, data_3, threshold_fraction, data_dif_1, data_dif_2, data_dif_3, data_p_1, data_p_2, data_p_3, file_path, type_dif, type_percent, directory):
-    """
-    Plot scatter plots for two outputs.
-
-    Parameters:
-        data_1 (pd.Series): Data for output 1.
-        data_2 (pd.Series): Data for output 2.
-        threshold_fraction (float): Threshold fraction for filtering the data.
-        data_dif_1 (pd.Series): Difference data for output 1.
-        data_dif_2 (pd.Series): Difference data for output 2.
-        data_p_1 (pd.Series): Percentage data for output 1.
-        data_p_2 (pd.Series): Percentage data for output 2.
-        file_path (str): File path of the data file.
-        type_dif (str): Label for the difference type.
-        type_percent (str): Label for the percentage type.
-        directory (str): Directory path for saving the scatter plots.
-
-    Returns:
-        None
-
-    Notes:
-        - This function plots scatter plots for two outputs based on the input data and parameters.
-        - The 'data_1' and 'data_2' parameters should be pandas Series representing the data for output 1 and output 2, respectively.
-        - The 'threshold_fraction' parameter should be a float representing the threshold fraction for filtering the data.
-        - The 'data_dif_1' and 'data_dif_2' parameters should be pandas Series representing the difference data for output 1 and output 2, respectively.
-        - The 'data_p_1' and 'data_p_2' parameters should be pandas Series representing the percentage data for output 1 and output 2, respectively.
-        - The 'file_path' parameter should be a string representing the file path of the data file.
-        - The 'type_dif' and 'type_percent' parameters should be strings representing the labels for the difference type and percentage type, respectively.
-        - The 'directory' parameter should be a string representing the directory path for saving the scatter plots.
-        - The function removes data points at the edges based on the 'threshold_fraction' parameter before plotting the scatter plots.
-        - The scatter plots are saved in the specified directory.
-    """
-    data_1, data_2, data_3, data_dif_1, data_dif_2, data_dif_3, data_p_1, data_p_2. data_p_3 = \
-        get_rid_of_edge(data_1, data_2, data_3, threshold_fraction, data_dif_1, data_dif_2, data_dif_3, data_p_1, data_p_2, data_p_3)
+def plot_3_outputs(data_1, data_2, data_3, threshold_fraction, data_dif_1, data_dif_2, data_dif_3, data_p_1, data_p_2,
+                   data_p_3, file_path, type_dif, type_percent, directory, show=False):
+    data_1, data_2, data_3, data_dif_1, data_dif_2, data_dif_3, data_p_1, data_p_2, data_p_3 = \
+        get_rid_of_edge(data_1, data_2, data_3, threshold_fraction, data_dif_1, data_dif_2, data_dif_3, data_p_1,
+                        data_p_2, data_p_3)
 
     # Create the directory if it doesn't exist
     if not os.path.exists(directory):
@@ -1086,37 +1019,35 @@ def plot_2_outputs(data_1, data_2, data_3, threshold_fraction, data_dif_1, data_
 
     save_path_d1 = os.path.join(directory, generate_scatter_png_path(file_path, "y1", type_dif, threshold_fraction))
     print(save_path_d1)
-    plot_scatter(save_path_d1, data_1, data_dif_1, "y1", type_dif, threshold_fraction)
+    plot_scatter(save_path_d1, data_1, data_dif_1, "y1", type_dif, threshold_fraction, show)
 
     save_path_p1 = os.path.join(directory, generate_scatter_png_path(file_path, "y1", type_percent, threshold_fraction))
     print(save_path_p1)
-    plot_scatter(save_path_p1, data_1, data_p_1, "y1", type_percent, threshold_fraction)
+    plot_scatter(save_path_p1, data_1, data_p_1, "y1", type_percent, threshold_fraction, show)
 
     save_path_d2 = os.path.join(directory, generate_scatter_png_path(file_path, "y2", type_dif, threshold_fraction))
     print(save_path_d2)
-    plot_scatter(save_path_d2, data_2, data_dif_2, "y2", type_dif, threshold_fraction)
+    plot_scatter(save_path_d2, data_2, data_dif_2, "y2", type_dif, threshold_fraction, show)
 
     save_path_p2 = os.path.join(directory, generate_scatter_png_path(file_path, "y2", type_percent, threshold_fraction))
     print(save_path_p2)
-    plot_scatter(save_path_p2, data_2, data_p_2, "y2", type_percent, threshold_fraction)
+    plot_scatter(save_path_p2, data_2, data_p_2, "y2", type_percent, threshold_fraction, show)
 
     save_path_d3 = os.path.join(directory, generate_scatter_png_path(file_path, "y3", type_dif, threshold_fraction))
     print(save_path_d3)
-    plot_scatter(save_path_d3, data_3, data_dif_3, "y3", type_dif, threshold_fraction)
+    plot_scatter(save_path_d3, data_3, data_dif_3, "y3", type_dif, threshold_fraction, show)
 
     save_path_p3 = os.path.join(directory, generate_scatter_png_path(file_path, "y3", type_percent, threshold_fraction))
     print(save_path_p3)
-    plot_scatter(save_path_p3, data_3, data_p_3, "y3", type_percent, threshold_fraction)
-
-
-
+    plot_scatter(save_path_p3, data_3, data_p_3, "y3", type_percent, threshold_fraction, show)
 
 
 # ***************************************** Learning And Predicting *********************************** #
 # ***************************************** Learning And Predicting *********************************** #
 # ***************************************** Learning And Predicting *********************************** #
 
-def fit_model_save_best_and_curve(data, epochs, layers, capacity, patience, epochs_start, squared=False, print_path=False):
+def fit_model_save_best_and_curve(data, epochs, layers, capacity, patience, epochs_start, squared=False,
+                                  print_path=False):
     # load dataset
     x, y = get_dataset(data)
     if print_path:
@@ -1124,7 +1055,8 @@ def fit_model_save_best_and_curve(data, epochs, layers, capacity, patience, epoc
 
     set_up_gpu()
 
-    model_path, learning_curve_path = generate_sequential_model_and_curve_path(data, epochs, layers, capacity, patience, squared)
+    model_path, learning_curve_path = generate_sequential_model_and_curve_path(data, epochs, layers, capacity, patience,
+                                                                               squared)
 
     # evaluate model
     results, model, history = evaluate_model(x, y, 2, layers, capacity, epochs, patience, model_path)
@@ -1143,45 +1075,52 @@ def fit_model_save_best_and_curve(data, epochs, layers, capacity, patience, epoc
     return model_path, learning_curve_path
 
 
-def load_model_to_predict_analysis_plot(model_path, data, old_data ='', type_dif="dif", type_percent="percent", threshold_start=0,
-                                        threshold_step=0.05, threshold_range=5, ):
+def load_model_to_predict_analysis_plot(model_path, data, old_data='', type_dif="dif", type_percent="percent",
+                                        threshold_start=0,
+                                        threshold_step=0.05, threshold_range=5, print_results=True, show=False):
     loaded_model = load_model(model_path)
 
     new_x, new_y = get_dataset(data)
-    print('new x=', new_x)
+    if print_results:
+        print('new x=', new_x)
 
     # get the result of the predicted output y
     predicted_y = loaded_model.predict(new_x)
 
-
-    print(predicted_y)
+    if print_results:
+        print(predicted_y)
 
     predicted_path, analysis_path = generate_predicted_analysis_csv_paths(model_path, data, old_data)
 
     directory = os.path.dirname(predicted_path)
 
-    print("output predicted path: ", predicted_path)
-    print("output analysis path: ", analysis_path)
+    if print_results:
+        print("output predicted path: ", predicted_path)
+        print("output analysis path: ", analysis_path)
+
+    print("Directory path:", directory)
 
     write_predicted_y_to_csv(predicted_path, predicted_y)
     write_predicted_y_analysed_to_csv(analysis_path, predicted_y, new_y)
 
-    data_1, data_2, data_3, data_dif_1, data_dif_2, data_dif_3, data_p_1, data_p_2, data_p_3 = get_data_corresponding(analysis_path, 'E')
+    data_1, data_2, data_3, data_dif_1, data_dif_2, data_dif_3, data_p_1, data_p_2, data_p_3 = get_data_corresponding(
+        analysis_path, 'E')
 
     analysis_name = get_file_name(analysis_path)
 
     for i in range(0, threshold_range):
-        plot_2_outputs(data_1, data_2, threshold_start, data_dif_1, data_dif_2, data_p_1, data_p_2, analysis_name, type_dif, type_percent, directory)
+        plot_3_outputs(data_1, data_2, data_3, threshold_start, data_dif_1, data_dif_2, data_dif_3, data_p_1, data_p_2,
+                       data_p_3, analysis_name, type_dif, type_percent, directory, show)
         threshold_start += threshold_step
 
     return directory, predicted_path, analysis_path
 
-def machine_learning_save_predict(train_data, test_data, epochs=5000, layers=9, capacity=32, patience=500, epochs_start=1000):
-    model_path, learning_curve_path = fit_model_save_best_and_curve(train_data, epochs, layers, capacity, patience, epochs_start)
-    directory, predicted_path, analysis_path = load_model_to_predict_analysis_plot(model_path, test_data)
+
+def machine_learning_save_predict(train_data, test_data, epochs=5000, layers=9, capacity=32, patience=500,
+                                  epochs_start=1000):
+    model_path, learning_curve_path = fit_model_save_best_and_curve(train_data, epochs, layers, capacity, patience,
+                                                                    epochs_start)
+    directory, predicted_path, analysis_path = load_model_to_predict_analysis_plot(model_path, test_data, print_results=True)
     print("Model Path: ", model_path, "\nPredicted Data: ", directory)
 
     return model_path, learning_curve_path, directory, predicted_path, analysis_path
-
-
-

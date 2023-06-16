@@ -13,6 +13,7 @@ import csv
 import pandas as pd
 import PCA_data
 import os
+import predict_funtions as pf
 
 def process_features(csv_file, Results_Folder, date_prefix):
     int_df = pd.read_csv(csv_file)
@@ -35,8 +36,9 @@ def process_features(csv_file, Results_Folder, date_prefix):
     final_df = pd.concat([int_df.loc[:, ["File Name", "E1", "E2","E3","Apex"]], PC_scores, PC_scores_bottom], axis=1)
     if not os.path.exists(Results_Folder):
         os.makedirs(Results_Folder)
+    file_name = pf.get_file_name(csv_file)
 
-    file_path = Results_Folder + '\\' + date_prefix + "_features.csv"
+    file_path = Results_Folder + '\\' + file_name + date_prefix + "_features.csv"
 
     final_df.to_csv(file_path, index=False)
     return file_path

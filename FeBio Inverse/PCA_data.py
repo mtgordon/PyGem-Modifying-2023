@@ -276,7 +276,7 @@ def PCA_and_Score(pca_trials_df, other_data_df):
 # result_PC.to_csv('test.csv', columns=['principal component 1', 'principal component 2'], index=False)
 
 
-def add_noise_to_csv(csv_filename, results_folder, noise_scale=0.5):
+def add_noise_to_csv(csv_filename, results_folder, noise_scale=0.1):
     # Results_Folder = "C:\\Users\\phine\\OneDrive\\Desktop\\FEBio files\\Pycharm Results"
     Results_Folder = results_folder
 
