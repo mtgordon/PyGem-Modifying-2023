@@ -74,7 +74,7 @@ capacity = 36
 patience = 50
 squared = False
 random.seed(33)
-data = "D:\\Gordon\\Automate FEB Runs\\2023_6_9_auto\\2023_6_13_intermediate.csv"
+data = "2023_6_16_intermediate.csv"
 
 machine_learning_all(epochs, epochs_start, layers, capacity, patience, squared, data)
 # pf.machine_learning_save_predict(train_data, test_data)
