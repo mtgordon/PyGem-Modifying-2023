@@ -5,8 +5,6 @@ import PCA_data as pd
 import random
 
 
-
-
 def machine_learning_all(epochs, epochs_start, layers, capacity, patience, squared, data=None):
     # TODO: Step 1
     # generate the csv file (all)
@@ -19,26 +17,27 @@ def machine_learning_all(epochs, epochs_start, layers, capacity, patience, squar
     # TODO: STEP 3
     # Generate new PCs based on the train file,
     Results_Folder = '2023_6_9_auto'
-    mod_train_path = pp.process_features(train_data_path, Results_Folder, "june, 12")
-
-
+    mod_train_path = pp.process_features(train_data_path, Results_Folder)
 
     # Save PCs and save the PCA Model
     pc_csv_path = pf.generate_PC_csv_file_from(mod_train_path, [5, 6, 7, 8])
 
     # add noise to test file
-    mod_test_path = pd.add_noise_to_csv(test_data_path, Results_Folder)
+    mod_test_path = pd.add_noise_to_csv(test_data_path, Results_Folder, noise_scale=0)
+    # mod_test_path = pp.process_features(test_data_path, Results_Folder)
+
+
     # TEST USE!!!
     # test = pf.generate_train_test_csvs_files_from(mod_test_path)[1]
 
     # TODO: Step 5
 
-    model_path, learning_curve_path, predict_directory, predicted_path, analysis_path = pf.machine_learning_save_predict(mod_train_path, mod_test_path, epochs, layers, capacity, patience, epochs_start)
+    # model_path, learning_curve_path, predict_directory, predicted_path, analysis_path = pf.machine_learning_save_predict(mod_train_path, mod_test_path, epochs, layers, capacity, patience, epochs_start)
     # Machine learning on train data and predict test data
-    # model_path = pf.fit_model_save_best_and_curve(mod_train_path, epochs, layers, capacity, patience, epochs_start, squared)
-    #
-    # # Use the train model before to predict the test file above
-    # predict_directory, predicted_path, analysis_path = pf.load_model_to_predict_analysis_plot(model_path, mod_test_path)
+    # model_path, learning_curve_path = pf.fit_model_save_best_and_curve(mod_train_path, epochs, layers, capacity, patience, epochs_start, squared)
+    # #
+    # # # Use the train model before to predict the test file above
+    # predict_directory, predicted_path, analysis_path = pf.load_model_to_predict_analysis_plot(model_path, mod_test_path, show=True)
 
     # TODO: Step 6
     # analysis and plot
@@ -52,14 +51,13 @@ def machine_learning_all(epochs, epochs_start, layers, capacity, patience, squar
     print("output train data: ", train_data_path)
     print("output test data: ", test_data_path)
     print("Modified train data: ", mod_train_path)
-    # print("Modified test data: ", mod_test_path)
+    print("Modified test data: ", mod_test_path)
     print("Saved PCs data: ", pc_csv_path)
-    print("Saved best model name: ", model_path)
-    print("Model learning curve: ", learning_curve_path)
-    print("Predicted data folder: ", predict_directory)
-    print("Predicted data file name: ", predicted_path)
-    print("Analysed data file name: ", analysis_path)
-
+    # print("Saved best model name: ", model_path)
+    # print("Model learning curve: ", learning_curve_path)
+    # print("Predicted data folder: ", predict_directory)
+    # print("Predicted data file name: ", predicted_path)
+    # print("Analysed data file name: ", analysis_path)
 
 
 old_data = 'combo_features (1).csv'
@@ -74,10 +72,7 @@ capacity = 36
 patience = 50
 squared = False
 random.seed(33)
-data = "2023_6_16_intermediate.csv"
+data = "D:\\Gordon\Automate FEB Runs\\2023_6_9_auto\\2023_6_20_intermediate.csv"
 
 machine_learning_all(epochs, epochs_start, layers, capacity, patience, squared, data)
 # pf.machine_learning_save_predict(train_data, test_data)
-
-
-

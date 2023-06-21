@@ -499,7 +499,8 @@ def write_predicted_y_analysed_to_csv(output_csv_path, predicted_y, new_y):
     if new_y.shape[1] == predicted_y.shape[1]:
         num_columns = new_y.shape[1]
     else:
-        return "Error: the test file has different format with the predicted data"
+        return "Error: the test file has a different format than the predicted data"
+
     dif_y = predicted_y - new_y
     percent_y = dif_y / new_y
     percent_y_formatted = np.array(["{:.2f}%".format(value * 100) for value in percent_y.flat])
@@ -510,18 +511,29 @@ def write_predicted_y_analysed_to_csv(output_csv_path, predicted_y, new_y):
     combined_data = np.concatenate(
         (predicted_y, empty_column, new_y, empty_column, dif_y, empty_column, percent_y_formatted),
         axis=1)
+
+    directory = os.path.dirname(output_csv_path)
+    os.makedirs(directory, exist_ok=True)
+
     empty_header = ''
     for i in range(0, num_columns - 1):
         empty_header += f", ''"
 
     headers = ['predicted_y', empty_header, 'new_y', empty_header, 'dif_y', empty_header, 'percent_y']
     header_row = ",".join(headers)
-    with open(output_csv_path, 'w') as file:
+
+    # Get the current working directory
+    current_dir = os.getcwd()
+
+    # Construct the absolute file path based on the current working directory
+    abs_output_csv_path = os.path.join(current_dir, output_csv_path)
+
+    # Use the absolute file path when opening the file
+    with open(abs_output_csv_path, 'w') as file:
         file.write(header_row + "\n")
         for row in combined_data:
             formatted_row = ",".join([f"{value:.18e}" if isinstance(value, (int, float)) else value for value in row])
             file.write(formatted_row + "\n")
-
 
 def write_predicted_y_to_csv(output_csv_path, predicted_y):
     """
@@ -533,20 +545,25 @@ def write_predicted_y_to_csv(output_csv_path, predicted_y):
 
     Returns:
         None
-
-    Example:
-        >>> predicted_y = np.array([1.2, 2.3, 3.4])
-        >>> output_csv_path = "predicted_values.csv"
-        >>> write_predicted_y_to_csv(output_csv_path, predicted_y)
-
     """
-    directory = os.path.dirname(output_csv_path)
-    os.makedirs(directory, exist_ok=True)  # Create the directory if it does not exist
+    try:
+        # Get the current working directory
+        current_dir = os.getcwd()
 
-    with open(output_csv_path, 'w') as file:
-        for row in predicted_y:
-            formatted_row = ",".join("{:.18e}".format(value) for value in row)
-            file.write(formatted_row + "\n")
+        # Construct the absolute file path based on the current working directory
+        abs_output_csv_path = os.path.join(current_dir, output_csv_path)
+
+        # Create the directory if it doesn't exist
+        directory = os.path.dirname(abs_output_csv_path)
+        os.makedirs(directory, exist_ok=True)
+
+        with open(abs_output_csv_path, 'w') as file:
+            for row in predicted_y:
+                formatted_row = ",".join("{:.18e}".format(value) for value in row)
+                file.write(formatted_row + "\n")
+    except IOError as e:
+        print(f"Error writing to file: {abs_output_csv_path}")
+        print(f"Error details: {e}")
 
 
 def generate_predicted_analysis_csv_paths(model_path, new_data_path, old_data=''):
@@ -572,6 +589,8 @@ def generate_predicted_analysis_csv_paths(model_path, new_data_path, old_data=''
         predicted_path = os.path.join('PredictedData', directory, f"M_{model_name}_D_{new_data}_Pre{suffix}.csv")
         analysis_path = os.path.join('PredictedData', directory, f"M_{model_name}_D_{new_data}_Ana{suffix}.csv")
 
+    predicted_path = predicted_path.replace(",", "").replace(" ", "")
+    analysis_path = analysis_path.replace(",", "").replace(" ", "")
     return predicted_path, analysis_path
 
 
@@ -641,18 +660,22 @@ def generate_train_test_csvs_files_from(file_name, not_print=False):
     # Split the dataset into training set and test set
     train_df, test_df = train_test_split(df, test_size=0.2, random_state=1)
 
+    # Generate the file paths for the training set and test set
     train_path, test_path = generate_train_test_csv_path_from(file_name)
+
+    # Remove any commas or spaces from the file paths
+    train_path = train_path.replace(",", "").replace(" ", "")
+    test_path = test_path.replace(",", "").replace(" ", "")
 
     # Write the training set and test set to CSV files
     train_df.to_csv(train_path, index=False)
     test_df.to_csv(test_path, index=False)
 
-    if not_print:
-        print("output train: ", train_path)
-        print("output test: ", test_path)
+    if not not_print:
+        print("output train:", train_path)
+        print("output test:", test_path)
 
     return train_path, test_path
-
 
 def generate_PC_csv_path_from(file_path):
     """
@@ -964,10 +987,15 @@ def plot_scatter(save_path, data, data_dif, value, type, threshold, show=False):
     plt.annotate(f"filtered: {threshold * 100}%", xy=(0.85, 0.95), xytext=(0.85, 0.95), xycoords='axes fraction',
                  fontsize=14)
 
-    plt.savefig(save_path, dpi=800)
+    # Get the current working directory
+    current_dir = os.getcwd()
+
+    # Construct the absolute file path based on the current working directory
+    abs_save_path = os.path.join(current_dir, save_path)
+
+    plt.savefig(abs_save_path, dpi=800)
     if show:
         plt.show()
-
 
 def generate_scatter_png_path(file_path, value, type, threshold):
     """
@@ -1092,6 +1120,10 @@ def load_model_to_predict_analysis_plot(model_path, data, old_data='', type_dif=
 
     predicted_path, analysis_path = generate_predicted_analysis_csv_paths(model_path, data, old_data)
 
+
+    write_predicted_y_to_csv(predicted_path, predicted_y)
+    write_predicted_y_analysed_to_csv(analysis_path, predicted_y, new_y)
+
     directory = os.path.dirname(predicted_path)
 
     if print_results:
@@ -1099,9 +1131,6 @@ def load_model_to_predict_analysis_plot(model_path, data, old_data='', type_dif=
         print("output analysis path: ", analysis_path)
 
     print("Directory path:", directory)
-
-    write_predicted_y_to_csv(predicted_path, predicted_y)
-    write_predicted_y_analysed_to_csv(analysis_path, predicted_y, new_y)
 
     data_1, data_2, data_3, data_dif_1, data_dif_2, data_dif_3, data_p_1, data_p_2, data_p_3 = get_data_corresponding(
         analysis_path, 'E')
