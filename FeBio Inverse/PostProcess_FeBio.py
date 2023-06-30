@@ -20,8 +20,8 @@ def process_features(csv_file, Results_Folder):
     pc1_df = int_df.iloc[:, 5:35]
     pcbottom_df = int_df.iloc[:, 35:len(int_df.columns)]
     # int_df = pd.read_csv("intermediate_pc_data", header=None)
-    total_result_PC1, pca = PCA_data.PCA_(pc1_df)
-    total_result_PCB, pca = PCA_data.PCA_([pcbottom_df])
+    total_result_PC1, pca1 = PCA_data.PCA_(pc1_df)
+    total_result_PCB, pcaB = PCA_data.PCA_([pcbottom_df])
 
     PC_scores = total_result_PC1[['principal component 1', 'principal component 2']]
     PC_scores_bottom = total_result_PCB[['principal component 1', 'principal component 2']]
@@ -38,10 +38,10 @@ def process_features(csv_file, Results_Folder):
         os.makedirs(Results_Folder)
     file_name = pf.get_file_name(csv_file)
 
-    file_path = Results_Folder + '\\' + file_name + "_features.csv"
+    file_path = Results_Folder + '\\' + file_name + "_modified_train.csv"
 
     final_df.to_csv(file_path, index=False)
-    return file_path
+    return file_path, pca1, pcaB
 
 def find_apex(coordList):
     min_y = coordList[0][1][1]

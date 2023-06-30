@@ -16,15 +16,16 @@ def machine_learning_all(epochs, epochs_start, layers, capacity, patience, squar
 
     # TODO: STEP 3
     # Generate new PCs based on the train file,
-    Results_Folder = '2023_6_9_auto'
-    mod_train_path = pp.process_features(train_data_path, Results_Folder)
+    Results_Folder = "Mod train and test"
+    # mod_train_path, pca1, pcaB = pp.process_features(train_data_path, Results_Folder)
 
     # Save PCs and save the PCA Model
-    pc_csv_path = pf.generate_PC_csv_file_from(mod_train_path, [5, 6, 7, 8])
+    # pc_csv_path = pf.generate_PC_csv_file_from(mod_train_path, [5, 6, 7, 8])
 
     # add noise to test file
-    mod_test_path = pd.add_noise_to_csv(test_data_path, Results_Folder, noise_scale=0)
-    # mod_test_path = pp.process_features(test_data_path, Results_Folder)
+    mod_test_path, pca1, pcaB = pp.process_features(train_data_path, Results_Folder)
+    noise_test_path = pd.add_noise_to_csv(test_data_path, Results_Folder, pca1, pcaB, noise_scale=0)
+
 
 
     # TEST USE!!!
@@ -44,15 +45,16 @@ def machine_learning_all(epochs, epochs_start, layers, capacity, patience, squar
 
     # pf.write_predicted_y_to_csv(output_predicted, predicted_y)
     # pf.write_predicted_y_analysed_to_csv(output_analysis, predicted_y, new_y)
-    #
+
     # print("output predicted name: ", output_predicted.title())
     # print("output analysis name: ", output_analysis.title())
     # print("output learning curve: ", output_image.title())
     print("output train data: ", train_data_path)
     print("output test data: ", test_data_path)
-    print("Modified train data: ", mod_train_path)
+    # print("Modified train data: ", mod_train_path)
     print("Modified test data: ", mod_test_path)
-    print("Saved PCs data: ", pc_csv_path)
+    # print("Saved PCs data: ", pc_csv_path)
+    print("noise_0 test data: ", noise_test_path)
     # print("Saved best model name: ", model_path)
     # print("Model learning curve: ", learning_curve_path)
     # print("Predicted data folder: ", predict_directory)
@@ -72,7 +74,7 @@ capacity = 36
 patience = 50
 squared = False
 random.seed(33)
-data = "D:\\Gordon\Automate FEB Runs\\2023_6_9_auto\\2023_6_20_intermediate.csv"
+data = "C:\\Users\\yyt08\\PycharmProjects\\PyGem-Modifying-2023\\FeBio Inverse\\intermediate.csv"
 
 machine_learning_all(epochs, epochs_start, layers, capacity, patience, squared, data)
 # pf.machine_learning_save_predict(train_data, test_data)
