@@ -276,7 +276,7 @@ def PCA_and_Score(pca_trials_df, other_data_df):
 # result_PC.to_csv('test.csv', columns=['principal component 1', 'principal component 2'], index=False)
 
 
-def add_noise_to_csv(csv_filename, results_folder, noise_scale=0.1):
+def add_noise_to_csv(csv_filename, results_folder, pca1, pcaB, noise_scale=0.1):
     # Results_Folder = "C:\\Users\\phine\\OneDrive\\Desktop\\FEBio files\\Pycharm Results"
     Results_Folder = results_folder
 
@@ -335,19 +335,33 @@ def add_noise_to_csv(csv_filename, results_folder, noise_scale=0.1):
     pc1_df =pc_df.iloc[:, 5:35]
     pcbottom_df = pc_df.iloc[:, 35:len(pc_df.columns)]
     # int_df = pd.read_csv("intermediate_pc_data", header=None)
-    total_result_PC1, pca = PCA_(pc1_df)
-    total_result_PCB, pca = PCA_([pcbottom_df])
+    # total_result_PC1, pca = PCA_(pc1_df)
+    # total_result_PCB, pca = PCA_([pcbottom_df])
 
-    PC_scores = total_result_PC1[['principal component 1', 'principal component 2']]
-    PC_scores_bottom = total_result_PCB[['principal component 1', 'principal component 2']]
+    # PC_scores = total_result_PC1[['principal component 1', 'principal component 2']]
+    # PC_scores_bottom = total_result_PCB[['principal component 1', 'principal component 2']]
+    #
+    # print(PC_scores)
+    # print(PC_scores_bottom)
+    #
+    # PC_scores = PC_scores.rename(columns={'principal component 1': 'principal component 1 AVW',
+    #                                       'principal component 2': 'principal component 2 AVW'})
+    # PC_scores_bottom = PC_scores_bottom.rename(columns={'principal component 1': 'principal component 1 Bottom Tissue',
+    #                                                     'principal component 2': 'principal component 2 Bottom Tissue'})
 
-    print(PC_scores)
-    print(PC_scores_bottom)
+    PC_scores = pca1.transform(pc1_df)
+    PC_scores_bottom = pcaB.transform(pcbottom_df)
+
+    PC_scores = pd.DataFrame(PC_scores, columns=['principal component 1', 'principal component 2'])
+    PC_scores_bottom = pd.DataFrame(PC_scores_bottom, columns=['principal component 1', 'principal component 2'])
 
     PC_scores = PC_scores.rename(columns={'principal component 1': 'principal component 1 AVW',
                                           'principal component 2': 'principal component 2 AVW'})
     PC_scores_bottom = PC_scores_bottom.rename(columns={'principal component 1': 'principal component 1 Bottom Tissue',
                                                         'principal component 2': 'principal component 2 Bottom Tissue'})
+
+    print(PC_scores)
+    print(PC_scores_bottom)
 
     final_df = pd.concat([pc_df.loc[:, ["File Name", "E1", "E2", "E3", "Apex"]], PC_scores, PC_scores_bottom], axis=1)
     file_path = Results_Folder + '\\' + "_modified_test.csv"

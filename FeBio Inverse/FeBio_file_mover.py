@@ -22,10 +22,10 @@ import pandas
 from datetime import datetime
 
 #The location of the generated files, in which they will be extracted from
-target_path = "D:\\Gordon\\Automate FEB Runs\\2023_6_9_auto\\*" #'D:\\Gordon\\Target_test\\*'
+target_path = "D:\\Gordon\\Automate FEB Runs\\2023_8_23 auto\\*" #'D:\\Gordon\\Target_test\\*'
 
 #The location of the folder where the files will be moved, and the already_ran_feb_variables.csv
-Results_Folder = 'D:\\Gordon\\Location_test'
+Results_Folder = 'D:\\Gordon\\New_model_completed_tests'
 
 date = datetime.today().strftime('D%Y%m%d_T%H%M%S')
 
