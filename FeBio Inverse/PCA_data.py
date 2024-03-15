@@ -6,6 +6,7 @@ Created on Tue Feb  4 20:32:40 2020
 """
 from math import hypot
 import datetime
+
 from scipy.interpolate import interpolate
 from scipy.interpolate import UnivariateSpline
 from sklearn.preprocessing import StandardScaler
@@ -15,8 +16,8 @@ import pandas as pd
 from scipy.stats import ttest_ind
 import numpy as np
 import re
-import pickle
-import os
+
+from scipy.interpolate import UnivariateSpline
 
 def do_PCA_get_data(pca_trials_df, PS_point, no_points, fig_file_prefix, results_folder, group_category, groups):
     pca_df, pca = PCA_(pca_trials_df)
@@ -371,6 +372,87 @@ def add_noise_to_csv(csv_filename, results_folder, pca1, pcaB, noise_scale=0.1):
 
 #Recommended noise scale value = 0.05,(.01 is too close to original graph),(.1 is very jumpy with the values)
 # noise scale is the parameter that goes into the std param in the np.random.normal function used to add the noise
+
+'''This new function adds noise to a spline that has already been made and it reads from a csv'''
+
+def add_noise_to_csv(csv_filename, noise_scale):
+    Results_Folder = "C:\\Users\\phine\\OneDrive\\Desktop\\FEBio files\\Pycharm Results"
+    current_date = datetime.datetime.now()
+    date_prefix = str(current_date.year) + '_' + str(current_date.month) + '_' + str(current_date.day)
+    data_df = pd.read_csv(csv_filename)
+    first_row = True
+    pc_header = []
+    pc_header.append('File Name')
+    pc_header.append('E1')
+    pc_header.append('E2')
+    pc_header.append('E3')
+    pc_header.append('Apex')
+    coord = 'x'
+    for i in range(2):
+        if i == 1:
+            coord = 'y'
+        for j in range(15):
+            pc_header.append(coord + str(j + 1))
+    coord = 'Bx'
+    for i in range(2):
+        if i == 1:
+            coord = 'By'
+        for j in range(10):
+            pc_header.append(coord + str(j + 1))
+    pc_df = pd.DataFrame(columns=pc_header)
+
+    for index, row in data_df.iterrows():
+        pc_rows = []
+        file_and_e_values = row.iloc[:5].tolist()
+        avw_xs= row.iloc[5:20].tolist()
+        avw_ys = row.iloc[20:35].tolist()
+        bottom_xs = row.iloc[35:45].tolist()
+        bottom_ys = row.iloc[45:].tolist()
+
+        noise_avw_xs = avw_xs + np.random.normal(0, noise_scale, len(avw_xs))
+        noise_avw_ys = avw_ys + np.random.normal(0, noise_scale, len(avw_ys))
+        noise_bottom_xs = bottom_xs + np.random.normal(0, noise_scale, len(bottom_xs))
+        noise_bottom_ys = bottom_ys + np.random.normal(0, noise_scale, len(bottom_ys))
+
+        splined_avw_xs, splined_avw_ys = get_noise_spline(noise_avw_xs, noise_avw_ys)
+        splined_bottom_xs , splined_bottom_ys = get_noise_spline(noise_bottom_xs, noise_bottom_ys)
+
+        apex = min(splined_avw_ys)
+
+        file_and_e_values[-1] = apex
+
+        pc_rows.extend(file_and_e_values)
+        pc_rows.extend(splined_avw_xs)
+        pc_rows.extend(splined_avw_ys)
+        pc_rows.extend(splined_bottom_xs)
+        pc_rows.extend(splined_bottom_ys)
+        pc_df.loc[index] = pc_rows
+
+    pc1_df =pc_df.iloc[:, 5:35]
+    pcbottom_df = pc_df.iloc[:, 35:len(pc_df.columns)]
+    # int_df = pd.read_csv("intermediate_pc_data", header=None)
+    total_result_PC1, pca = PCA_(pc1_df)
+    total_result_PCB, pca = PCA_([pcbottom_df])
+
+    PC_scores = total_result_PC1[['principal component 1', 'principal component 2']]
+    PC_scores_bottom = total_result_PCB[['principal component 1', 'principal component 2']]
+
+    print(PC_scores)
+    print(PC_scores_bottom)
+
+    PC_scores = PC_scores.rename(columns={'principal component 1': 'principal component 1 AVW',
+                                          'principal component 2': 'principal component 2 AVW'})
+    PC_scores_bottom = PC_scores_bottom.rename(columns={'principal component 1': 'principal component 1 Bottom Tissue',
+                                                        'principal component 2': 'principal component 2 Bottom Tissue'})
+
+    final_df = pd.concat([pc_df.loc[:, ["File Name", "E1", "E2", "E3", "Apex"]], PC_scores, PC_scores_bottom], axis=1)
+    file_path = Results_Folder + '\\' + date_prefix + "_modified_test.csv"
+    final_df.to_csv(Results_Folder + '\\' + date_prefix + "_modified_test.csv", index=False)
+
+
+
+'''This is the old spline function that is part of a process and adds noise to already splined points, which are also
+points that have been analysed already'''
 def add_noise_to_spline(spline_ordered_list, dist_array, noise_scale):
     xs = [i[0] for i in spline_ordered_list]
     ys = [i[1] for i in spline_ordered_list]
@@ -444,12 +526,11 @@ def get_noise_spline(xs, ys):
     curve_x = UnivariateSpline(noise_distance_array, spline_xs, k=5)
     curve_y = UnivariateSpline(noise_distance_array, spline_ys, k=5)
 
-    if len(spline_ys) < 11:
+
+    if len(spline_ys)<11:
         noise_spaced_distance_array = np.linspace(0, noise_distance_array[-1], len(spline_ys))
     else:
         noise_spaced_distance_array = np.linspace(0, noise_distance_array[-1], 15)
-
-
 
     new_distance = 0
     new_distance_array = [0]
