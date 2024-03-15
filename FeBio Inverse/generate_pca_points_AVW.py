@@ -19,7 +19,7 @@ import seaborn as sns
 import numpy as np
 import csv
 
-def generate_2d_coords_for_pca(coords_list):
+def  generate_2d_coords_for_pca(coords_list):
   #coords_list = extract_coordinates_from_final_step(log_file_name,feb_file_name,obj_name)
   X,Y,Z = get_x_y_z_values(coords_list)
   spline_list,dist_array=get_AVW_midline(X,Y,Z)

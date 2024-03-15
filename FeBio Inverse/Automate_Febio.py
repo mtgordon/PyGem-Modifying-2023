@@ -73,17 +73,18 @@ def new_check_normal_run(log_file_path):
 
 
 # FeBio Variables
-dictionary_file = 'test_variables.csv'
+#TODO: IN VAR FILE --> SET PART NAMES FOR ALL MATERIALS --> DONE
+dictionary_file = 'feb_variables.csv' #DONE
 FeBioLocation = 'C:\\Program Files\\FEBioStudio2\\bin\\febio4.exe'
-originalFebFilePath = "C:\\Users\\phine\\Downloads\\Curve_and_Flat_and_CL_and_Filler_meshed_v4_v2_log_included.feb"
+originalFebFilePath = 'D:\\Gordon\\Automate FEB Runs\\2023_8_23 auto\\Base File\\Full_Model_Close_modified_10.feb' #DONE
 
 # Post Processing Variables
 current_date = datetime.datetime.now()
 date_prefix = str(current_date.year) + '_' + str(current_date.month)  + '_' + str(current_date.day)
-object_list = ['Object2', 'Object8','Object16']
+object_list = ['Object2', 'Object6','Object1'] #TODO: Get new names for flat, curve, GI Filler --> DONE
 obj_coords_list = []
 file_num = 0
-Results_Folder = "C:\\Users\\phine\\OneDrive\\Desktop\\FEBio files\\Pycharm Results"
+Results_Folder = 'D:\\Gordon\\Automate FEB Runs\\2023_8_23 auto' #DONE
 csv_filename = Results_Folder + '\\' + date_prefix + '_intermediate.csv'
 
 # FLAGS
@@ -97,13 +98,16 @@ run_file = open(dictionary_file)
 DOE_dict = csv.DictReader(run_file)
 
 #Have the default material variables be 1 (100%) so they do not change if no variable is given
+#TODO: Get names of all parts --> DONE
 default_dict = {
+    'Part1_E': 1,
     'Part2_E': 1,
-    'Part8_E': 1,
-    'Part9_E': 1,
+    'Part3_E': 1,
+    'Part4_E': 1,
+    'Part6_E': 1,
     'Part12_E': 1,
-    'Part27_E': 1
-}
+    'Part14_E': 1
+} #In FEB-variables file, have the headers increase in number to work with file mover file
 
 current_run_dict = default_dict.copy()
 

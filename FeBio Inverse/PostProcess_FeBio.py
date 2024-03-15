@@ -12,13 +12,16 @@ import time
 import csv
 import pandas as pd
 import PCA_data
-def process_features(csv_file, Results_Folder, date_prefix):
+import os
+import predict_funtions as pf
+
+def process_features(csv_file, Results_Folder):
     int_df = pd.read_csv(csv_file)
     pc1_df = int_df.iloc[:, 5:35]
     pcbottom_df = int_df.iloc[:, 35:len(int_df.columns)]
     # int_df = pd.read_csv("intermediate_pc_data", header=None)
-    total_result_PC1, pca = PCA_data.PCA_(pc1_df)
-    total_result_PCB, pca = PCA_data.PCA_([pcbottom_df])
+    total_result_PC1, pca1 = PCA_data.PCA_(pc1_df)
+    total_result_PCB, pcaB = PCA_data.PCA_([pcbottom_df])
 
     PC_scores = total_result_PC1[['principal component 1', 'principal component 2']]
     PC_scores_bottom = total_result_PCB[['principal component 1', 'principal component 2']]
@@ -27,11 +30,19 @@ def process_features(csv_file, Results_Folder, date_prefix):
     print(PC_scores_bottom)
 
     PC_scores = PC_scores.rename(columns = {'principal component 1': 'principal component 1 AVW','principal component 2':'principal component 2 AVW'})
-    PC_scores_bottom = PC_scores_bottom.rename(columns={'principal component 1': 'principal component 1 Bottom Tissue',
+    PC_scores_bottom  = PC_scores_bottom.rename(columns={'principal component 1': 'principal component 1 Bottom Tissue',
                                           'principal component 2': 'principal component 2 Bottom Tissue'})
 
     final_df = pd.concat([int_df.loc[:, ["File Name", "E1", "E2","E3","Apex"]], PC_scores, PC_scores_bottom], axis=1)
-    final_df.to_csv(Results_Folder + '\\' + date_prefix + "_features.csv", index=False)
+    if not os.path.exists(Results_Folder):
+        os.makedirs(Results_Folder)
+    file_name = pf.get_file_name(csv_file)
+
+    file_path = Results_Folder + '\\' + file_name + "_modified_train.csv"
+
+    final_df.to_csv(file_path, index=False)
+    return file_path, pca1, pcaB
+
 def find_apex(coordList):
     min_y = coordList[0][1][1]
     for coord in coordList:
@@ -106,4 +117,6 @@ def generate_int_csvs(file_params,object_list,log_name,feb_name,first_int_file_f
 
     # sleep to give the file time to reach directory
     time.sleep(1)
+
+    return csv_filename
 

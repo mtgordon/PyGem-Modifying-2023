@@ -19,6 +19,8 @@ import subprocess
 import time
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
+from pathlib import Path
 
 '''
 Function: Post_Processing
@@ -308,6 +310,8 @@ Function: Post_Processing_Files
 '''
 def Post_Processing_Files(odb_file, INP_File, INI_File, Output_File_Name, first_file_flag, output_base_filename, frame):
 
+    fileRenameFlag = True
+
     base_file_name = os.path.splitext(os.path.split(odb_file)[1])[0]
     path_base_file_name = os.path.splitext(odb_file)[0]
 #    print('##################################')
@@ -348,7 +352,18 @@ def Post_Processing_Files(odb_file, INP_File, INI_File, Output_File_Name, first_
     INP_File = odb_file[:-4]
 
     print(ODBFile_NoPath)
-    GenericFileCode = ODBFile_NoPath.split('Gen')[1][0]
+
+    if fileRenameFlag:
+        logFile = Results_Folder_Location + '\\' + Path(odb_file).stem + '_log.csv'
+        if 'Working_' in logFile:
+            logFile = logFile.replace('Working_', '')
+        log_df = pd.read_csv(logFile)
+        log_df = log_df.set_index('Property')
+        log_df_codes = log_df.set_index('Code')
+        GenericFileCode = log_df.loc['Generic_File', 'Code'][-1]
+    else:
+        GenericFileCode = ODBFile_NoPath.split('Gen')[1][0]
+
     if GenericFileCode.lower() == 'u':
         GenericINPFile = 'Unilateral_Generic.inp'
     elif GenericFileCode.lower() == 'b':
@@ -359,9 +374,11 @@ def Post_Processing_Files(odb_file, INP_File, INI_File, Output_File_Name, first_
         print('NO GENERIC FILE')
     Output = [ODBFile_NoPath,frame]
     # Split_Array = re.split('(\d+\.\d+|-?\d+)|_|-', ODBFile_NoPath)
-    Split_Array = re.split('(-?\d+\.\d+|-?\d+)|_', ODBFile_NoPath)
-    Split_Array = [i for i in Split_Array if i]
-    print(Split_Array)
+
+    if not fileRenameFlag:
+        Split_Array = re.split('(-?\d+\.\d+|-?\d+)|_', ODBFile_NoPath)
+        Split_Array = [i for i in Split_Array if i]
+        print(Split_Array)
     print(Header_Codes)
     for Code in Header_Codes:
         
@@ -370,25 +387,15 @@ def Post_Processing_Files(odb_file, INP_File, INI_File, Output_File_Name, first_
         if Code == 'Gen':
             Output.append(GenericFileCode)
         else:
-            Header_Index = Split_Array.index(Code)
-            Data_Index = Header_Index + 1
-    #        print(Header[j],Header_Index,Data_Index)
-            Output.append(Split_Array[Data_Index])
-            
-            
-    #         print('****')
-    #         print(ODBFile_NoPath)
-    #         match = re.search(Code+'(-?\d+)',ODBFile_NoPath)
-            
-    # #         Header_Index = Split_Array.index(Code)
-    # #         Data_Index = Header_Index + 1
-    # # #        print(Header[j],Header_Index,Data_Index)
-    #         Output.append(match.group(1))    
-            
+            if fileRenameFlag:
+                Output.append(log_df_codes.loc[Code, 'Value'])
+            else:
+                Header_Index = Split_Array.index(Code)
+                Data_Index = Header_Index + 1
+        #        print(Header[j],Header_Index,Data_Index)
+                Output.append(Split_Array[Data_Index])
             
         Header.append(mydict[Code][1])
-#        Header.append(Code)
-#        print(Code)
 
     if get_data == '1':
         print('Getting Data')
