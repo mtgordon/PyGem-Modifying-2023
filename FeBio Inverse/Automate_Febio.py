@@ -8,8 +8,9 @@ import os.path
 import sys
 import subprocess
 import xml.etree.ElementTree as ET
-import generate_int_csvs as gic
+import generate_pca_points_AVW as gic
 import PostProcess_FeBio as proc
+import Bottom_Tissue_SA_Final as bts
 import pandas as pd
 import re
 import time
@@ -72,17 +73,18 @@ def new_check_normal_run(log_file_path):
 
 
 # FeBio Variables
-dictionary_file = 'feb_variables.csv'
+#TODO: IN VAR FILE --> SET PART NAMES FOR ALL MATERIALS --> DONE
+dictionary_file = 'feb_variables.csv' #DONE
 FeBioLocation = 'C:\\Program Files\\FEBioStudio2\\bin\\febio4.exe'
-originalFebFilePath = 'C:\\Users\\Elijah Brown\\Desktop\\Bio Research\\Results\\Testing_high_modulus.feb'
+originalFebFilePath = 'D:\\Gordon\\Automate FEB Runs\\2023_8_23 auto\\Base File\\Full_Model_Close_modified_10.feb' #DONE
 
 # Post Processing Variables
 current_date = datetime.datetime.now()
 date_prefix = str(current_date.year) + '_' + str(current_date.month)  + '_' + str(current_date.day)
-object_list = ['Object2', 'Object8']
+object_list = ['Object2', 'Object6','Object1'] #TODO: Get new names for flat, curve, GI Filler --> DONE
 obj_coords_list = []
 file_num = 0
-Results_Folder = 'C:\\Users\\Elijah Brown\\Desktop\\Bio Research\\Results'
+Results_Folder = 'D:\\Gordon\\Automate FEB Runs\\2023_8_23 auto' #DONE
 csv_filename = Results_Folder + '\\' + date_prefix + '_intermediate.csv'
 
 # FLAGS
@@ -96,13 +98,16 @@ run_file = open(dictionary_file)
 DOE_dict = csv.DictReader(run_file)
 
 #Have the default material variables be 1 (100%) so they do not change if no variable is given
+#TODO: Get names of all parts --> DONE
 default_dict = {
+    'Part1_E': 1,
     'Part2_E': 1,
-    'Part8_E': 1,
-    'Part9_E': 1,
+    'Part3_E': 1,
+    'Part4_E': 1,
+    'Part6_E': 1,
     'Part12_E': 1,
-    'Part27_E': 1
-}
+    'Part14_E': 1
+} #In FEB-variables file, have the headers increase in number to work with file mover file
 
 current_run_dict = default_dict.copy()
 
@@ -135,44 +140,14 @@ for row in DOE_dict:
     # Check for success of the feb run
     if new_check_normal_run(logFile):
         # Post process
-        csv_row = []
-
-        # Get the changed material properties
-        paren_pattern = re.compile(r'(?<=\().*?(?=\))')  # find digits in parentheses
-        prop_result = paren_pattern.findall(fileTemplate)
-        prop_final = []
-        for prop in prop_result:
-            prop = float(prop)
-            if prop != 1.0:
-                prop_final.append(prop)
-
-        # Get the coordinates for each object in list
-        for obj in object_list:
-            obj_coords_list.append(gic.extract_coordinates_from_final_step(logFile, workingInputFileName, obj))
-            print('Extracting... ' + obj + ' for ' + fileTemplate)
-
-        # Get the PC points for Object2
-        pc_points = gic.generate_2d_coords_for_pca(obj_coords_list[0])
-
-        # Begin building the row to be put into the intermediate csv
-        csv_row.append(fileTemplate)  # file params
-        apex = proc.find_apex(obj_coords_list[1])
-        csv_row.append(apex)  # apex FIX
-        csv_row.extend(prop_final)
-        csv_row.extend(pc_points)  # the 30 pc coordinates
-
         if first_int_file_flag:
-            with open(csv_filename, 'w', newline='') as csvfile:
-                writer = csv.writer(csvfile)
-                writer.writerow(csv_row)
-                first_int_file_flag = False
+            proc.generate_int_csvs(fileTemplate, object_list, logFile, workingInputFileName, first_int_file_flag,
+                                   csv_filename)
+            first_int_file_flag = False
         else:
-            with open(csv_filename, 'a', newline='') as csvfile:
-                writer = csv.writer(csvfile)
-                writer.writerow(csv_row)
+            proc.generate_int_csvs(fileTemplate, object_list, logFile, workingInputFileName, first_int_file_flag,
+                                   csv_filename)
 
-        # sleep to give the file time to reach directory
-        time.sleep(1)
         file_num += 1
         print('Completed Iteration ' + str(file_num) + ": " + fileTemplate)
         obj_coords_list = []
@@ -181,13 +156,4 @@ for row in DOE_dict:
         os.rename(workingInputFileName, os.path.splitext(workingInputFileName)[0] + '_error.feb')
 
 if final_csv_flag:
-    # use the generated csv to get the 2 PC scores
-    int_df = pd.read_csv(csv_filename, header=None)
-    pc_df = int_df.iloc[:, 4:len(int_df.columns)]
-    total_result_PC, pca = PCA_data.PCA_(pc_df)
-
-    PC_scores = total_result_PC[['principal component 1', 'principal component 2']]
-    print(PC_scores)
-
-    final_df = pd.concat([int_df.iloc[:, 0:4], PC_scores], axis=1)
-    final_df.to_csv(Results_Folder + '\\' + date_prefix + "_features.csv", index=False, header=False)
+    proc.process_features(csv_filename,Results_Folder, date_prefix)

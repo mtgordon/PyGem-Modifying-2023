@@ -26,11 +26,20 @@ from lib.Surface_Tools import find_starting_ending_points_for_inside, findInnerN
 from pygem import RBF, IDW
 import matplotlib.pyplot as plt
 import lib.Shape_Analysis
+import pandas as pd
 
 '''
 Function: same_geometry_file
 '''
 def same_geometry_file(OutputINPFile, Results_Folder_Location):
+    #TODO: A temporary flag to switch between using the file rename code and original code
+    fileRenameFlag = True
+
+    if fileRenameFlag:
+        logFile = Results_Folder_Location + '\\' + os.path.splitext(OutputINPFile)[0] + '_log.csv'
+        log_df = pd.read_csv(logFile)
+        log_df = log_df.set_index('Property')
+        log_df_codes = log_df.set_index('Code')
 
     current_file_name = OutputINPFile
     location = Results_Folder_Location
@@ -42,27 +51,45 @@ def same_geometry_file(OutputINPFile, Results_Folder_Location):
 
     Geometry_Codes = ['CLSS', 'AVWL', 'HL', 'AVWW', 'AS', 'FLP', 'SLP', 'FICM', 'SICM']
 
-    Orig_GenericFileCode = current_file_name.split('Gen')[1][0]
+    if fileRenameFlag:
+        Orig_GenericFileCode = log_df.loc['Generic_File', 'Code']
+    else:
+        Orig_GenericFileCode = current_file_name.split('Gen')[1][0]
+
     same_geometry_file = ''
 
     for file in glob.glob(location + '\*.inp'):
         try:
-            file_name = os.path.split(file)[1]
-            new_GenericFileCode = file_name.split('Gen')[1][0]
-            Split_Array = re.split('(\d+\.\d+|-?\d+)|_|-', file_name)
-            new_file_array = [i for i in Split_Array if i]
+            if fileRenameFlag:
+                current_log = os.path.splitext(file)[0] + '_log.csv'
+                current_df = pd.read_csv(current_log)
+                current_df = current_df.set_index('Property')
+                new_GenericFileCode = current_df.loc['Generic_File', 'Code']
+                current_df_codes = current_df.set_index('Code')
+
+            else:
+                file_name = os.path.split(file)[1]
+                new_GenericFileCode = file_name.split('Gen')[1][0]
+                Split_Array = re.split('(\d+\.\d+|-?\d+)|_|-', file_name)
+                new_file_array = [i for i in Split_Array if i]
 
             if Orig_GenericFileCode == new_GenericFileCode:
                 match = 1
             else:
                 match = 0
             for code in Geometry_Codes:
-                Header_Index = original_file_array.index(code)
-                Data_Index = Header_Index + 1
-                original_geometry = original_file_array[Data_Index]
-                Header_Index = new_file_array.index(code)
-                Data_Index = Header_Index + 1
-                new_geometry = new_file_array[Data_Index]
+                if fileRenameFlag:
+                    original_geometry = float(log_df_codes.loc[code, 'Value'])
+                    new_geometry = float(current_df_codes.loc[code, 'Value'])
+                else:
+                    Header_Index = original_file_array.index(code)
+                    Data_Index = Header_Index + 1
+                    original_geometry = original_file_array[Data_Index]
+                    Header_Index = new_file_array.index(code)
+                    Data_Index = Header_Index + 1
+                    new_geometry = new_file_array[Data_Index]
+
+
                 if new_geometry == original_geometry:
                     pass
                 else:
@@ -85,7 +112,7 @@ def AnalogGenerateINP(TissueParameters, MaterialStartLine, LoadLine, LoadLineNo,
                       GIFillerPoint, HiatusLength, levator_plate_PC1, levator_plate_PC2, ICM_PC1, ICM_PC2,
                       positive_CL_point, negative_CL_point, positive_US_point, negative_US_point,
                       positive_PARA_point, negative_PARA_point, positive_CL_remove_percent, negative_remove_percent,
-                      Results_Folder_Location):
+                      mid_x, threshold_x_from_mid, generate_scar_tissue_flag, Results_Folder_Location):
 
     config = configparser.ConfigParser()
     config.sections()
@@ -1191,6 +1218,10 @@ def AnalogGenerateINP(TissueParameters, MaterialStartLine, LoadLine, LoadLineNo,
 #         pm_mid    = Scaling.rotate_part(PM_MID, OutputINPFile, rotate_angle, rot_point)
 #         print('7')
 #         ######################################################################################
+
+        #ADDING THE SCAR TISSUE FUNCTION
+        if generate_scar_tissue_flag != 0:
+            io.write_points_x_from_mid_excluded_to_inp(OutputINPFile, AVW, mid_x, threshold_x_from_mid, 22, 'AWP', 'SCAR_TISSUE')
 
     ######################################################################################
         #TODO: Commented out droop

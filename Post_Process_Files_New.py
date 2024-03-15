@@ -74,7 +74,7 @@ with open(error_log_file, 'w') as out_file:
 
 # Loop through the files to get the results
 for full_odb_file in full_odb_files:
-    Upgrade_Necessary = 0
+    Upgrade_Necessary = 1
     ODBFile_NoPath = os.path.basename(full_odb_file)
     file_to_analyze = Results_Folder_Location + '\Working_' + ODBFile_NoPath
     if Upgrade_Necessary:
