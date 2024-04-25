@@ -1301,7 +1301,7 @@ def extract_coordinates_list_from_feb(file_name, node_name, get_connections=Fals
     - get_connections (bool, optional): Whether to also extract the connections between nodes. Default is False.
 
     Returns:
-    - points_list (list): A list containing the coordinates of nodes as tuples.
+    - points_list (list): A list containing the coordinates of nodes as tuples. [(x, y, z), (x, y, z)]
 
     Description:
     This function parses the XML file specified by 'file_name' and searches for the 'Nodes' element with the given

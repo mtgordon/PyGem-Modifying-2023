@@ -50,6 +50,13 @@ def updateProperties(origFile, fileTemp):
                         newValue = float(mat.find(propName).text) * float(current_run_dict[partProp])
                         mat.find(propName).text = str(newValue)
 
+    loads = root.find('Loads')
+    for surface_load in loads:
+        pressure = surface_load.find('pressure')
+        pressure.text = str(current_run_dict["Pressure"])
+
+
+
     # using UTF-8 encoding does not bring up any issues (can be changed if needed)
     newInputFile = Results_Folder + '\\' + fileTemp + '.feb'
     tree.write(newInputFile, xml_declaration=True, encoding='ISO-8859-1')
@@ -81,10 +88,11 @@ originalFebFilePath = 'D:\\Gordon\\Automate FEB Runs\\2023_8_23 auto\\Base File\
 # Post Processing Variables
 current_date = datetime.datetime.now()
 date_prefix = str(current_date.year) + '_' + str(current_date.month)  + '_' + str(current_date.day)
+#TODO: CHANGE PER FILE
 object_list = ['Object2', 'Object6','Object1'] #TODO: Get new names for flat, curve, GI Filler --> DONE
 obj_coords_list = []
 file_num = 0
-Results_Folder = 'D:\\Gordon\\Automate FEB Runs\\2023_8_23 auto' #DONE
+Results_Folder = 'D:\\Gordon\\Automate FEB Runs\\2024_3_22 New Branch Test' #DONE
 csv_filename = Results_Folder + '\\' + date_prefix + '_intermediate.csv'
 
 # FLAGS
@@ -98,7 +106,8 @@ run_file = open(dictionary_file)
 DOE_dict = csv.DictReader(run_file)
 
 #Have the default material variables be 1 (100%) so they do not change if no variable is given
-#TODO: Get names of all parts --> DONE
+#TODO: In FEB-variables file, have the headers increase in number to work with file mover file
+#TODO: CHANGE PER FILE
 default_dict = {
     'Part1_E': 1,
     'Part2_E': 1,
@@ -106,8 +115,12 @@ default_dict = {
     'Part4_E': 1,
     'Part6_E': 1,
     'Part12_E': 1,
-    'Part14_E': 1
-} #In FEB-variables file, have the headers increase in number to work with file mover file
+    'Part14_E': 1,
+    'Pressure': 0,
+    'Inner_Radius': 1,
+    'Outer_Radius': 2
+}
+#Eventually add outer_radius and pressure
 
 current_run_dict = default_dict.copy()
 
@@ -135,6 +148,10 @@ for row in DOE_dict:
 
     # TODO: to easily get input files from anywhere, do the shutil move to working directory
     logFile = Results_Folder + '\\' + fileTemplate + '.log'
+
+
+    #TODO: CHANGE NODES FOR CYLINDER HERE
+
     RunFEBinFeBio(workingInputFileName, FeBioLocation, logFile)
 
     # Check for success of the feb run
@@ -156,4 +173,4 @@ for row in DOE_dict:
         os.rename(workingInputFileName, os.path.splitext(workingInputFileName)[0] + '_error.feb')
 
 if final_csv_flag:
-    proc.process_features(csv_filename,Results_Folder, date_prefix)
+    proc.process_features(csv_filename, Results_Folder, date_prefix)

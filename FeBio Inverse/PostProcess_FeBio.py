@@ -15,7 +15,8 @@ import PCA_data
 import os
 import predict_funtions as pf
 
-def process_features(csv_file, Results_Folder):
+
+def process_features(csv_file, Results_Folder, date_prefix):
     int_df = pd.read_csv(csv_file)
     pc1_df = int_df.iloc[:, 5:35]
     pcbottom_df = int_df.iloc[:, 35:len(int_df.columns)]
@@ -38,7 +39,7 @@ def process_features(csv_file, Results_Folder):
         os.makedirs(Results_Folder)
     file_name = pf.get_file_name(csv_file)
 
-    file_path = Results_Folder + '\\' + file_name + "_modified_train.csv"
+    file_path = Results_Folder + '\\' + file_name + date_prefix + "_modified_train.csv"
 
     final_df.to_csv(file_path, index=False)
     return file_path, pca1, pcaB
