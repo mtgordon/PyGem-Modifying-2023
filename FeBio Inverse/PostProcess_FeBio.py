@@ -73,38 +73,40 @@ def generate_int_csvs(file_params,object_list,log_name,feb_name,first_int_file_f
     for obj in object_list:
         obj_coords_list.append(gic.extract_coordinates_from_final_step(log_name, feb_name, obj))
         print('Extracting... ' + obj + ' for ' + file_params)
-        if obj == 'Object16':
-            last_object = True
     pc_points = gic.generate_2d_coords_for_pca(obj_coords_list[0])
-    pc_points_bottom = bts.generate_2d_bottom_tissue(bts.extract_ten_coordinates_block(obj_coords_list[2])) #TODO: Errors due to not enough objects (0, 2, 1 idx should be looked at)
+    #pc_points_bottom = bts.generate_2d_bottom_tissue(bts.extract_ten_coordinates_block(obj_coords_list[2])) #TODO: Errors due to not enough objects (0, 2, 1 idx should be looked at)
     # Get the PC points for Object2
     # Begin building the row to be put into the intermediate csv
     csv_row.append(file_params)  # file params
-    apex = find_apex(obj_coords_list[1])
+    #apex = find_apex(obj_coords_list[1])
     # apex FIX
     csv_row.extend(prop_final)
-    csv_row.append(apex)
+    #csv_row.append(apex)
     csv_row.extend(pc_points)
-    csv_row.extend(pc_points_bottom)  # the 30 pc coordinates
+    #csv_row.extend(pc_points_bottom)  # the 30 pc coordinates
 
     if first_int_file_flag:
         csv_header.append('File Name')
-        csv_header.append('E1')
-        csv_header.append('E2')
-        csv_header.append('E3')
-        csv_header.append('Apex')
+        csv_header.append('E5')
+        #csv_header.append('E2')
+        #csv_header.append('E3')
+        #csv_header.append('Apex')
         coord = 'x'
         for i in range(2):
             if i == 1:
                 coord = 'y'
             for j in range(15):
                 csv_header.append(coord + str(j + 1))
+        #TODO: commented this out because we do not have a points for 'bottom'
+        """
+        
         coord = 'Bx'
         for i in range(2):
             if i == 1:
                 coord = 'By'
             for j in range(10):
                 csv_header.append(coord + str(j + 1))
+        """
 
         with open(csv_filename, 'w', newline='') as csvfile:
             writer = csv.writer(csvfile)
