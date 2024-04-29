@@ -87,14 +87,15 @@ def plot_3d_points(points):
 
    plt.show()
 
-#TODO: Input Parameters for Cylinder Creation
-height = 4
-num_points = 200
-
 
 #plot_3d_points(cylinder1points)
 
+
+#TODO: Input Parameters for Cylinder Creation
+height = 4
+num_points = 200
 """
+Function: determineRadiiFromFEB
 This method utilizes the .feb files extracted points which are parsed from the .feb file previously using
 IOfunctions.extract_coordinates_list_from_feb, We then convert this to a np array and take the first
 two nodes x-values which are the inner and outer radius correspondingly.

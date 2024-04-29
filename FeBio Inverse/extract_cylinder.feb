@@ -2828,8 +2828,5 @@
 			<var type="stress" />
 			<var type="relative volume" />
 		</plotfile>
-		<logfile>
-			<node_data data="x;y;z" />
-		</logfile>
 	</Output>
 </febio_spec>

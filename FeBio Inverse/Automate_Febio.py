@@ -16,6 +16,10 @@ import re
 import time
 import PCA_data
 from lib import IOfunctions
+import PointsExtractionTesting
+from pygem import RBF
+import numpy as np
+import matplotlib.pyplot as plt
 
 '''
 Function: RunFEBinFeBio
@@ -63,16 +67,36 @@ def updateProperties(origFile, fileTemp):
                 pressure = surface_load.find('pressure')
                 pressure.text = str(current_run_dict["Pressure"])
 
-        #elif "Inner_Radius" in partProp:
-            # Get inner
-        #elif "Outer_Radius" in partProp:
-            # Get Outer then call inner and outer from PointsExtractionTesting.Py
+        elif "Inner_Radius" in partProp:
+            # Assign inner_radius value from "feb_variables.csv"
+            inner_radius = float(current_run_dict["Inner_Radius"])
 
+        elif "Outer_Radius" in partProp:
+            # Assign outer_radius value from "feb_variables.csv"
+            outer_radius = float(current_run_dict["Outer_Radius"])
+            # Extract points from .feb file and return in array of tuples
+            extract_points = IOfunctions.extract_coordinates_list_from_feb(originalFebFilePath, 'Object5')
+            # Assign cylinder1points extract_points
+            cylinder1points = PointsExtractionTesting.determineRadiiFromFEB(extract_points)
+            # Generate Cylinder2 points using given Inner & Outer Radius from "feb_variables.csv"
+            cylinder2points = PointsExtractionTesting.generate_annular_cylinder_points(inner_radius, outer_radius, 4, 200)
+            # Use RBF to find differences between both cylinders
+            rbf = RBF(cylinder1points, cylinder2points, func='thin_plate_spline')
+            # Convert extract_points to np array to use rbf to get deformed_points
+            extract_points = np.array(extract_points)
+            # Call rbf to return deformed points given extract_points
+            deformed_points = rbf(extract_points)
+
+            # Convert Array to tuples to 2D array to use "replace_node_in_feb_file" function
+            deformed_points_list = []
+            for tuple in deformed_points:
+                deformed_points_list.append(list(tuple))
 
 
     # using UTF-8 encoding does not bring up any issues (can be changed if needed)
     newInputFile = Results_Folder + '\\' + fileTemp + '.feb'
     tree.write(newInputFile, xml_declaration=True, encoding='ISO-8859-1')
+    IOfunctions.replace_node_in_feb_file(newInputFile, 'Object5', deformed_points_list)
 
     return newInputFile
 
