@@ -19,7 +19,34 @@ from lib import IOfunctions
 import PointsExtractionTesting
 from pygem import RBF
 import numpy as np
-import matplotlib.pyplot as plt
+
+
+# FeBio Variables
+#TODO: ENTER IN VAR FILE --> SET PART NAMES FOR ALL MATERIALS --> DONE
+dictionary_file = 'feb_variables.csv' #DONE
+FeBioLocation = 'C:\\Program Files\\FEBioStudio2\\bin\\febio4.exe'
+originalFebFilePath = 'D:\\Gordon\\Automate FEB Runs\\2024_4_29 auto\\Base File\\Basic_Cylinder_Pressure.feb' #DONE
+Results_Folder = 'D:\\Gordon\\Automate FEB Runs\\2024_4_29 auto' #DONE
+object_list = ['Object5'] #TODO: Get new names for flat, curve, GI Filler --> DONE
+object_name = 'Object5'
+
+# FLAGS
+first_int_file_flag = True
+final_csv_flag = False
+GENERATE_INTERMEDIATE_FLAG = True
+
+#Have the default material variables be 1 (100%) so they do not change if no variable is given
+#TODO: Update Everytime you want to change your base file
+default_dict = {
+    'Part5_E': 1,
+    'Pressure': 0,
+    'Inner_Radius': 1,
+    'Outer_Radius': 2
+}
+
+#TODO: Input Parameters for Cylinder Creation
+cylinder_height = 4
+num_cylinder_points = 200
 
 '''
 Function: RunFEBinFeBio
@@ -36,13 +63,15 @@ def RunFEBinFeBio(inputFileName, FeBioLocation, outputFileName=None):
 '''
 Function: updateProperties
 Takes in a specified part name, finds the corresponding material, changes the modulus of the material, 
-then saves a new input file with the name relating to the changed part (part, property, new value)
+then saves a new input file with the name relating to the changed part (part, property, new value).
+
+Update 4/29: Can now take in Pressure, Inner & Outer Radius for generating 3D Cylinders 
 '''
 def updateProperties(origFile, fileTemp):
     # Parse original FEB file
     tree = ET.parse(origFile)
     root = tree.getroot()
-    extract_points = IOfunctions.extract_coordinates_list_from_feb(originalFebFilePath, "Object5")
+    extract_points = IOfunctions.extract_coordinates_list_from_feb(originalFebFilePath, object_name)
 
 
     # Go through each element which is within the csv
@@ -75,11 +104,11 @@ def updateProperties(origFile, fileTemp):
             # Assign outer_radius value from "feb_variables.csv"
             outer_radius = float(current_run_dict["Outer_Radius"])
             # Extract points from .feb file and return in array of tuples
-            extract_points = IOfunctions.extract_coordinates_list_from_feb(originalFebFilePath, 'Object5')
+            extract_points = IOfunctions.extract_coordinates_list_from_feb(originalFebFilePath, object_name)
             # Assign cylinder1points extract_points
             cylinder1points = PointsExtractionTesting.determineRadiiFromFEB(extract_points)
             # Generate Cylinder2 points using given Inner & Outer Radius from "feb_variables.csv"
-            cylinder2points = PointsExtractionTesting.generate_annular_cylinder_points(inner_radius, outer_radius, 4, 200)
+            cylinder2points = PointsExtractionTesting.generate_annular_cylinder_points(inner_radius, outer_radius, cylinder_height, num_cylinder_points)
             # Use RBF to find differences between both cylinders
             rbf = RBF(cylinder1points, cylinder2points, func='thin_plate_spline')
             # Convert extract_points to np array to use rbf to get deformed_points
@@ -96,9 +125,21 @@ def updateProperties(origFile, fileTemp):
     # using UTF-8 encoding does not bring up any issues (can be changed if needed)
     newInputFile = Results_Folder + '\\' + fileTemp + '.feb'
     tree.write(newInputFile, xml_declaration=True, encoding='ISO-8859-1')
-    IOfunctions.replace_node_in_feb_file(newInputFile, 'Object5', deformed_points_list)
+    IOfunctions.replace_node_in_feb_file(newInputFile, object_name, deformed_points_list)
 
     return newInputFile
+
+# Post Processing Variables
+current_date = datetime.datetime.now()
+date_prefix = str(current_date.year) + '_' + str(current_date.month)  + '_' + str(current_date.day)
+obj_coords_list = []
+file_num = 0
+csv_filename = Results_Folder + '\\' + date_prefix + '_intermediate.csv'
+
+#Get data from the Run_Variables file
+# Newer code (2/14)
+run_file = open(dictionary_file)
+DOE_dict = csv.DictReader(run_file)
 
 
 '''
@@ -114,44 +155,6 @@ def new_check_normal_run(log_file_path):
             if "N O R M A L   T E R M I N A T I O N" in line:
                 return True
         return False
-
-
-# FeBio Variables
-#TODO: IN VAR FILE --> SET PART NAMES FOR ALL MATERIALS --> DONE
-dictionary_file = 'feb_variables.csv' #DONE
-FeBioLocation = 'C:\\Program Files\\FEBioStudio2\\bin\\febio4.exe'
-originalFebFilePath = 'D:\\Gordon\\Automate FEB Runs\\2024_4_29 auto\\Base File\\Basic_Cylinder_Pressure.feb' #DONE
-
-# Post Processing Variables
-current_date = datetime.datetime.now()
-date_prefix = str(current_date.year) + '_' + str(current_date.month)  + '_' + str(current_date.day)
-#TODO: CHANGE PER FILE
-object_list = ['Object5'] #TODO: Get new names for flat, curve, GI Filler --> DONE
-obj_coords_list = []
-file_num = 0
-Results_Folder = 'D:\\Gordon\\Automate FEB Runs\\2024_4_29 auto' #DONE
-csv_filename = Results_Folder + '\\' + date_prefix + '_intermediate.csv'
-
-# FLAGS
-first_int_file_flag = True
-final_csv_flag = False
-GENERATE_INTERMEDIATE_FLAG = True
-
-#Get data from the Run_Variables file
-# Newer code (2/14)
-run_file = open(dictionary_file)
-DOE_dict = csv.DictReader(run_file)
-
-#Have the default material variables be 1 (100%) so they do not change if no variable is given
-#TODO: In FEB-variables file, have the headers increase in number to work with file mover file
-#TODO: CHANGE PER FILE
-default_dict = {
-    'Part5_E': 1,
-    'Pressure': 0,
-    'Inner_Radius': 1,
-    'Outer_Radius': 2
-}
-#Eventually add outer_radius and pressure
 
 current_run_dict = default_dict.copy()
 

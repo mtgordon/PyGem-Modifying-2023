@@ -14,7 +14,6 @@ from pygem import RBF
 febio_file_name = "D:\\Gordon\\Automate FEB Runs\\2024_4_29 auto\\Base File\\Basic_Cylinder_Pressure.feb"
 node_name = "Object5"
 extract_points = IOfunctions.extract_coordinates_list_from_feb(febio_file_name, node_name)
-print(extract_points)
 
 
 #plot_3d_points(extract_points)
@@ -110,11 +109,9 @@ def determineRadiiFromFEB(extracted_points):
     for i in range(2):  # Loop over the range from 0 to 1 (inclusive)
         if i == 0:
             inner_radius = extract_points[i][0]
-            print("Inner Radius = " + str(inner_radius))
 
         if i == 1:
             outer_radius = extract_points[i][0]
-            print("Outer Radius = " + str(outer_radius))
 
     # create cylinder using our found inner & outer radius
     cylinderpoints = generate_annular_cylinder_points(inner_radius, outer_radius, height, num_points)
