@@ -87,27 +87,26 @@ def plot_3d_points(points):
 
    plt.show()
 
-
-
-
+# Parameters for Cylinder Creation
 height = 4
 num_points = 200
 
-
+#TODO: This creates the cylinder from the .feb file, but is hard coded, we want this to create it from parsing the .feb file
 cylinder1points = generate_annular_cylinder_points(1, 2, height, num_points)
-generate_annular_cylinder_points(1, 2, height, num_points)
-plot_3d_points(cylinder1points)
+#generate_annular_cylinder_points(1, 2, height, num_points)
+#plot_3d_points(cylinder1points)
 
-
+# Cylinder which we are morphing. This is the Cylinder that MATTERS!!
 cylinder2points = generate_annular_cylinder_points(2,3,height,num_points)
-plot_3d_points(cylinder2points)
+#plot_3d_points(cylinder2points)
 
-
+#TODO: This uses RBF Interpolator from the SciPy Library, Currently unused, because we are using PyGem
 # rbf = RBF(original_control_points = cylinder1points, deformed_control_points = cylinder2points, func='thin_plate_spline', radius = 10)
 # rbf(cylinder1points)
-
 # Initialize the RBF with the original control points and their deformations
 #rbf = RBFInterpolator(cylinder1points, deformations, kernel='thin_plate_spline')
+
+
 
 #TODO: This uses Pygem, only works on COBS for rn
 rbf = RBF(cylinder1points, cylinder2points, func='thin_plate_spline')
@@ -127,4 +126,3 @@ for tuple in deformed_points:
 print(deformed_points_list)
 print(extract_points)
 IOfunctions.replace_node_in_new_feb_file(febio_file_name, node_name, "extract_cylinder.feb", deformed_points_list)
-

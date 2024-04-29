@@ -15,6 +15,7 @@ import pandas as pd
 import re
 import time
 import PCA_data
+from lib import IOfunctions
 
 '''
 Function: RunFEBinFeBio
@@ -37,23 +38,35 @@ def updateProperties(origFile, fileTemp):
     # Parse original FEB file
     tree = ET.parse(origFile)
     root = tree.getroot()
+    extract_points = IOfunctions.extract_coordinates_list_from_feb(originalFebFilePath, "Object5")
 
-    # Locate the Mesh Domains section to find which parts have which materials
-    meshDomains = root.find('MeshDomains')
-    for domain in meshDomains:
-        for partProp in current_run_dict.keys():
+
+    # Go through each element which is within the csv
+    for partProp in current_run_dict.keys():
+
+        if "Part" in partProp:
             partName = partProp.split('_')[0]
             propName = partProp.split('_')[1]
-            if domain.attrib['name'] == partName:
-                for mat in tree.find('Material'):
-                    if mat.attrib['name'] == domain.attrib['mat']:
-                        newValue = float(mat.find(propName).text) * float(current_run_dict[partProp])
-                        mat.find(propName).text = str(newValue)
 
-    loads = root.find('Loads')
-    for surface_load in loads:
-        pressure = surface_load.find('pressure')
-        pressure.text = str(current_run_dict["Pressure"])
+            # Locate the Mesh Domains section to find which parts have which materials
+            meshDomains = root.find('MeshDomains')
+            for domain in meshDomains:
+                if domain.attrib['name'] == partName:
+                    for mat in tree.find('Material'):
+                        if mat.attrib['name'] == domain.attrib['mat']:
+                            newValue = float(mat.find(propName).text) * float(current_run_dict[partProp])
+                            mat.find(propName).text = str(newValue)
+
+        elif "Pressure" in partProp:
+            loads = root.find('Loads')
+            for surface_load in loads:
+                pressure = surface_load.find('pressure')
+                pressure.text = str(current_run_dict["Pressure"])
+
+        #elif "Inner_Radius" in partProp:
+            # Get inner
+        #elif "Outer_Radius" in partProp:
+            # Get Outer then call inner and outer from PointsExtractionTesting.Py
 
 
 
@@ -83,21 +96,21 @@ def new_check_normal_run(log_file_path):
 #TODO: IN VAR FILE --> SET PART NAMES FOR ALL MATERIALS --> DONE
 dictionary_file = 'feb_variables.csv' #DONE
 FeBioLocation = 'C:\\Program Files\\FEBioStudio2\\bin\\febio4.exe'
-originalFebFilePath = 'D:\\Gordon\\Automate FEB Runs\\2023_8_23 auto\\Base File\\Full_Model_Close_modified_10.feb' #DONE
+originalFebFilePath = 'D:\\Gordon\\Automate FEB Runs\\2024_4_29 auto\\Base File\\Basic_Cylinder_Pressure.feb' #DONE
 
 # Post Processing Variables
 current_date = datetime.datetime.now()
 date_prefix = str(current_date.year) + '_' + str(current_date.month)  + '_' + str(current_date.day)
 #TODO: CHANGE PER FILE
-object_list = ['Object2', 'Object6','Object1'] #TODO: Get new names for flat, curve, GI Filler --> DONE
+object_list = ['Object5'] #TODO: Get new names for flat, curve, GI Filler --> DONE
 obj_coords_list = []
 file_num = 0
-Results_Folder = 'D:\\Gordon\\Automate FEB Runs\\2024_3_22 New Branch Test' #DONE
+Results_Folder = 'D:\\Gordon\\Automate FEB Runs\\2024_4_29 auto' #DONE
 csv_filename = Results_Folder + '\\' + date_prefix + '_intermediate.csv'
 
 # FLAGS
 first_int_file_flag = True
-final_csv_flag = True
+final_csv_flag = False
 GENERATE_INTERMEDIATE_FLAG = True
 
 #Get data from the Run_Variables file
@@ -109,13 +122,7 @@ DOE_dict = csv.DictReader(run_file)
 #TODO: In FEB-variables file, have the headers increase in number to work with file mover file
 #TODO: CHANGE PER FILE
 default_dict = {
-    'Part1_E': 1,
-    'Part2_E': 1,
-    'Part3_E': 1,
-    'Part4_E': 1,
-    'Part6_E': 1,
-    'Part12_E': 1,
-    'Part14_E': 1,
+    'Part5_E': 1,
     'Pressure': 0,
     'Inner_Radius': 1,
     'Outer_Radius': 2
@@ -157,13 +164,14 @@ for row in DOE_dict:
     # Check for success of the feb run
     if new_check_normal_run(logFile):
         # Post process
-        if first_int_file_flag:
-            proc.generate_int_csvs(fileTemplate, object_list, logFile, workingInputFileName, first_int_file_flag,
-                                   csv_filename)
-            first_int_file_flag = False
-        else:
-            proc.generate_int_csvs(fileTemplate, object_list, logFile, workingInputFileName, first_int_file_flag,
-                                   csv_filename)
+        if GENERATE_INTERMEDIATE_FLAG:
+            if first_int_file_flag:
+                proc.generate_int_csvs(fileTemplate, object_list, logFile, workingInputFileName, first_int_file_flag,
+                                       csv_filename)
+                first_int_file_flag = False
+            else:
+                proc.generate_int_csvs(fileTemplate, object_list, logFile, workingInputFileName, first_int_file_flag,
+                                       csv_filename)
 
         file_num += 1
         print('Completed Iteration ' + str(file_num) + ": " + fileTemplate)

@@ -1,0 +1,460 @@
+===========================================================================
+         ________    _________   _______       __     _________            
+        |        |\ |        |\ |       \\    |  |\  /         \\          
+        |    ____|| |    ____|| |    __  ||   |__|| |    ___    ||         
+        |   |\___\| |   |\___\| |   |\_| ||    \_\| |   //  \   ||         
+        |   ||__    |   ||__    |   ||_| ||   |  |\ |  ||    |  ||         
+        |       |\  |       |\  |         \\  |  || |  ||    |  ||         
+        |    ___||  |    ___||  |    ___   || |  || |  ||    |  ||         
+        |   |\__\|  |   |\__\|  |   |\__|  || |  || |  ||    |  ||         
+        |   ||      |   ||___   |   ||__|  || |  || |   \\__/   ||         
+        |   ||      |        |\ |          || |  || |           ||         
+        |___||      |________|| |_________//  |__||  \_________//          
+                                                                           
+      F I N I T E   E L E M E N T S   F O R   B I O M E C H A N I C S      
+                                                                           
+  version 4.6.0
+  FEBio is a registered trademark.                                         
+  copyright (c) 2006-2024 - All rights reserved                            
+                                                                           
+===========================================================================
+
+
+
+
+
+ FILES USED
+===========================================================================
+	Input file : C:\Users\EGRStudent\PycharmProjects\PyGem-Modifying-2023\FeBio Inverse\jobs\extract_cylinder.feb
+	Plot file  : C:\Users\EGRStudent\PycharmProjects\PyGem-Modifying-2023\FeBio Inverse\jobs\extract_cylinder.xplt
+	Log file   : C:\Users\EGRStudent\PycharmProjects\PyGem-Modifying-2023\FeBio Inverse\jobs\extract_cylinder.log
+
+
+ MESH INFO
+===========================================================================
+	Number of materials ............................ : 1
+	Number of domains .............................. : 1
+	Number of nodes ................................ : 1440
+	Number of solid elements ....................... : 1024
+
+
+ MODULE
+===========================================================================
+	Module type ....................................... : solid
+
+
+ CONTROL DATA
+===========================================================================
+	analysis .......................................... : STATIC (0)
+	time_steps ........................................ : 10
+	step_size ......................................... : 0.1
+	plot_zero_state ................................... : no (0)
+	plot_range ........................................ : 0,-1
+	plot_level ........................................ : PLOT_MAJOR_ITRS (1)
+	output_level ...................................... : OUTPUT_MAJOR_ITRS (1)
+	plot_stride ....................................... : 1
+	output_stride ..................................... : 1
+	adaptor_re_solve .................................. : yes (1)
+	Auto time stepper activated ....................... : yes
+	  max_retries ..................................... : 5
+	  opt_iter ........................................ : 11
+	  dtmin ........................................... : 0
+	  dtmax ........................................... : 0.1
+	  aggressiveness .................................. : 0
+	  cutback ......................................... : 0.5
+	  dtforce ......................................... : no (0)
+ SOLVER PARAMETERS
+===========================================================================
+	symmetric_stiffness ............................... : symmetric (1)
+	equation_scheme ................................... : staggered (0)
+	equation_order .................................... : default (0)
+	optimize_bw ....................................... : no (0)
+	lstol ............................................. : 0.9
+	lsmin ............................................. : 0.01
+	lsiter ............................................ : 5
+	max_refs .......................................... : 15
+	check_zero_diagonal ............................... : no (0)
+	zero_diagonal_tol ................................. : 0
+	force_partition ................................... : 0
+	reform_each_time_step ............................. : yes (1)
+	reform_augment .................................... : no (0)
+	diverge_reform .................................... : yes (1)
+	min_residual ...................................... : 1e-20
+	max_residual ...................................... : 0
+	dtol .............................................. : 0.001
+	etol .............................................. : 0.01
+	rtol .............................................. : 0
+	rhoi .............................................. : -2
+	alpha ............................................. : 1
+	beta .............................................. : 0.25
+	gamma ............................................. : 0.5
+	logSolve .......................................... : no (0)
+	arc_length ........................................ : 0
+	arc_length_scale .................................. : 0
+
+
+
+
+
+
+ MATERIAL DATA
+===========================================================================
+  1 - Material1 (type: damage neo-Hookean)
+	density ........................................... : 1
+	E ................................................. : 10
+	v ................................................. : 0.2
+	a ................................................. : 0.014
+	b ................................................. : 0.34
+
+
+ LOAD CONTROLLER DATA
+===========================================================================
+
+
+ OUTPUT DATA
+===========================================================================
+ LINEAR SOLVER DATA
+===========================================================================
+	Default linear solver ............................. : pardiso
+
+
+ *************************************************************************
+ * Selecting linear solver pardiso                                       *
+ *************************************************************************
+
+===== beginning time step 1 : 0.1 =====
+
+
+Reforming stiffness matrix: reformation #1
+
+===== reforming stiffness matrix:
+	Nr of equations ........................... : 4320
+	Nr of nonzeroes in stiffness matrix ....... : 142560
+ 1
+ Nonlinear solution status: time= 0.1
+	stiffness updates             = 0
+	right hand side evaluations   = 2
+	stiffness matrix reformations = 1
+	step from line search         = 1.000000
+	convergence norms :     INITIAL         CURRENT         REQUIRED
+	   residual            2.956424e-27    4.386805e-27    0.000000e+00 
+	   energy              3.165449e-28    6.147512e-29    3.165449e-30 
+	   displacement        6.674186e-27    6.674186e-27    6.674186e-33 
+
+ *************************************************************************
+ *                               WARNING                                 *
+ * No force acting on the system.                                        *
+ *************************************************************************
+
+convergence summary
+    number of iterations   : 1
+    number of reformations : 1
+
+------- converged at time : 0.1
+
+
+===== beginning time step 2 : 0.2 =====
+
+
+Reforming stiffness matrix: reformation #1
+
+ 1
+ Nonlinear solution status: time= 0.2
+	stiffness updates             = 0
+	right hand side evaluations   = 2
+	stiffness matrix reformations = 1
+	step from line search         = 1.000000
+	convergence norms :     INITIAL         CURRENT         REQUIRED
+	   residual            4.386805e-27    8.657887e-27    0.000000e+00 
+	   energy              3.493833e-28    3.209948e-28    3.493833e-30 
+	   displacement        2.345792e-27    2.345792e-27    2.345792e-33 
+
+ *************************************************************************
+ *                               WARNING                                 *
+ * No force acting on the system.                                        *
+ *************************************************************************
+
+convergence summary
+    number of iterations   : 1
+    number of reformations : 1
+
+------- converged at time : 0.2
+
+
+===== beginning time step 3 : 0.3 =====
+
+
+Reforming stiffness matrix: reformation #1
+
+ 1
+ Nonlinear solution status: time= 0.3
+	stiffness updates             = 0
+	right hand side evaluations   = 2
+	stiffness matrix reformations = 1
+	step from line search         = 1.000000
+	convergence norms :     INITIAL         CURRENT         REQUIRED
+	   residual            8.657887e-27    8.283625e-27    0.000000e+00 
+	   energy              6.363418e-28    3.369040e-28    6.363418e-30 
+	   displacement        1.178791e-26    1.178791e-26    1.178791e-32 
+
+ *************************************************************************
+ *                               WARNING                                 *
+ * No force acting on the system.                                        *
+ *************************************************************************
+
+convergence summary
+    number of iterations   : 1
+    number of reformations : 1
+
+------- converged at time : 0.3
+
+
+===== beginning time step 4 : 0.4 =====
+
+
+Reforming stiffness matrix: reformation #1
+
+ 1
+ Nonlinear solution status: time= 0.4
+	stiffness updates             = 0
+	right hand side evaluations   = 2
+	stiffness matrix reformations = 1
+	step from line search         = 1.000000
+	convergence norms :     INITIAL         CURRENT         REQUIRED
+	   residual            8.283625e-27    8.424847e-27    0.000000e+00 
+	   energy              6.390619e-28    3.499995e-28    6.390619e-30 
+	   displacement        1.292663e-26    1.292663e-26    1.292663e-32 
+
+ *************************************************************************
+ *                               WARNING                                 *
+ * No force acting on the system.                                        *
+ *************************************************************************
+
+convergence summary
+    number of iterations   : 1
+    number of reformations : 1
+
+------- converged at time : 0.4
+
+
+===== beginning time step 5 : 0.5 =====
+
+
+Reforming stiffness matrix: reformation #1
+
+ 1
+ Nonlinear solution status: time= 0.5
+	stiffness updates             = 0
+	right hand side evaluations   = 2
+	stiffness matrix reformations = 1
+	step from line search         = 1.000000
+	convergence norms :     INITIAL         CURRENT         REQUIRED
+	   residual            8.424847e-27    7.260007e-27    0.000000e+00 
+	   energy              6.439204e-28    2.987720e-28    6.439204e-30 
+	   displacement        1.977375e-27    1.977375e-27    1.977375e-33 
+
+ *************************************************************************
+ *                               WARNING                                 *
+ * No force acting on the system.                                        *
+ *************************************************************************
+
+convergence summary
+    number of iterations   : 1
+    number of reformations : 1
+
+------- converged at time : 0.5
+
+
+===== beginning time step 6 : 0.6 =====
+
+
+Reforming stiffness matrix: reformation #1
+
+ 1
+ Nonlinear solution status: time= 0.6
+	stiffness updates             = 0
+	right hand side evaluations   = 2
+	stiffness matrix reformations = 1
+	step from line search         = 1.000000
+	convergence norms :     INITIAL         CURRENT         REQUIRED
+	   residual            7.260007e-27    8.717072e-27    0.000000e+00 
+	   energy              5.761161e-28    2.958868e-28    5.761161e-30 
+	   displacement        5.769720e-28    5.769720e-28    5.769720e-34 
+
+ *************************************************************************
+ *                               WARNING                                 *
+ * No force acting on the system.                                        *
+ *************************************************************************
+
+convergence summary
+    number of iterations   : 1
+    number of reformations : 1
+
+------- converged at time : 0.6
+
+
+===== beginning time step 7 : 0.7 =====
+
+
+Reforming stiffness matrix: reformation #1
+
+ 1
+ Nonlinear solution status: time= 0.7
+	stiffness updates             = 0
+	right hand side evaluations   = 2
+	stiffness matrix reformations = 1
+	step from line search         = 1.000000
+	convergence norms :     INITIAL         CURRENT         REQUIRED
+	   residual            8.717072e-27    8.995946e-27    0.000000e+00 
+	   energy              6.325448e-28    3.545776e-28    6.325448e-30 
+	   displacement        8.732948e-28    8.732948e-28    8.732948e-34 
+
+ *************************************************************************
+ *                               WARNING                                 *
+ * No force acting on the system.                                        *
+ *************************************************************************
+
+convergence summary
+    number of iterations   : 1
+    number of reformations : 1
+
+------- converged at time : 0.7
+
+
+===== beginning time step 8 : 0.8 =====
+
+
+Reforming stiffness matrix: reformation #1
+
+ 1
+ Nonlinear solution status: time= 0.8
+	stiffness updates             = 0
+	right hand side evaluations   = 2
+	stiffness matrix reformations = 1
+	step from line search         = 1.000000
+	convergence norms :     INITIAL         CURRENT         REQUIRED
+	   residual            8.995946e-27    8.854617e-27    0.000000e+00 
+	   energy              6.464460e-28    3.324241e-28    6.464460e-30 
+	   displacement        3.856616e-28    3.856616e-28    3.856616e-34 
+
+ *************************************************************************
+ *                               WARNING                                 *
+ * No force acting on the system.                                        *
+ *************************************************************************
+
+convergence summary
+    number of iterations   : 1
+    number of reformations : 1
+
+------- converged at time : 0.8
+
+
+===== beginning time step 9 : 0.9 =====
+
+
+Reforming stiffness matrix: reformation #1
+
+ 1
+ Nonlinear solution status: time= 0.9
+	stiffness updates             = 0
+	right hand side evaluations   = 2
+	stiffness matrix reformations = 1
+	step from line search         = 1.000000
+	convergence norms :     INITIAL         CURRENT         REQUIRED
+	   residual            8.854617e-27    7.600638e-27    0.000000e+00 
+	   energy              6.163383e-28    3.036972e-28    6.163383e-30 
+	   displacement        1.702650e-28    1.702650e-28    1.702650e-34 
+
+ *************************************************************************
+ *                               WARNING                                 *
+ * No force acting on the system.                                        *
+ *************************************************************************
+
+convergence summary
+    number of iterations   : 1
+    number of reformations : 1
+
+------- converged at time : 0.9
+
+
+===== beginning time step 10 : 1 =====
+
+
+Reforming stiffness matrix: reformation #1
+
+ 1
+ Nonlinear solution status: time= 1
+	stiffness updates             = 0
+	right hand side evaluations   = 2
+	stiffness matrix reformations = 1
+	step from line search         = 1.000000
+	convergence norms :     INITIAL         CURRENT         REQUIRED
+	   residual            7.600638e-27    7.748504e-27    0.000000e+00 
+	   energy              5.941784e-28    3.087505e-28    5.941784e-30 
+	   displacement        3.126006e-28    3.126006e-28    3.126006e-34 
+
+ *************************************************************************
+ *                               WARNING                                 *
+ * No force acting on the system.                                        *
+ *************************************************************************
+
+convergence summary
+    number of iterations   : 1
+    number of reformations : 1
+
+------- converged at time : 1
+
+
+
+ N O N L I N E A R   I T E R A T I O N   I N F O R M A T I O N
+
+	Number of time steps completed .................... : 10
+
+	Total number of equilibrium iterations ............ : 10
+
+	Average number of equilibrium iterations .......... : 1
+
+	Total number of right hand evaluations ............ : 20
+
+	Total number of stiffness reformations ............ : 10
+
+
+ L I N E A R   S O L V E R   S T A T S
+
+	Total calls to linear solver ........ : 10
+
+	Avg iterations per solve ............ : 1
+
+	Time in linear solver: 0:00:01
+
+ Peak memory  : 271.5 MB
+
+ Elapsed time : 0:00:01
+
+ T I M I N G   I N F O R M A T I O N
+
+	Input time ...................... : 0:00:00 (0.0864513 sec)
+
+	Initialization time ............. : 0:00:00 (0.02005 sec)
+
+	Solve time ...................... : 0:00:01 (1.22201 sec)
+
+	   IO-time (plot, dmp, data) .... : 0:00:00 (0.0480885 sec)
+
+	   reforming stiffness .......... : 0:00:00 (0.01217 sec)
+
+	   evaluating stiffness ......... : 0:00:00 (0.0642608 sec)
+
+	   evaluating residual .......... : 0:00:00 (0.0123472 sec)
+
+	   model update ................. : 0:00:00 (0.0702808 sec)
+
+	   QN updates ................... : 0:00:00 (0 sec)
+
+	   time in linear solver ........ : 0:00:01 (0.966893 sec)
+
+	Total elapsed time .............. : 0:00:01 (1.32851 sec)
+
+
+ N O R M A L   T E R M I N A T I O N
+

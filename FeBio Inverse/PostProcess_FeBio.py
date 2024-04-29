@@ -18,7 +18,7 @@ import predict_funtions as pf
 
 def process_features(csv_file, Results_Folder, date_prefix):
     int_df = pd.read_csv(csv_file)
-    pc1_df = int_df.iloc[:, 5:35]
+    pc1_df = int_df.iloc[:, 5:35] #TODO: HARD CODED _ CHANGE LATER
     pcbottom_df = int_df.iloc[:, 35:len(int_df.columns)]
     # int_df = pd.read_csv("intermediate_pc_data", header=None)
     total_result_PC1, pca1 = PCA_data.PCA_(pc1_df)
@@ -76,7 +76,7 @@ def generate_int_csvs(file_params,object_list,log_name,feb_name,first_int_file_f
         if obj == 'Object16':
             last_object = True
     pc_points = gic.generate_2d_coords_for_pca(obj_coords_list[0])
-    pc_points_bottom = bts.generate_2d_bottom_tissue(bts.extract_ten_coordinates_block(obj_coords_list[2]))
+    pc_points_bottom = bts.generate_2d_bottom_tissue(bts.extract_ten_coordinates_block(obj_coords_list[2])) #TODO: Errors due to not enough objects (0, 2, 1 idx should be looked at)
     # Get the PC points for Object2
     # Begin building the row to be put into the intermediate csv
     csv_row.append(file_params)  # file params
@@ -120,4 +120,3 @@ def generate_int_csvs(file_params,object_list,log_name,feb_name,first_int_file_f
     time.sleep(1)
 
     return csv_filename
-
