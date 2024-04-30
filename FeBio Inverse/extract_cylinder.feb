@@ -2542,6 +2542,136 @@
 			<elem id="1023">1439,1440,229,228,851,852,27,28</elem>
 			<elem id="1024">1440,761,26,229,852,188,10,27</elem>
 		</Elements>
+		<Surface name="NormalDisplacement1">
+			<quad4 id="1">77,367,17,1</quad4>
+			<quad4 id="2">367,368,18,17</quad4>
+			<quad4 id="3">368,369,19,18</quad4>
+			<quad4 id="4">369,37,2,19</quad4>
+			<quad4 id="5">76,364,367,77</quad4>
+			<quad4 id="6">364,365,368,367</quad4>
+			<quad4 id="7">365,366,369,368</quad4>
+			<quad4 id="8">366,38,37,369</quad4>
+			<quad4 id="9">75,361,364,76</quad4>
+			<quad4 id="10">361,362,365,364</quad4>
+			<quad4 id="11">362,363,366,365</quad4>
+			<quad4 id="12">363,39,38,366</quad4>
+			<quad4 id="13">74,358,361,75</quad4>
+			<quad4 id="14">358,359,362,361</quad4>
+			<quad4 id="15">359,360,363,362</quad4>
+			<quad4 id="16">360,40,39,363</quad4>
+			<quad4 id="17">73,355,358,74</quad4>
+			<quad4 id="18">355,356,359,358</quad4>
+			<quad4 id="19">356,357,360,359</quad4>
+			<quad4 id="20">357,41,40,360</quad4>
+			<quad4 id="21">72,352,355,73</quad4>
+			<quad4 id="22">352,353,356,355</quad4>
+			<quad4 id="23">353,354,357,356</quad4>
+			<quad4 id="24">354,42,41,357</quad4>
+			<quad4 id="25">71,349,352,72</quad4>
+			<quad4 id="26">349,350,353,352</quad4>
+			<quad4 id="27">350,351,354,353</quad4>
+			<quad4 id="28">351,43,42,354</quad4>
+			<quad4 id="29">3,60,349,71</quad4>
+			<quad4 id="30">60,59,350,349</quad4>
+			<quad4 id="31">59,58,351,350</quad4>
+			<quad4 id="32">58,4,43,351</quad4>
+			<quad4 id="33">125,528,60,3</quad4>
+			<quad4 id="34">528,529,59,60</quad4>
+			<quad4 id="35">529,530,58,59</quad4>
+			<quad4 id="36">530,85,4,58</quad4>
+			<quad4 id="37">124,525,528,125</quad4>
+			<quad4 id="38">525,526,529,528</quad4>
+			<quad4 id="39">526,527,530,529</quad4>
+			<quad4 id="40">527,86,85,530</quad4>
+			<quad4 id="41">123,522,525,124</quad4>
+			<quad4 id="42">522,523,526,525</quad4>
+			<quad4 id="43">523,524,527,526</quad4>
+			<quad4 id="44">524,87,86,527</quad4>
+			<quad4 id="45">122,519,522,123</quad4>
+			<quad4 id="46">519,520,523,522</quad4>
+			<quad4 id="47">520,521,524,523</quad4>
+			<quad4 id="48">521,88,87,524</quad4>
+			<quad4 id="49">121,516,519,122</quad4>
+			<quad4 id="50">516,517,520,519</quad4>
+			<quad4 id="51">517,518,521,520</quad4>
+			<quad4 id="52">518,89,88,521</quad4>
+			<quad4 id="53">120,513,516,121</quad4>
+			<quad4 id="54">513,514,517,516</quad4>
+			<quad4 id="55">514,515,518,517</quad4>
+			<quad4 id="56">515,90,89,518</quad4>
+			<quad4 id="57">119,510,513,120</quad4>
+			<quad4 id="58">510,511,514,513</quad4>
+			<quad4 id="59">511,512,515,514</quad4>
+			<quad4 id="60">512,91,90,515</quad4>
+			<quad4 id="61">5,108,510,119</quad4>
+			<quad4 id="62">108,107,511,510</quad4>
+			<quad4 id="63">107,106,512,511</quad4>
+			<quad4 id="64">106,6,91,512</quad4>
+			<quad4 id="65">173,689,108,5</quad4>
+			<quad4 id="66">689,690,107,108</quad4>
+			<quad4 id="67">690,691,106,107</quad4>
+			<quad4 id="68">691,133,6,106</quad4>
+			<quad4 id="69">172,686,689,173</quad4>
+			<quad4 id="70">686,687,690,689</quad4>
+			<quad4 id="71">687,688,691,690</quad4>
+			<quad4 id="72">688,134,133,691</quad4>
+			<quad4 id="73">171,683,686,172</quad4>
+			<quad4 id="74">683,684,687,686</quad4>
+			<quad4 id="75">684,685,688,687</quad4>
+			<quad4 id="76">685,135,134,688</quad4>
+			<quad4 id="77">170,680,683,171</quad4>
+			<quad4 id="78">680,681,684,683</quad4>
+			<quad4 id="79">681,682,685,684</quad4>
+			<quad4 id="80">682,136,135,685</quad4>
+			<quad4 id="81">169,677,680,170</quad4>
+			<quad4 id="82">677,678,681,680</quad4>
+			<quad4 id="83">678,679,682,681</quad4>
+			<quad4 id="84">679,137,136,682</quad4>
+			<quad4 id="85">168,674,677,169</quad4>
+			<quad4 id="86">674,675,678,677</quad4>
+			<quad4 id="87">675,676,679,678</quad4>
+			<quad4 id="88">676,138,137,679</quad4>
+			<quad4 id="89">167,671,674,168</quad4>
+			<quad4 id="90">671,672,675,674</quad4>
+			<quad4 id="91">672,673,676,675</quad4>
+			<quad4 id="92">673,139,138,676</quad4>
+			<quad4 id="93">7,156,671,167</quad4>
+			<quad4 id="94">156,155,672,671</quad4>
+			<quad4 id="95">155,154,673,672</quad4>
+			<quad4 id="96">154,8,139,673</quad4>
+			<quad4 id="97">201,829,156,7</quad4>
+			<quad4 id="98">829,830,155,156</quad4>
+			<quad4 id="99">830,831,154,155</quad4>
+			<quad4 id="100">831,181,8,154</quad4>
+			<quad4 id="101">200,826,829,201</quad4>
+			<quad4 id="102">826,827,830,829</quad4>
+			<quad4 id="103">827,828,831,830</quad4>
+			<quad4 id="104">828,182,181,831</quad4>
+			<quad4 id="105">199,823,826,200</quad4>
+			<quad4 id="106">823,824,827,826</quad4>
+			<quad4 id="107">824,825,828,827</quad4>
+			<quad4 id="108">825,183,182,828</quad4>
+			<quad4 id="109">198,820,823,199</quad4>
+			<quad4 id="110">820,821,824,823</quad4>
+			<quad4 id="111">821,822,825,824</quad4>
+			<quad4 id="112">822,184,183,825</quad4>
+			<quad4 id="113">197,817,820,198</quad4>
+			<quad4 id="114">817,818,821,820</quad4>
+			<quad4 id="115">818,819,822,821</quad4>
+			<quad4 id="116">819,185,184,822</quad4>
+			<quad4 id="117">196,814,817,197</quad4>
+			<quad4 id="118">814,815,818,817</quad4>
+			<quad4 id="119">815,816,819,818</quad4>
+			<quad4 id="120">816,186,185,819</quad4>
+			<quad4 id="121">195,811,814,196</quad4>
+			<quad4 id="122">811,812,815,814</quad4>
+			<quad4 id="123">812,813,816,815</quad4>
+			<quad4 id="124">813,187,186,816</quad4>
+			<quad4 id="125">1,17,811,195</quad4>
+			<quad4 id="126">17,18,812,811</quad4>
+			<quad4 id="127">18,19,813,812</quad4>
+			<quad4 id="128">19,2,187,813</quad4>
+		</Surface>
 		<Surface name="Pressure1">
 			<quad4 id="1">3,71,300,61</quad4>
 			<quad4 id="2">71,72,301,300</quad4>
@@ -2804,6 +2934,13 @@
 	<MeshDomains>
 		<SolidDomain name="Part5" mat="Material1" />
 	</MeshDomains>
+	<Boundary>
+		<bc name="NormalDisplacement1" surface="NormalDisplacement1" type="normal displacement">
+			<scale>0</scale>
+			<surface_hint>0</surface_hint>
+			<relative>0</relative>
+		</bc>
+	</Boundary>
 	<Loads>
 		<surface_load name="Pressure1" surface="Pressure1" type="pressure">
 			<pressure lc="1" type="math">.1</pressure>
@@ -2828,5 +2965,8 @@
 			<var type="stress" />
 			<var type="relative volume" />
 		</plotfile>
+		<logfile>
+			<node_data data="x;y;z" />
+		</logfile>
 	</Output>
 </febio_spec>

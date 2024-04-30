@@ -65,8 +65,8 @@ def generate_annular_cylinder_points(inner_radius, outer_radius, height, num_poi
 
 
 
-def plot_3d_points(points):
-   fig = plt.figure()
+def plot_3d_points(points, fig):
+   #fig = plt.figure()
    ax = fig.add_subplot(111, projection='3d')
 
 
@@ -122,6 +122,7 @@ cylinder1points = determineRadiiFromFEB(extract_points)
 
 # Cylinder which we are morphing. This is the Cylinder that MATTERS!!
 cylinder2points = generate_annular_cylinder_points(2,3,height,num_points)
+print(cylinder2points)
 #plot_3d_points(cylinder2points)
 
 #TODO: This uses RBF Interpolator from the SciPy Library, Currently unused, because we are using PyGem
@@ -135,7 +136,6 @@ cylinder2points = generate_annular_cylinder_points(2,3,height,num_points)
 
 #TODO: This uses Pygem, only works on COBS for rn
 rbf = RBF(cylinder1points, cylinder2points, func='thin_plate_spline')
-
 
 # Apply the RBF transformation to the first set of points
 extract_points = np.array(extract_points)

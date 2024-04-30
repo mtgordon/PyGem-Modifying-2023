@@ -28,12 +28,13 @@ FeBioLocation = 'C:\\Program Files\\FEBioStudio2\\bin\\febio4.exe'
 originalFebFilePath = 'D:\\Gordon\\Automate FEB Runs\\2024_4_29 auto\\Base File\\Basic_Cylinder_Pressure.feb' #DONE
 Results_Folder = 'D:\\Gordon\\Automate FEB Runs\\2024_4_29 auto' #DONE
 object_list = ['Object5'] #TODO: Get new names for flat, curve, GI Filler --> DONE
+# Currently being used to access base object, may need to be changed when looking to generate multiple objects at once
 object_name = 'Object5'
 
 # FLAGS
 first_int_file_flag = True
 final_csv_flag = False
-GENERATE_INTERMEDIATE_FLAG = True
+GENERATE_INTERMEDIATE_FLAG = False
 
 #Have the default material variables be 1 (100%) so they do not change if no variable is given
 #TODO: Update Everytime you want to change your base file
@@ -90,6 +91,7 @@ def updateProperties(origFile, fileTemp):
                             newValue = float(mat.find(propName).text) * float(current_run_dict[partProp])
                             mat.find(propName).text = str(newValue)
 
+        # Replace Pressure Value in .feb file with selected value from "feb_variables.csv"
         elif "Pressure" in partProp:
             loads = root.find('Loads')
             for surface_load in loads:
