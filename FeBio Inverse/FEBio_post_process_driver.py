@@ -39,7 +39,7 @@ object_list = ['Object5']  # MAKE SURE THIS MATCHES THE OBJECTS IN THE CURRENTLY
 obj_coords_list = []
 file_num = 0
 
-first_file_flag = False
+first_file_flag = True
 GENERATE_INTERMEDIATE_FLAG = True
 
 

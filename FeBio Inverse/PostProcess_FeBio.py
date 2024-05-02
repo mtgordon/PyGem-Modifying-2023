@@ -28,8 +28,8 @@ def process_features(csv_file, Results_Folder, date_prefix):
     PC_scores = total_result_PC1[['principal component 1', 'principal component 2']]
     PC_scores_bottom = total_result_PCB[['principal component 1', 'principal component 2']]
 
-    print(PC_scores)
-    print(PC_scores_bottom)
+    print("PC_Scores: ", PC_scores)
+    print("PC_scores_bottom", PC_scores_bottom)
 
     PC_scores = PC_scores.rename(columns = {'principal component 1': 'principal component 1 AVW','principal component 2':'principal component 2 AVW'})
     PC_scores_bottom  = PC_scores_bottom.rename(columns={'principal component 1': 'principal component 1 Bottom Tissue',
@@ -89,18 +89,15 @@ def generate_int_csvs(file_params,object_list,log_name,feb_name,first_int_file_f
         obj_coords_list.append(gic.extract_coordinates_from_final_step(log_name, feb_name, obj))
 
     #TODO: THIS IS WHERE THE INT CSV DATA IS OBTAINED
-    temp_pc_points = sav.generate_outer_cylinder_bottom(9 , obj_coords_list[0], 0.3) #REPLACE WITH CYLINDER POINTS
-    pc_points = []
 
-    for ele in temp_pc_points:
-        pc_points.append(ele[0])
+    pc_points = sav.generate_2d_coords_for_cylinder_pca(obj_coords_list[0]) #REPLACE WITH CYLINDER POINTS
+    #pc_points = []
 
-    for ele in temp_pc_points:
-        pc_points.append(ele[1])
-
-    print("18 POINTS ARRAY", pc_points)
-
+    # for ele in temp_pc_points:
+    #     pc_points.append(ele[0])
     #
+    # for ele in temp_pc_points:
+    #     pc_points.append(ele[1])
 
     #pc_points_bottom = bts.generate_2d_bottom_tissue(bts.extract_ten_coordinates_block(obj_coords_list[2])) #TODO: Errors due to not enough objects (0, 2, 1 idx should be looked at)
 
@@ -131,7 +128,7 @@ def generate_int_csvs(file_params,object_list,log_name,feb_name,first_int_file_f
         for i in range(2):
             if i == 1:
                 coord = 'y'
-            for j in range(9):
+            for j in range(15):
                 csv_header.append(coord + str(j + 1))
         #TODO: commented this out because we do not have a points for 'bottom'
         """

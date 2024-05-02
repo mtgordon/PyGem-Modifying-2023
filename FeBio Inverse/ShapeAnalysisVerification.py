@@ -24,10 +24,11 @@ log_name = 'D:\\Gordon\\Automate FEB Runs\\2024_4_29 auto\\_Part5_E(0.78)_Pressu
 # Parameters for functions below
 obj = 'Object5'
 window_width = 0.3
-num_pts = 9
+num_pts = 15
 spline_ordered = 0
 
-logCoordinates = gic.extract_coordinates_from_final_step(log_name, feb_name, obj)
+logCoordinates = []
+logCoordinates.append(gic.extract_coordinates_from_final_step(log_name, feb_name, obj))
 
 
 """
@@ -36,6 +37,10 @@ Function: generate_cylinder_bottom(numpts, extract_pts, window_width)
 This function takes in a desired amount of points (numpts), the point cloud (extract_pts), and desired window size
 We then generate the "bottom" points of the cylinder by finding the ymin value for each z_value index, which
 we determine through the numpts passed in.
+
+INPUT: numpts (ex. 15), extract_pts (ex. [[x1,y1,z1]]), window_width (ex. 0.3)
+
+OUTPUT: best_points ()
 """
 def generate_outer_cylinder_bottom(numpts, extract_pts, window_width):
    #initialize maxz, minz, & best points array which we will be returning
@@ -79,16 +84,8 @@ def generate_outer_cylinder_bottom(numpts, extract_pts, window_width):
    return best_points
 
 # assign cylinder_bottom equal to generate_outer_cylinder_bottom given parameters.
-cylinder_bottom = generate_outer_cylinder_bottom(num_pts, logCoordinates, window_width)
+cylinder_bottom = generate_outer_cylinder_bottom(num_pts, logCoordinates[0], window_width)
 
-# Sort logCoordinates into regular 2d array ready for plotting
-#logStripped = []
-#for ele in logCoordinates:
-#   logStripped.append(ele[1])
-
-# convert arrays to np.arrays
-#logStripped = np.array(logStripped)
-#cylinder_bottom = np.array(cylinder_bottom)
 
 """
 Function: plot_cylinder_bottom(cylinder, cylinder_bottom)
@@ -155,7 +152,7 @@ def generate_inner_cylinder_bottom(numpts, extract_pts, window_width):
                   ymin = abs(ele[1][1])
                   zvalue = ele[1][2]
       # append values to best_points after ymin and z value are determined
-      best_points.append([0, ymin, zvalue])
+      best_points.append([ymin, zvalue])
 
    return best_points
 
@@ -170,21 +167,27 @@ Returns:
 ys and zs array that dont include x values
 the distance array between each point
 """
-def get_spline_points(coords_list):
-   #this is to get rid of the x values since they are all zeros
-   ys_zs = coords_list[:, 1:]
-   #calculates the new distances between the points
+
+
+def get_distance_and_coords(ys, zs):
+   coords_2d = []
+   for i in range(len(ys)):
+      temparr = []
+      temparr.append(ys[i])  # Append individual elements instead of the entire array
+      temparr.append(zs[i])  # Append individual elements instead of the entire array
+      coords_2d.append(temparr)
+
+   # Calculate the new distances between the points
    new_distance_array = [0]
-   for i in range(1, len(ys_zs)):
-      new_distance_array.append(hypot(ys_zs[i][0] - ys_zs[i-1][0],
-                                      ys_zs[i][1] - ys_zs[i-1][1]) + new_distance_array[-1])
-   print("New Distance Array: ", new_distance_array)
+   for i in range(1, len(coords_2d)):
+      distance = hypot(coords_2d[i][0] - coords_2d[i - 1][0], coords_2d[i][1] - coords_2d[i - 1][1])
+      new_distance_array.append(distance + new_distance_array[-1])
 
+   print("New Distance Array:", new_distance_array)
 
-   print("BEST POINTS", ys_zs)
-   return ys_zs, new_distance_array
+   return coords_2d, new_distance_array
+#get_spline_points(cylinder_bottom)
 
-print(get_spline_points(cylinder_bottom))
 """
 This function is to generate the 2d coordinates of our cylinder model. it is similar to a function in generate_pca_points but does some
 things differently.
@@ -194,19 +197,20 @@ takes in a coordinates list that is an array of arrays that contain the x, y, an
 
 Returns:
 newys and newzs
-
 """
 def generate_2d_coords_for_cylinder_pca(coords_list):
+   #  to fix, ctrl z till this is gone.
+   X,Y,Z = gic.get_x_y_z_values(coords_list)
 
-   spline_list, dist_array = get_spline_points(coords_list)
+   y_and_z_coords, dist_array = get_distance_and_coords(Y, Z)
    #gets all of the ys and zs and inserts them into their own arrays
-   ys = [i[0] for i in spline_list]
-   zs = [i[1] for i in spline_list]
+   ys = [i[0] for i in y_and_z_coords]
+   zs = [i[1] for i in y_and_z_coords]
 
    #uses a function from interpolate that calculates TODO: find out what UnivariateSpline does
    curve_y = interpolate.UnivariateSpline(dist_array, ys, k = 5)
    curve_z = interpolate.UnivariateSpline(dist_array, zs, k = 5)
-   #finds the equal amount of space between each element
+   #  finds the equal amount of space between each element
    spaced_distace_array = np.linspace(0, dist_array[-1], num_pts)
 
    #calls curve_y to find a curve to find y and z coordinate of the curve
@@ -225,15 +229,45 @@ def generate_2d_coords_for_cylinder_pca(coords_list):
 
    return new_ys + new_zs
 
-#cylinder_inner_bottom = generate_inner_cylinder_bottom(num_pts, logCoordinates, window_width)
-#cylinder_inner_bottom = np.array(cylinder_inner_bottom)
-#plot_cylinder_bottom(logStripped, cylinder_bottom)
 
-#TODO: plot this to see what it outputs
-#y,z = generate_2d_coords_for_cylinder_pca(cylinder_bottom)
-#this allows us to plot the newly made points generated by the function above
-"""
-x_zeros = np.zeros_like(y)
-coordinates_with_zeros_x = np.column_stack((x_zeros, y, z))
-plot_cylinder_bottom(coordinates_with_zeros_x, logStripped)
-"""
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#TODO: Sort logCoordinates into regular 2d array ready for plotting
+#logStripped = []
+#for ele in logCoordinates:
+#   logStripped.append(ele[1])
+
+# convert arrays to np.arrays
+#logStripped = np.array(logStripped)
+#cylinder_bottom = np.array(cylinder_bottom)
