@@ -14,6 +14,7 @@ import pandas as pd
 import PCA_data
 import os
 import predict_funtions as pf
+import ShapeAnalysisVerification as sav
 
 
 def process_features(csv_file, Results_Folder, date_prefix):
@@ -88,7 +89,17 @@ def generate_int_csvs(file_params,object_list,log_name,feb_name,first_int_file_f
         obj_coords_list.append(gic.extract_coordinates_from_final_step(log_name, feb_name, obj))
 
     #TODO: THIS IS WHERE THE INT CSV DATA IS OBTAINED
-    pc_points = gic.generate_2d_coords_for_pca(obj_coords_list[0]) #REPLACE WITH CYLINDER POINTS
+    temp_pc_points = sav.generate_outer_cylinder_bottom(9 , obj_coords_list[0], 0.3) #REPLACE WITH CYLINDER POINTS
+    pc_points = []
+
+    for ele in temp_pc_points:
+        pc_points.append(ele[0])
+
+    for ele in temp_pc_points:
+        pc_points.append(ele[1])
+
+    print("18 POINTS ARRAY", pc_points)
+
     #
 
     #pc_points_bottom = bts.generate_2d_bottom_tissue(bts.extract_ten_coordinates_block(obj_coords_list[2])) #TODO: Errors due to not enough objects (0, 2, 1 idx should be looked at)

@@ -34,7 +34,7 @@ object_name = 'Object5'
 # FLAGS
 first_int_file_flag = True
 final_csv_flag = False
-GENERATE_INTERMEDIATE_FLAG = False
+GENERATE_INTERMEDIATE_FLAG = True
 
 #Have the default material variables be 1 (100%) so they do not change if no variable is given
 #TODO: Update Everytime you want to change your base file

@@ -74,7 +74,7 @@ def generate_outer_cylinder_bottom(numpts, extract_pts, window_width):
                   ymin = ele[1][1]
                   zvalue = ele[1][2]
       # append values to best_points after ymin and z value are determined
-      best_points.append([0, ymin, zvalue])
+      best_points.append([ymin, zvalue])
 
    return best_points
 
@@ -82,13 +82,13 @@ def generate_outer_cylinder_bottom(numpts, extract_pts, window_width):
 cylinder_bottom = generate_outer_cylinder_bottom(num_pts, logCoordinates, window_width)
 
 # Sort logCoordinates into regular 2d array ready for plotting
-logStripped = []
-for ele in logCoordinates:
-   logStripped.append(ele[1])
+#logStripped = []
+#for ele in logCoordinates:
+#   logStripped.append(ele[1])
 
 # convert arrays to np.arrays
-logStripped = np.array(logStripped)
-cylinder_bottom = np.array(cylinder_bottom)
+#logStripped = np.array(logStripped)
+#cylinder_bottom = np.array(cylinder_bottom)
 
 """
 Function: plot_cylinder_bottom(cylinder, cylinder_bottom)
@@ -183,6 +183,8 @@ def get_spline_points(coords_list):
 
    print("BEST POINTS", ys_zs)
    return ys_zs, new_distance_array
+
+print(get_spline_points(cylinder_bottom))
 """
 This function is to generate the 2d coordinates of our cylinder model. it is similar to a function in generate_pca_points but does some
 things differently.
@@ -223,9 +225,9 @@ def generate_2d_coords_for_cylinder_pca(coords_list):
 
    return new_ys + new_zs
 
-cylinder_inner_bottom = generate_inner_cylinder_bottom(num_pts, logCoordinates, window_width)
-cylinder_inner_bottom = np.array(cylinder_inner_bottom)
-plot_cylinder_bottom(logStripped, cylinder_bottom)
+#cylinder_inner_bottom = generate_inner_cylinder_bottom(num_pts, logCoordinates, window_width)
+#cylinder_inner_bottom = np.array(cylinder_inner_bottom)
+#plot_cylinder_bottom(logStripped, cylinder_bottom)
 
 #TODO: plot this to see what it outputs
 #y,z = generate_2d_coords_for_cylinder_pca(cylinder_bottom)
