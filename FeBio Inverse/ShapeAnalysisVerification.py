@@ -32,53 +32,55 @@ logCoordinates.append(gic.extract_coordinates_from_final_step(log_name, feb_name
 
 
 """
-Function: generate_cylinder_bottom(numpts, extract_pts, window_width)
+   Function: generate_outer_cylinder_bottom
 
-This function takes in a desired amount of points (numpts), the point cloud (extract_pts), and desired window size
-We then generate the "bottom" points of the cylinder by finding the ymin value for each z_value index, which
-we determine through the numpts passed in.
+   Generates the "bottom" points of a cylinder based on the provided parameters.
 
-INPUT: numpts (ex. 15), extract_pts (ex. [[x1,y1,z1]]), window_width (ex. 0.3)
+   Parameters:
+   - numpts (int): Desired number of points.
+   - extract_pts (list): Point cloud represented as a list of points, each point in the form [x, y, z].
+   - window_width (float): Width of the search window for selecting points.
 
-OUTPUT: best_points ()
+   Returns:
+   - best_points (list): List of selected points representing the "bottom" of the cylinder, each point represented as [y, z].
 """
 def generate_outer_cylinder_bottom(numpts, extract_pts, window_width):
-   #initialize maxz, minz, & best points array which we will be returning
-   best_points = []
-   maxz = 0
-   minz = np.infty
+   # Initialize variables
+   best_points = []  # List to store the selected points
+   maxz = 0  # Maximum z-value encountered in the point cloud
+   minz = np.infty  # Minimum z-value encountered in the point cloud
 
-   # iterate through each element within extract_pts
+   # Iterate through each element within extract_pts
    for ele in extract_pts:
-      # if current elements z value is greater than maxz, then update maxz
-      if ele[1][2] > maxz:
-         maxz = ele[1][2]
-      # if current elements z value is less than minz, then update minz
-      if ele[1][2] < minz and ele[1][2] >= 0:
-         minz = ele[1][2]
+      # Update maxz if the current element's z-value is greater than maxz
+      if ele[2] > maxz:
+         maxz = ele[2]
+      # Update minz if the current element's z-value is less than minz and greater than or equal to 0
+      if ele[2] < minz and ele[2] >= 0:
+         minz = ele[2]
 
-   # divide up z points using linspace given the desired numpts from user
+   # Divide up z points using linspace given the desired numpts from user
    z_values = np.linspace(minz, maxz, numpts)
 
-   # determine width of 2nd window
-   window2_width = ((maxz - minz)/(numpts-1)) / 2
+   # Determine the width of the second search window
+   window2_width = ((maxz - minz) / (numpts - 1)) / 2
 
-   # iterate through each z-value in z_values
+   # Iterate through each z-value in z_values
    for i, z in enumerate(z_values):
-      # initialize ymin to infinity which we will be updating later
+      # Initialize ymin to infinity
       ymin = np.infty
-      # iterate through each element within extract_pts
+      # Iterate through each element within extract_pts
       for ele in extract_pts:
-         # determine whether the "|X| < window_width"
-         if abs(ele[1][0]) < window_width:
-            # determine whether the "|Z - current_z_in_loop| < window2_width"
-            if abs(ele[1][2] - z) < window2_width:
-               # determine if "y < ymin"
-               if ele[1][1] < ymin:
-                  # update ymin to equal y & assign z value
-                  ymin = ele[1][1]
-                  zvalue = ele[1][2]
-      # append values to best_points after ymin and z value are determined
+         # Determine whether the absolute value of X is less than window_width
+         if abs(ele[0]) < window_width:
+            # Determine whether the absolute value of Z - current_z_in_loop is less than window2_width
+            if abs(ele[2] - z) < window2_width:
+               # Determine if Y is less than ymin
+               if ele[1] < ymin:
+                  # Update ymin and assign the corresponding z value
+                  ymin = ele[1]
+                  zvalue = ele[2]
+      # Append values to best_points after ymin and z value are determined
       best_points.append([ymin, zvalue])
 
    return best_points
@@ -87,71 +89,58 @@ def generate_outer_cylinder_bottom(numpts, extract_pts, window_width):
 cylinder_bottom = generate_outer_cylinder_bottom(num_pts, logCoordinates[0], window_width)
 
 
-"""
-Function: plot_cylinder_bottom(cylinder, cylinder_bottom)
 
-Simple helper function which takes in regular cylinder & calculated cylinder bottom coordinates and
-plots them along the same graph to compare differences between the two
-"""
-def plot_cylinder_bottom(cylinder, cylinder_bottom):
-   fig = plt.figure()
-   ax = fig.add_subplot(111, projection='3d')
-   # Plot points
-   ax.scatter(cylinder[:, 0], cylinder[:, 1], cylinder[:, 2], c='g', marker='o')
-   ax.scatter(cylinder_bottom[:, 0], cylinder_bottom[:, 1], cylinder_bottom[:, 2], c='r', marker='X')
-   # Set labels
-   ax.set_xlabel('X')
-   ax.set_ylabel('Y')
-   ax.set_zlabel('Z')
-   # Set aspect ratio
-   ax.set_box_aspect([1, 1, 1])
-   plt.show()
-   return 0
 
-# Call plot function
-#plot_cylinder_bottom(logStripped, cylinder_bottom)
-
-#TODO: Create generate_inner_cylinder_bottom
-#TODO: THIS FUNCTION IS NOT FINISHED, DIRECTLY PORTED FROM genertate_outer_cylinder_bottom
 """
-Function: generate_inner_cylinder_bottom(numpts, extract_pts, window_width)
+   Function: generate_inner_cylinder_bottom
+ 
+    Generates the "bottom" points of the inner cylinder based on the provided parameters.
+
+    Parameters:
+    - numpts (int): Desired number of points.
+    - extract_pts (list): Point cloud represented as a list of points, each point in the form [x, y, z].
+    - window_width (float): Width of the search window for selecting points.
+
+    Returns:
+    - best_points (list): List of selected points representing the "bottom" of the inner cylinder, each point represented as [y, z].
 """
 def generate_inner_cylinder_bottom(numpts, extract_pts, window_width):
-   # initialize maxz, minz, & best points array which we will be returning
-   best_points = []
-   maxz = 0
-   minz = np.infty
+   # Initialize variables
+   best_points = []  # List to store the selected points
+   maxz = 0  # Maximum z-value encountered in the point cloud
+   minz = np.infty  # Minimum z-value encountered in the point cloud
 
-   # iterate through each element within extract_pts
+   # Iterate through each element within extract_pts
    for ele in extract_pts:
-      # if current elements z value is greater than maxz, then update maxz
-      if ele[1][2] > maxz:
-         maxz = ele[1][2]
-      # if current elements z value is less than minz, then update minz
-      if ele[1][2] < minz and ele[1][2] >= 0:
-         minz = ele[1][2]
+      # Update maxz if the current element's z-value is greater than maxz
+      if ele[2] > maxz:
+         maxz = ele[2]
+      # Update minz if the current element's z-value is less than minz and greater than or equal to 0
+      if ele[2] < minz and ele[2] >= 0:
+         minz = ele[2]
 
-   # divide up z points using linspace given the desired numpts from user
+   # Divide up z points using linspace given the desired numpts from user
    z_values = np.linspace(minz, maxz, numpts)
-   # determine width of 2nd window
+
+   # Determine the width of the second search window
    window2_width = ((maxz - minz) / (numpts - 1)) / 2
 
-   # iterate through each z-value in z_values
+   # Iterate through each z-value in z_values
    for i, z in enumerate(z_values):
-      # initialize ymin to infinity which we will be updating later
+      # Initialize ymin to infinity
       ymin = np.infty
-      # iterate through each element within extract_pts
+      # Iterate through each element within extract_pts
       for ele in extract_pts:
-         # determine whether the "|X| < window_width"
-         if abs(ele[1][0]) < window_width:
-            # determine whether the "|Z - current_z_in_loop| < window2_width"
-            if abs(ele[1][2] - z) < window2_width:
-               # determine if "y < ymin"
-               if abs(ele[1][1]) < ymin and ele[1][1] < 0:
-                  # update ymin to equal y & assign z value
-                  ymin = abs(ele[1][1])
-                  zvalue = ele[1][2]
-      # append values to best_points after ymin and z value are determined
+         # Determine whether the absolute value of X is less than window_width
+         if abs(ele[0]) < window_width:
+            # Determine whether the absolute value of Z - current_z_in_loop is less than window2_width
+            if abs(ele[2] - z) < window2_width:
+               # Determine if Y is less than ymin and negative
+               if abs(ele[1]) < ymin and ele[1] < 0:
+                  # Update ymin and assign the corresponding z value
+                  ymin = abs(ele[1])
+                  zvalue = ele[2]
+      # Append values to best_points after ymin and z value are determined
       best_points.append([ymin, zvalue])
 
    return best_points
@@ -187,6 +176,7 @@ def get_distance_and_coords(ys, zs):
 
    return coords_2d, new_distance_array
 #get_spline_points(cylinder_bottom)
+
 
 """
 This function is to generate the 2d coordinates of our cylinder model. it is similar to a function in generate_pca_points but does some
@@ -260,7 +250,8 @@ def generate_2d_coords_for_cylinder_pca(coords_list):
 
 
 
-
+# ****************************************
+# PLOTTING STUFF ON MATPLOTLIB FOR VISUALIZATIONS
 
 
 #TODO: Sort logCoordinates into regular 2d array ready for plotting
@@ -271,3 +262,27 @@ def generate_2d_coords_for_cylinder_pca(coords_list):
 # convert arrays to np.arrays
 #logStripped = np.array(logStripped)
 #cylinder_bottom = np.array(cylinder_bottom)
+
+"""
+Function: plot_cylinder_bottom(cylinder, cylinder_bottom)
+
+Simple helper function which takes in regular cylinder & calculated cylinder bottom coordinates and
+plots them along the same graph to compare differences between the two
+"""
+def plot_cylinder_bottom(cylinder, cylinder_bottom):
+   fig = plt.figure()
+   ax = fig.add_subplot(111, projection='3d')
+   # Plot points
+   ax.scatter(cylinder[:, 0], cylinder[:, 1], cylinder[:, 2], c='g', marker='o')
+   ax.scatter(cylinder_bottom[:, 0], cylinder_bottom[:, 1], cylinder_bottom[:, 2], c='r', marker='X')
+   # Set labels
+   ax.set_xlabel('X')
+   ax.set_ylabel('Y')
+   ax.set_zlabel('Z')
+   # Set aspect ratio
+   ax.set_box_aspect([1, 1, 1])
+   plt.show()
+   return 0
+
+# Call plot function
+#plot_cylinder_bottom(logStripped, cylinder_bottom)
