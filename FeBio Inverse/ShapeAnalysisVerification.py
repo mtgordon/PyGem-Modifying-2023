@@ -146,20 +146,33 @@ def generate_inner_cylinder_bottom(numpts, extract_pts, window_width):
    return best_points
 
 """
-this is a helper function to get the distances between the spline points and then return the 
-ys and zs for the spline points
+Function:
+   get_distance_and_coords(ys, zs)
+
+Summary:
+   This function is a helper function that collects the ys and zs together in an array of arrays first it 
+   creates a array that will hold our arrays, then it inserts the ys and zs together in a array called temparr
+   this is then appended to the end of or arrray coords_2d to be stored. After this, we create a new array called 
+   distance_array and then loop through the coordinates that we placed into coords_2d accessing the ys and zs to get
+   the distances between them using the hypot function which calculates the distance between them. then we
+   append the distances into new_distances_array. after that it is returned
 
 Parameters:
-The coordinate list of the desired points on the cylinder
+
+   ys: list of y coordinates
+   zs: list of z coordinates 
 
 Returns:
-ys and zs array that dont include x values
-the distance array between each point
+
+   coords_2d : list of coordinates that we placed into coords_2d
+   distances_2d : list of distances between coordinates
 """
 
 
 def get_distance_and_coords(ys, zs):
+   #Create a new array to store our coords_2d
    coords_2d = []
+   #loop through and insert our coords into an array of arrays
    for i in range(len(ys)):
       temparr = []
       temparr.append(ys[i])  # Append individual elements instead of the entire array
@@ -175,21 +188,28 @@ def get_distance_and_coords(ys, zs):
    print("New Distance Array:", new_distance_array)
 
    return coords_2d, new_distance_array
-#get_spline_points(cylinder_bottom)
 
 
 """
-This function is to generate the 2d coordinates of our cylinder model. it is similar to a function in generate_pca_points but does some
-things differently.
+Function:
+   This function generates the 2d coordinates that we will use for the pca. IT DOES NOT GENERATE THE PCA POINTS
+   It starts by separating the X, Y, and Z coordinates from our coords_list and then passing them into our
+   get_distance_and_coords function. After that, we loop through our array to get the ys and then zs in separate arrays. 
+   Then we use the interpolate.UnivariateSpline() function to find the curve of y and curve of z. We then get the 
+   spaced_distance_array from np.linspace() which finds the equal amount of space between them. Then we call   
+   curve_y and curve_z to get the y and z values. Then we do the same but for all the new ys and zs. returns 2 appended 
+   arrays ys and zs with ys being the first half anf the zs being the second half. 
+
 
 Parameters:
-takes in a coordinates list that is an array of arrays that contain the x, y, and z values
+   takes in a coordinates list that is an array of arrays that contain the x, y, and z values
+   eg. [1[x,y,z]
 
 Returns:
-newys and newzs
+   a list that concatenates newys and newzs, the first half being ys and the second half being zs
+   
 """
 def generate_2d_coords_for_cylinder_pca(coords_list):
-   #  to fix, ctrl z till this is gone.
    X,Y,Z = gic.get_x_y_z_values(coords_list)
 
    y_and_z_coords, dist_array = get_distance_and_coords(Y, Z)
