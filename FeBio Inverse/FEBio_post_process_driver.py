@@ -22,29 +22,30 @@ import seaborn as sns
 import numpy as np
 import csv
 import glob
-import generate_int_csvs as gic
+#import generate_int_csvs as gic
 import PostProcess_FeBio as proc
 import PCA_data
 import pandas as pd
 import re
 import Bottom_Tissue_SA_Final as bts
 
-first_file_flag = True
 current_date = datetime.datetime.now()
 date_prefix = str(current_date.year) + '_' + str(current_date.month)  + '_' + str(current_date.day)
-Results_Folder = "C:\\Users\\phine\\OneDrive\\Desktop\\FEBio files\\Pycharm Results"
+Results_Folder = "D:\\Gordon\\Automate FEB Runs\\2024_4_29 auto\\target_folder"  # INTERMEDIATE CSV ENDS UP HERE
+Target_Folder = "D:\\Gordon\\Automate FEB Runs\\2024_4_29 auto\\target_folder\\*.feb"  # LOOK HERE FOR THE FEB FILES
 csv_filename = Results_Folder + '\\' + date_prefix + '_intermediate.csv'
 
-object_list = ['Object2', 'Object8'] #,'Object16'
+object_list = ['Object5']  # MAKE SURE THIS MATCHES THE OBJECTS IN THE CURRENTLY USED MODEL
 obj_coords_list = []
 file_num = 0
 
-GENERATE_INTERMEDIATE_FLAG =True
+first_file_flag = True
+GENERATE_INTERMEDIATE_FLAG = True
 
 
 if GENERATE_INTERMEDIATE_FLAG:
 
-    for feb_name in glob.glob("C:\\Users\\phine\\OneDrive\\Desktop\\FEBio files\\Test_post_process_driver\\*.feb"):
+    for feb_name in glob.glob(Target_Folder):
 
         int_log_name = feb_name.split(".f")
         int_log_name[1] = ".log"
@@ -55,44 +56,9 @@ if GENERATE_INTERMEDIATE_FLAG:
         # Get the pure file name that just has the material parameters
         file_params = int_log_name[0].split('\\')[-1]
 
-        # Get the changed material properties
-        paren_pattern = re.compile(r'(?<=\().*?(?=\))') # find digits in parentheses
-        prop_result = paren_pattern.findall(file_params)
-        prop_final = []
-        for prop in prop_result:
-            prop = float(prop)
-            if prop != 1.0:
-                prop_final.append(prop)
-
-
-
-        # Get the coordinates for each object in list
-        for obj in object_list:
-            obj_coords_list.append(gic.extract_coordinates_from_final_step(log_name, feb_name, obj))
-            print('Extracting... ' + obj + ' for ' + file_params)
-
-        #Get the PC points for Object2
-        pc_points = gic.generate_2d_coords_for_pca(obj_coords_list[0])
-
-        # Begin building the row to be put into the intermediate csv
-        csv_row.append(file_params) # file params
-        csv_row.append(proc.find_apex(obj_coords_list[1])) # apex FIX
-
-        csv_row.extend(prop_final)
-        csv_row.extend(pc_points) # the 30 pc coordinates
-
-        if first_file_flag:
-            with open(csv_filename, 'w', newline='') as csvfile:
-                writer = csv.writer(csvfile)
-                writer.writerow(csv_row)
-            first_file_flag = False
-        else:
-            with open(csv_filename, 'a', newline='') as csvfile:
-                writer = csv.writer(csvfile)
-                writer.writerow(csv_row)
+        proc.generate_int_csvs(file_params, object_list, log_name, feb_name, first_file_flag, csv_filename)
 
         # sleep to give the file time to reach directory
-
         time.sleep(1)
         file_num += 1
         print(str(file_num) + ": " + file_params)
@@ -102,6 +68,7 @@ if GENERATE_INTERMEDIATE_FLAG:
 print('TESTING')
 
 # use the generated csv to get the 2 PC scores
+#TODO: IGNORE THIS FUNCTION, USE THE ONE IN "PostProcess_FeBio"
 def process_features(csv_file):
     int_df = pd.read_csv(csv_file)
     pc_df = int_df.iloc[:, 4:len(int_df.columns)]
