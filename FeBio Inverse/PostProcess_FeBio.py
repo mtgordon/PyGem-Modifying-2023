@@ -15,7 +15,15 @@ import PCA_data
 import os
 import predict_funtions as pf
 import ShapeAnalysisVerification as sav
+import numpy as np
+import matplotlib.pyplot as plt
 
+
+
+#TODO: Change the following to preffered numbers
+window_width = 0.3
+num_pts = 9
+spline_ordered = 0
 
 def process_features(csv_file, Results_Folder, date_prefix):
     int_df = pd.read_csv(csv_file)
@@ -90,14 +98,24 @@ def generate_int_csvs(file_params,object_list,log_name,feb_name,first_int_file_f
 
     #TODO: THIS IS WHERE THE INT CSV DATA IS OBTAINED
 
-    pc_points = sav.generate_2d_coords_for_cylinder_pca(obj_coords_list[0]) #REPLACE WITH CYLINDER POINTS
-    #pc_points = []
 
-    # for ele in temp_pc_points:
-    #     pc_points.append(ele[0])
-    #
-    # for ele in temp_pc_points:
-    #     pc_points.append(ele[1])
+    # gets obj_coords_list to [[x, y, z]]
+    object_coords_list = []
+    for ele in obj_coords_list[0]:
+        temparray = []
+        temparray.append(ele[1][0])
+        temparray.append(ele[1][1])
+        temparray.append(ele[1][2])
+        object_coords_list.append(temparray)
+    obj_coords_list[0] = object_coords_list
+
+
+    outer_points = sav.generate_outer_cylinder_bottom(num_pts, obj_coords_list[0], window_width)
+    inner_points = sav.generate_inner_cylinder_bottom(num_pts, obj_coords_list[0], window_width)
+    outer_pc_points = sav.generate_2d_coords_for_cylinder_pca(outer_points)
+    inner_pc_points = sav.generate_2d_coords_for_cylinder_pca(inner_points) #REPLACE WITH CYLINDER POINTS
+
+
 
     #pc_points_bottom = bts.generate_2d_bottom_tissue(bts.extract_ten_coordinates_block(obj_coords_list[2])) #TODO: Errors due to not enough objects (0, 2, 1 idx should be looked at)
 
@@ -110,7 +128,8 @@ def generate_int_csvs(file_params,object_list,log_name,feb_name,first_int_file_f
     # apex FIX
     csv_row.extend(prop_final)
     #csv_row.append(apex)
-    csv_row.extend(pc_points)
+    csv_row.extend(inner_pc_points)
+    csv_row.extend(outer_pc_points)
     #csv_row.extend(pc_points_bottom)  # the 30 pc coordinates
 
     if first_int_file_flag:
@@ -123,12 +142,16 @@ def generate_int_csvs(file_params,object_list,log_name,feb_name,first_int_file_f
 
 
 
-        coord = 'x'
+        coord = 'inner_x'
         # TODO: This is purely for the coordinate headers (ADJUST 15 FOR THE MAX NUMBER OF COORDINATE HEADERS)
-        for i in range(2):
+        for i in range(4):
             if i == 1:
-                coord = 'y'
-            for j in range(15):
+                coord = 'inner_y'
+            elif i == 2:
+                coord = 'outer_x'
+            elif i == 3:
+                coord = 'outer_y'
+            for j in range(9):
                 csv_header.append(coord + str(j + 1))
         #TODO: commented this out because we do not have a points for 'bottom'
         """

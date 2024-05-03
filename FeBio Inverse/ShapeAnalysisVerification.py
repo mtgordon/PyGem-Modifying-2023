@@ -24,7 +24,7 @@ log_name = 'D:\\Gordon\\Automate FEB Runs\\2024_4_29 auto\\_Part5_E(0.78)_Pressu
 # Parameters for functions below
 obj = 'Object5'
 window_width = 0.3
-num_pts = 15
+num_pts = 9
 spline_ordered = 0
 
 logCoordinates = []
@@ -86,7 +86,7 @@ def generate_outer_cylinder_bottom(numpts, extract_pts, window_width):
    return best_points
 
 # assign cylinder_bottom equal to generate_outer_cylinder_bottom given parameters.
-cylinder_bottom = generate_outer_cylinder_bottom(num_pts, logCoordinates[0], window_width)
+#cylinder_bottom = generate_outer_cylinder_bottom(num_pts, logCoordinates[0], window_width)
 
 
 
@@ -169,15 +169,7 @@ Returns:
 """
 
 
-def get_distance_and_coords(ys, zs):
-   #Create a new array to store our coords_2d
-   coords_2d = []
-   #loop through and insert our coords into an array of arrays
-   for i in range(len(ys)):
-      temparr = []
-      temparr.append(ys[i])  # Append individual elements instead of the entire array
-      temparr.append(zs[i])  # Append individual elements instead of the entire array
-      coords_2d.append(temparr)
+def get_distance_and_coords(coords_2d):
 
    # Calculate the new distances between the points
    new_distance_array = [0]
@@ -185,9 +177,8 @@ def get_distance_and_coords(ys, zs):
       distance = hypot(coords_2d[i][0] - coords_2d[i - 1][0], coords_2d[i][1] - coords_2d[i - 1][1])
       new_distance_array.append(distance + new_distance_array[-1])
 
-   print("New Distance Array:", new_distance_array)
 
-   return coords_2d, new_distance_array
+   return new_distance_array
 
 
 """
@@ -210,12 +201,11 @@ Returns:
    
 """
 def generate_2d_coords_for_cylinder_pca(coords_list):
-   X,Y,Z = gic.get_x_y_z_values(coords_list)
+   dist_array = get_distance_and_coords(coords_list)
 
-   y_and_z_coords, dist_array = get_distance_and_coords(Y, Z)
    #gets all of the ys and zs and inserts them into their own arrays
-   ys = [i[0] for i in y_and_z_coords]
-   zs = [i[1] for i in y_and_z_coords]
+   ys = [i[0] for i in coords_list]
+   zs = [i[1] for i in coords_list]
 
    #uses a function from interpolate that calculates TODO: find out what UnivariateSpline does
    curve_y = interpolate.UnivariateSpline(dist_array, ys, k = 5)
