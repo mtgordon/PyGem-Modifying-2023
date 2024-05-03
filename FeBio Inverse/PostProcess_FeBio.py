@@ -109,7 +109,8 @@ def generate_int_csvs(file_params,object_list,log_name,feb_name,first_int_file_f
         object_coords_list.append(temparray)
     obj_coords_list[0] = object_coords_list
 
-
+    #THIS USES THE FUNCTION THAT WE CREATED TO GENERATE THE OUTER AND INNER POINTS THEN PASSING THEM
+    #IN TO FIND THE 2D_COORDS FOR THE PCA POINTS
     outer_points = sav.generate_outer_cylinder_bottom(num_pts, obj_coords_list[0], window_width)
     inner_points = sav.generate_inner_cylinder_bottom(num_pts, obj_coords_list[0], window_width)
     outer_pc_points = sav.generate_2d_coords_for_cylinder_pca(outer_points)
