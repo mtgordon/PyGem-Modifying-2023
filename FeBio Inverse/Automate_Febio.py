@@ -25,11 +25,11 @@ import numpy as np
 #TODO: ENTER IN VAR FILE --> SET PART NAMES FOR ALL MATERIALS --> DONE
 dictionary_file = 'feb_variables.csv' #DONE
 FeBioLocation = 'C:\\Program Files\\FEBioStudio2\\bin\\febio4.exe'
-originalFebFilePath = 'D:\\Gordon\\Automate FEB Runs\\2024_4_29 auto\\Base File\\Basic_Cylinder_Pressure.feb' #DONE
-Results_Folder = 'D:\\Gordon\\Automate FEB Runs\\2024_4_29 auto' #DONE
-object_list = ['Object5'] #TODO: Get new names for flat, curve, GI Filler --> DONE
+originalFebFilePath = 'D:\\Gordon\\Automate FEB Runs\\2024_5_6_NewModel\\Base_File\\3 Tissue Model v5.feb' #DONE
+Results_Folder = 'D:\\Gordon\\Automate FEB Runs\\2024_5_6_NewModel' #DONE
+object_list = ['Object17'] #TODO: Get new names for flat, curve, GI Filler --> DONE
 # Currently being used to access base object, may need to be changed when looking to generate multiple objects at once
-object_name = 'Object5'
+object_name = 'Object17'
 
 # FLAGS
 first_int_file_flag = True
@@ -39,7 +39,11 @@ GENERATE_INTERMEDIATE_FLAG = True
 #Have the default material variables be 1 (100%) so they do not change if no variable is given
 #TODO: Update Everytime you want to change your base file
 default_dict = {
-    'Part5_E': 1,
+    'Vaginal Wall_E': 1,
+    'Perineal Complex_E': 1,
+    'LA_E': 1,
+    'Part16_E': 1,
+    'Part17_E': 1,
     'Pressure': 0,
     'Inner_Radius': 1,
     'Outer_Radius': 2
@@ -78,21 +82,9 @@ def updateProperties(origFile, fileTemp):
     # Go through each element which is within the csv
     for partProp in current_run_dict.keys():
 
-        if "Part" in partProp:
-            partName = partProp.split('_')[0]
-            propName = partProp.split('_')[1]
-
-            # Locate the Mesh Domains section to find which parts have which materials
-            meshDomains = root.find('MeshDomains')
-            for domain in meshDomains:
-                if domain.attrib['name'] == partName:
-                    for mat in tree.find('Material'):
-                        if mat.attrib['name'] == domain.attrib['mat']:
-                            newValue = float(mat.find(propName).text) * float(current_run_dict[partProp])
-                            mat.find(propName).text = str(newValue)
 
         # Replace Pressure Value in .feb file with selected value from "feb_variables.csv"
-        elif "Pressure" in partProp:
+        if "Pressure" in partProp:
             loads = root.find('Loads')
             for surface_load in loads:
                 pressure = surface_load.find('pressure')
@@ -122,6 +114,20 @@ def updateProperties(origFile, fileTemp):
             deformed_points_list = []
             for tuple in deformed_points:
                 deformed_points_list.append(list(tuple))
+
+        else:
+            # if it is not above names then it is a part
+            partName = partProp.split('_')[0]
+            propName = partProp.split('_')[1]
+
+            # Locate the Mesh Domains section to find which parts have which materials
+            meshDomains = root.find('MeshDomains')
+            for domain in meshDomains:
+                if domain.attrib['name'] == partName:
+                    for mat in tree.find('Material'):
+                        if mat.attrib['name'] == domain.attrib['mat']:
+                            newValue = float(mat.find(propName).text) * float(current_run_dict[partProp])
+                            mat.find(propName).text = str(newValue)
 
 
     # using UTF-8 encoding does not bring up any issues (can be changed if needed)
