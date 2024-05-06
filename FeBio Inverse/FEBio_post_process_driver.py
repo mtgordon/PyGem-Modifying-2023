@@ -31,16 +31,18 @@ import Bottom_Tissue_SA_Final as bts
 
 current_date = datetime.datetime.now()
 date_prefix = str(current_date.year) + '_' + str(current_date.month)  + '_' + str(current_date.day)
-Results_Folder = "D:\\Gordon\\Automate FEB Runs\\2024_4_29 auto\\target_folder"  # INTERMEDIATE CSV ENDS UP HERE
-Target_Folder = "D:\\Gordon\\Automate FEB Runs\\2024_4_29 auto\\target_folder\\*.feb"  # LOOK HERE FOR THE FEB FILES
+Results_Folder = "D:\\Gordon\\Automate FEB Runs\\2024_4_29 auto"  # INTERMEDIATE CSV ENDS UP HERE
+Target_Folder = "D:\\Gordon\\Automate FEB Runs\\2024_4_29 auto\\*.feb"  # LOOK HERE FOR THE FEB FILES
 csv_filename = Results_Folder + '\\' + date_prefix + '_intermediate.csv'
+date_prefix = str(current_date.year) + '_' + str(current_date.month)  + '_' + str(current_date.day)
 
 object_list = ['Object5']  # MAKE SURE THIS MATCHES THE OBJECTS IN THE CURRENTLY USED MODEL
 obj_coords_list = []
 file_num = 0
 
-first_file_flag = False
+first_file_flag = True
 GENERATE_INTERMEDIATE_FLAG = True
+final_csv_flag = False
 
 
 if GENERATE_INTERMEDIATE_FLAG:
@@ -58,12 +60,18 @@ if GENERATE_INTERMEDIATE_FLAG:
 
         proc.generate_int_csvs(file_params, object_list, log_name, feb_name, first_file_flag, csv_filename)
 
+        if first_file_flag:
+            first_file_flag = False
+
         # sleep to give the file time to reach directory
         time.sleep(1)
         file_num += 1
         print(str(file_num) + ": " + file_params)
         obj_coords_list = []
 
+if final_csv_flag:
+    print('Generating PC File')
+    proc.process_features(csv_filename, Results_Folder, date_prefix)
 
 print('TESTING')
 

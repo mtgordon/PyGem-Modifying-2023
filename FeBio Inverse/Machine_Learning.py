@@ -1,9 +1,27 @@
 import predict_funtions as pf
 import PostProcess_FeBio as pp
 import PCA_data as pd
-
+import datetime
 import random
 
+
+
+current_date = datetime.datetime.now()
+date_prefix = str(current_date.year) + '_' + str(current_date.month)  + '_' + str(current_date.day)
+
+old_data = 'combo_features (1).csv'
+train_data = 'combo_features (1).csv'
+test_data = 'updated_order_features_5_30.csv'
+# model_path = 'Models\\real_y2el_50009_c36_x1x2'
+epochs = 10000
+epochs_start = 10
+layers = 3
+capacity = 36
+patience = 50
+squared = False
+random.seed(33)
+#data = "D:\\Gordon\\Automate FEB Runs\\2024_4_29 auto\\target_folder\\2024_5_6_intermediate.csv" #TODO: Change to the PC csv
+data = "D:\\Gordon\\Automate FEB Runs\\2024_4_29 auto\\target_folder\\2024_5_6_intermediate.csv"
 
 def machine_learning_all(epochs, epochs_start, layers, capacity, patience, squared, data=None):
     # TODO: Step 1
@@ -17,14 +35,14 @@ def machine_learning_all(epochs, epochs_start, layers, capacity, patience, squar
     # TODO: STEP 3
     # Generate new PCs based on the train file,
     Results_Folder = "Mod train and test"
-    mod_train_path, pca1, pcaB = pp.process_features(train_data_path, Results_Folder)
+    mod_train_path, pca1, pcaB = pp.process_features(train_data_path, Results_Folder, date_prefix)
 
     # Save PCs and save the PCA Model
     # pc_csv_path = pf.generate_PC_csv_file_from(mod_train_path, [5, 6, 7, 8])
 
     # add noise to test file
-    mod_test_path, pca1, pcaB = pp.process_features(train_data_path, Results_Folder)
-    noise_test_path = pd.add_noise_to_csv(test_data_path, Results_Folder, pca1, pcaB, noise_scale=0)
+    mod_test_path, pca1, pcaB = pp.process_features(train_data_path, Results_Folder, date_prefix)
+    # noise_test_path = pd.add_noise_to_csv(test_data_path, Results_Folder, pca1, pcaB, noise_scale=0)
 
 
 
@@ -54,7 +72,7 @@ def machine_learning_all(epochs, epochs_start, layers, capacity, patience, squar
     # print("Modified train data: ", mod_train_path)
     print("Modified test data: ", mod_test_path)
     # print("Saved PCs data: ", pc_csv_path)
-    print("noise_0 test data: ", noise_test_path)
+    # print("noise_0 test data: ", noise_test_path)
     # print("Saved best model name: ", model_path)
     # print("Model learning curve: ", learning_curve_path)
     # print("Predicted data folder: ", predict_directory)
@@ -62,19 +80,7 @@ def machine_learning_all(epochs, epochs_start, layers, capacity, patience, squar
     # print("Analysed data file name: ", analysis_path)
 
 
-old_data = 'combo_features (1).csv'
 
-train_data = 'combo_features (1).csv'
-test_data = 'updated_order_features_5_30.csv'
-# model_path = 'Models\\real_y2el_50009_c36_x1x2'
-epochs = 10000
-epochs_start = 10
-layers = 3
-capacity = 36
-patience = 50
-squared = False
-random.seed(33)
-data = "C:\\Users\\yyt08\\PycharmProjects\\PyGem-Modifying-2023\\FeBio Inverse\\intermediate.csv"
 
 machine_learning_all(epochs, epochs_start, layers, capacity, patience, squared, data)
 # pf.machine_learning_save_predict(train_data, test_data)

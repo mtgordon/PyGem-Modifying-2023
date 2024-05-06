@@ -122,7 +122,6 @@ cylinder1points = determineRadiiFromFEB(extract_points)
 
 # Cylinder which we are morphing. This is the Cylinder that MATTERS!!
 cylinder2points = generate_annular_cylinder_points(2,3,height,num_points)
-print(cylinder2points)
 #plot_3d_points(cylinder2points)
 
 #TODO: This uses RBF Interpolator from the SciPy Library, Currently unused, because we are using PyGem
@@ -148,6 +147,6 @@ deformed_points_list = []
 for tuple in deformed_points:
     deformed_points_list.append(list(tuple))
 
-print(deformed_points_list)
-print(extract_points)
+# print(deformed_points_list)
+# print(extract_points)
 IOfunctions.replace_node_in_new_feb_file(febio_file_name, node_name, "extract_cylinder.feb", deformed_points_list)

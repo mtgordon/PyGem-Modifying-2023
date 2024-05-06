@@ -24,15 +24,65 @@ import matplotlib.pyplot as plt
 window_width = 0.3
 num_pts = 9
 spline_ordered = 0
+startingPointColHeader = 'inner_x'
+secondPartStart = 'outer_x'
+numCompPCA = 2
+stringList = ['inner_x', 'outer_x']
+
+# TEST PROCESS FEATURES
+#TODO: finish this later today at the end so that we can use string list to go through and have the least amount of hard
+#      coding
+
+# def process_features(csv_file, Results_Folder, date_prefix):
+#     int_df = pd.read_csv(csv_file)
+#     for i, header in enumerate(stringList):
+#         if i < len(stringList) - 1:
+#             next_header = stringList[i + 1]
+#
+#         currentStartIndex = int_df.columns[int_df.columns.str.contains(header)].tolist()
+#         currentIndex = int_df.columns.get_loc(currentStartIndex[0])
+#         nextStartIndex = int_df.columns[int_df.columns.str.contains(next_header)].tolist()
+#         nextIndex = int_df.columns.get_loc(nextStartIndex[0])
+#         pc1_df = int_df.iloc[:, currentIndex:nextIndex] #TODO: HARD CODED _ CHANGE LATER
+#         pcbottom_df = int_df.iloc[:, nextIndex:len(int_df.columns)]
+#         # int_df = pd.read_csv("intermediate_pc_data", header=None)
+#         total_result_PC1, pca1 = PCA_data.PCA_(pc1_df, numCompPCA)
+#         total_result_PCB, pcaB = PCA_data.PCA_([pcbottom_df], numCompPCA)
+#
+#     #TODO: MAKE THESE WORK WITH ANY OBJECT NAME OR PC COMPONENT NUMBER
+#     PC_scores = total_result_PC1[['principal component 1', 'principal component 2']]
+#     PC_scores_bottom = total_result_PCB[['principal component 1', 'principal component 2']]
+#
+#     print("PC_Scores: ", PC_scores)
+#     print("PC_scores_bottom", PC_scores_bottom)
+#
+#     PC_scores = PC_scores.rename(columns = {'principal component 1': 'principal component 1 AVW','principal component 2':'principal component 2 AVW'})
+#     PC_scores_bottom  = PC_scores_bottom.rename(columns={'principal component 1': 'principal component 1 Bottom Tissue',
+#                                           'principal component 2': 'principal component 2 Bottom Tissue'})
+#
+#     final_df = pd.concat([int_df.loc[:, ["File Name", "E5", "Pressure", "Inner_Radius", "Outer_Radius"]], PC_scores, PC_scores_bottom], axis=1)
+#     if not os.path.exists(Results_Folder):
+#         os.makedirs(Results_Folder)
+#     file_name = pf.get_file_name(csv_file)
+#
+#     file_path = Results_Folder + '\\' + file_name + '_' + date_prefix + "_modified_train.csv"
+#
+#     final_df.to_csv(file_path, index=False)
+#     return file_path, pca1, pcaB
 
 def process_features(csv_file, Results_Folder, date_prefix):
     int_df = pd.read_csv(csv_file)
-    pc1_df = int_df.iloc[:, 5:18] #TODO: HARD CODED _ CHANGE LATER
-    pcbottom_df = int_df.iloc[:, 18:len(int_df.columns)]
+    pointStartIdx = int_df.columns[int_df.columns.str.contains(startingPointColHeader)].tolist()
+    startIdx = int_df.columns.get_loc(pointStartIdx[0])
+    secondStartIdx = int_df.columns[int_df.columns.str.contains(secondPartStart)].tolist()
+    secondIdx = int_df.columns.get_loc(secondStartIdx[0])
+    pc1_df = int_df.iloc[:, startIdx:secondIdx] #TODO: HARD CODED _ CHANGE LATER
+    pcbottom_df = int_df.iloc[:, secondIdx:len(int_df.columns)]
     # int_df = pd.read_csv("intermediate_pc_data", header=None)
-    total_result_PC1, pca1 = PCA_data.PCA_(pc1_df)
-    total_result_PCB, pcaB = PCA_data.PCA_([pcbottom_df])
+    total_result_PC1, pca1 = PCA_data.PCA_(pc1_df, numCompPCA)
+    total_result_PCB, pcaB = PCA_data.PCA_([pcbottom_df], numCompPCA)
 
+    #TODO: MAKE THESE WORK WITH ANY OBJECT NAME OR PC COMPONENT NUMBER
     PC_scores = total_result_PC1[['principal component 1', 'principal component 2']]
     PC_scores_bottom = total_result_PCB[['principal component 1', 'principal component 2']]
 
@@ -48,7 +98,7 @@ def process_features(csv_file, Results_Folder, date_prefix):
         os.makedirs(Results_Folder)
     file_name = pf.get_file_name(csv_file)
 
-    file_path = Results_Folder + '\\' + file_name + date_prefix + "_modified_train.csv"
+    file_path = Results_Folder + '\\' + file_name + '_' + date_prefix + "_modified_train.csv"
 
     final_df.to_csv(file_path, index=False)
     return file_path, pca1, pcaB
@@ -143,7 +193,8 @@ def generate_int_csvs(file_params,object_list,log_name,feb_name,first_int_file_f
 
 
 
-        coord = 'inner_x'
+        #coord = 'inner_x'
+        coord = startingPointColHeader
         # TODO: This is purely for the coordinate headers (ADJUST 15 FOR THE MAX NUMBER OF COORDINATE HEADERS)
         for i in range(4):
             if i == 1:
@@ -152,7 +203,7 @@ def generate_int_csvs(file_params,object_list,log_name,feb_name,first_int_file_f
                 coord = 'outer_x'
             elif i == 3:
                 coord = 'outer_y'
-            for j in range(9):
+            for j in range(num_pts):
                 csv_header.append(coord + str(j + 1))
         #TODO: commented this out because we do not have a points for 'bottom'
         """

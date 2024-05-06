@@ -81,7 +81,7 @@ def load_pca_model(file_path):
 
 
 
-def PCA_(pca_trials_df):
+def PCA_(pca_trials_df, numComp):
     ### Notes
     '''
     full_df is all of the data about the subject and run
@@ -109,7 +109,7 @@ def PCA_(pca_trials_df):
     #    x = StandardScaler().fit_transform(pca_trials_data_df)
     #    print(x)
     # How many components to look at
-    PCA_components = 2
+    PCA_components = numComp
 
     # Genreate the PCA and record the principal components
     pca = PCA(n_components=PCA_components)
@@ -121,6 +121,7 @@ def PCA_(pca_trials_df):
     # print('#############################################')
 
     # Making a dataframe from the principle components
+    #TODO: MAKE LOOP BASED ON PC SCORE ARGUMENT (MAKE IT SO ANY NUMBER WORKS)
     if PCA_components == 2:
         pc_df = pd.concat([pd.DataFrame(IDs, columns=['SubjectID']), pd.DataFrame(principalComponents,
                                                                                   columns=['principal component 1',
@@ -392,79 +393,79 @@ def add_noise_to_csv(csv_filename, results_folder, pca1, pcaB, noise_scale=0.1):
 
 '''This new function adds noise to a spline that has already been made and it reads from a csv'''
 
-def add_noise_to_csv(csv_filename, noise_scale):
-    Results_Folder = "C:\\Users\\phine\\OneDrive\\Desktop\\FEBio files\\Pycharm Results"
-    current_date = datetime.datetime.now()
-    date_prefix = str(current_date.year) + '_' + str(current_date.month) + '_' + str(current_date.day)
-    data_df = pd.read_csv(csv_filename)
-    first_row = True
-    pc_header = []
-    pc_header.append('File Name')
-    pc_header.append('E1')
-    pc_header.append('E2')
-    pc_header.append('E3')
-    pc_header.append('Apex')
-    coord = 'x'
-    for i in range(2):
-        if i == 1:
-            coord = 'y'
-        for j in range(15):
-            pc_header.append(coord + str(j + 1))
-    coord = 'Bx'
-    for i in range(2):
-        if i == 1:
-            coord = 'By'
-        for j in range(10):
-            pc_header.append(coord + str(j + 1))
-    pc_df = pd.DataFrame(columns=pc_header)
-
-    for index, row in data_df.iterrows():
-        pc_rows = []
-        file_and_e_values = row.iloc[:5].tolist()
-        avw_xs= row.iloc[5:20].tolist()
-        avw_ys = row.iloc[20:35].tolist()
-        bottom_xs = row.iloc[35:45].tolist()
-        bottom_ys = row.iloc[45:].tolist()
-
-        noise_avw_xs = avw_xs + np.random.normal(0, noise_scale, len(avw_xs))
-        noise_avw_ys = avw_ys + np.random.normal(0, noise_scale, len(avw_ys))
-        noise_bottom_xs = bottom_xs + np.random.normal(0, noise_scale, len(bottom_xs))
-        noise_bottom_ys = bottom_ys + np.random.normal(0, noise_scale, len(bottom_ys))
-
-        splined_avw_xs, splined_avw_ys = get_noise_spline(noise_avw_xs, noise_avw_ys)
-        splined_bottom_xs , splined_bottom_ys = get_noise_spline(noise_bottom_xs, noise_bottom_ys)
-
-        apex = min(splined_avw_ys)
-
-        file_and_e_values[-1] = apex
-
-        pc_rows.extend(file_and_e_values)
-        pc_rows.extend(splined_avw_xs)
-        pc_rows.extend(splined_avw_ys)
-        pc_rows.extend(splined_bottom_xs)
-        pc_rows.extend(splined_bottom_ys)
-        pc_df.loc[index] = pc_rows
-
-    pc1_df =pc_df.iloc[:, 5:35]
-    pcbottom_df = pc_df.iloc[:, 35:len(pc_df.columns)]
-    # int_df = pd.read_csv("intermediate_pc_data", header=None)
-    total_result_PC1, pca = PCA_(pc1_df)
-    total_result_PCB, pca = PCA_([pcbottom_df])
-
-    PC_scores = total_result_PC1[['principal component 1', 'principal component 2']]
-    PC_scores_bottom = total_result_PCB[['principal component 1', 'principal component 2']]
-
-    print(PC_scores)
-    print(PC_scores_bottom)
-
-    PC_scores = PC_scores.rename(columns={'principal component 1': 'principal component 1 AVW',
-                                          'principal component 2': 'principal component 2 AVW'})
-    PC_scores_bottom = PC_scores_bottom.rename(columns={'principal component 1': 'principal component 1 Bottom Tissue',
-                                                        'principal component 2': 'principal component 2 Bottom Tissue'})
-
-    final_df = pd.concat([pc_df.loc[:, ["File Name", "E1", "E2", "E3", "Apex"]], PC_scores, PC_scores_bottom], axis=1)
-    file_path = Results_Folder + '\\' + date_prefix + "_modified_test.csv"
-    final_df.to_csv(Results_Folder + '\\' + date_prefix + "_modified_test.csv", index=False)
+# def add_noise_to_csv(csv_filename, noise_scale):
+#     Results_Folder = "C:\\Users\\phine\\OneDrive\\Desktop\\FEBio files\\Pycharm Results"
+#     current_date = datetime.datetime.now()
+#     date_prefix = str(current_date.year) + '_' + str(current_date.month) + '_' + str(current_date.day)
+#     data_df = pd.read_csv(csv_filename)
+#     first_row = True
+#     pc_header = []
+#     pc_header.append('File Name')
+#     pc_header.append('E1')
+#     pc_header.append('E2')
+#     pc_header.append('E3')
+#     pc_header.append('Apex')
+#     coord = 'x'
+#     for i in range(2):
+#         if i == 1:
+#             coord = 'y'
+#         for j in range(15):
+#             pc_header.append(coord + str(j + 1))
+#     coord = 'Bx'
+#     for i in range(2):
+#         if i == 1:
+#             coord = 'By'
+#         for j in range(10):
+#             pc_header.append(coord + str(j + 1))
+#     pc_df = pd.DataFrame(columns=pc_header)
+#
+#     for index, row in data_df.iterrows():
+#         pc_rows = []
+#         file_and_e_values = row.iloc[:5].tolist()
+#         avw_xs= row.iloc[5:20].tolist()
+#         avw_ys = row.iloc[20:35].tolist()
+#         bottom_xs = row.iloc[35:45].tolist()
+#         bottom_ys = row.iloc[45:].tolist()
+#
+#         noise_avw_xs = avw_xs + np.random.normal(0, noise_scale, len(avw_xs))
+#         noise_avw_ys = avw_ys + np.random.normal(0, noise_scale, len(avw_ys))
+#         noise_bottom_xs = bottom_xs + np.random.normal(0, noise_scale, len(bottom_xs))
+#         noise_bottom_ys = bottom_ys + np.random.normal(0, noise_scale, len(bottom_ys))
+#
+#         splined_avw_xs, splined_avw_ys = get_noise_spline(noise_avw_xs, noise_avw_ys)
+#         splined_bottom_xs , splined_bottom_ys = get_noise_spline(noise_bottom_xs, noise_bottom_ys)
+#
+#         apex = min(splined_avw_ys)
+#
+#         file_and_e_values[-1] = apex
+#
+#         pc_rows.extend(file_and_e_values)
+#         pc_rows.extend(splined_avw_xs)
+#         pc_rows.extend(splined_avw_ys)
+#         pc_rows.extend(splined_bottom_xs)
+#         pc_rows.extend(splined_bottom_ys)
+#         pc_df.loc[index] = pc_rows
+#
+#     pc1_df =pc_df.iloc[:, 5:35]
+#     pcbottom_df = pc_df.iloc[:, 35:len(pc_df.columns)]
+#     # int_df = pd.read_csv("intermediate_pc_data", header=None)
+#     total_result_PC1, pca = PCA_(pc1_df)
+#     total_result_PCB, pca = PCA_([pcbottom_df])
+#
+#     PC_scores = total_result_PC1[['principal component 1', 'principal component 2']]
+#     PC_scores_bottom = total_result_PCB[['principal component 1', 'principal component 2']]
+#
+#     print(PC_scores)
+#     print(PC_scores_bottom)
+#
+#     PC_scores = PC_scores.rename(columns={'principal component 1': 'principal component 1 AVW',
+#                                           'principal component 2': 'principal component 2 AVW'})
+#     PC_scores_bottom = PC_scores_bottom.rename(columns={'principal component 1': 'principal component 1 Bottom Tissue',
+#                                                         'principal component 2': 'principal component 2 Bottom Tissue'})
+#
+#     final_df = pd.concat([pc_df.loc[:, ["File Name", "E1", "E2", "E3", "Apex"]], PC_scores, PC_scores_bottom], axis=1)
+#     file_path = Results_Folder + '\\' + date_prefix + "_modified_test.csv"
+#     final_df.to_csv(Results_Folder + '\\' + date_prefix + "_modified_test.csv", index=False)
 
 
 
