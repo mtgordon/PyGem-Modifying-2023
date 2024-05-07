@@ -14,7 +14,7 @@ from scipy.interpolate import UnivariateSpline
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 #from sklearn import joblib
-from predict_funtions import get_file_name
+from predict_functions import get_file_name
 import pandas as pd
 from scipy.stats import ttest_ind
 import numpy as np
@@ -121,28 +121,15 @@ def PCA_(pca_trials_df, numComp):
     # print('#############################################')
 
     # Making a dataframe from the principle components
-    #TODO: MAKE LOOP BASED ON PC SCORE ARGUMENT (MAKE IT SO ANY NUMBER WORKS)
-    if PCA_components == 2:
-        pc_df = pd.concat([pd.DataFrame(IDs, columns=['SubjectID']), pd.DataFrame(principalComponents,
-                                                                                  columns=['principal component 1',
-                                                                                           'principal component 2'])],
-                          axis=1)
-        pc_df.set_index('SubjectID', inplace=True)
+    #TODO: MAKE LOOP BASED ON PC SCORE ARGUMENT (MAKE IT SO ANY NUMBER WORKS) -- THIS SHOULD SOLVE
+    pc_columns = [f'principal component {i + 1}' for i in range(numComp)]
+    pc_df = pd.DataFrame(principalComponents, columns=pc_columns, index=IDs)
+    pca_df = pd.concat([pca_trials_data_df, pc_df], axis=1)
 
-        pca_df = pd.concat([pca_trials_data_df, pc_df], axis = 1)
-
-    elif PCA_components == 3:
-        pc_df = pd.concat([pd.DataFrame(IDs, columns=['SubjectID']), pd.DataFrame(principalComponents,
-                                                                                  columns=['principal component 1',
-                                                                                           'principal component 2',
-                                                                                           'principal component 3'])],
-                          axis=1)
-        pc_df.set_index('SubjectID', inplace=True)
-
-        pca_df = pd.concat([pca_trials_data_df, pc_df], axis = 1)
-
+    # Save PCA model
     pca_path = generate_PCA_Model_path(pca)
     save_pca_model(pca, pca_path)
+
     return(pca_df, pca)
 
 

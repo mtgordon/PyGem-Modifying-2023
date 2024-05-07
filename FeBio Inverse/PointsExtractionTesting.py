@@ -14,7 +14,17 @@ from pygem import RBF
 febio_file_name = "D:\\Gordon\\Automate FEB Runs\\2024_4_29 auto\\Base File\\Basic_Cylinder_Pressure.feb"
 node_name = "Object5"
 extract_points = IOfunctions.extract_coordinates_list_from_feb(febio_file_name, node_name)
+#TODO: Input Parameters for Cylinder Creation
+num_points = 200
 
+def findLargestZ(): # Uses extract_points within function
+    maxz = 0
+    for tuple in extract_points:
+        maxz = max(maxz, tuple[2])
+
+    return maxz
+
+height = findLargestZ()
 
 #plot_3d_points(extract_points)
 
@@ -90,9 +100,6 @@ def plot_3d_points(points, fig):
 #plot_3d_points(cylinder1points)
 
 
-#TODO: Input Parameters for Cylinder Creation
-height = 4
-num_points = 200
 """
 Function: determineRadiiFromFEB
 This method utilizes the .feb files extracted points which are parsed from the .feb file previously using

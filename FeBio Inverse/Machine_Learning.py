@@ -1,4 +1,4 @@
-import predict_funtions as pf
+import predict_functions as pf
 import PostProcess_FeBio as pp
 import PCA_data as pd
 import datetime

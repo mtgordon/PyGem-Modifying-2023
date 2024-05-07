@@ -1777,3 +1777,14 @@ def get_interconnections_feb(file_name, node_name):  # connections-between-mater
             break
 
     return connections
+'''
+Simple Method to return the largest Z value given a point dictionary
+'''
+def findLargestZ(point_dict):
+    maxz = 0
+    for key, coords in point_dict.items():
+        # Ensure the coordinates have length 3
+        if coords[2] > maxz:
+            maxz = coords[2]
+
+    return maxz

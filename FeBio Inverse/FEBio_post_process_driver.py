@@ -39,10 +39,11 @@ date_prefix = str(current_date.year) + '_' + str(current_date.month)  + '_' + st
 object_list = ['Object5']  # MAKE SURE THIS MATCHES THE OBJECTS IN THE CURRENTLY USED MODEL
 obj_coords_list = []
 file_num = 0
+numCompPCA = 6
 
-first_file_flag = True
-GENERATE_INTERMEDIATE_FLAG = True
-final_csv_flag = False
+first_file_flag = False
+GENERATE_INTERMEDIATE_FLAG = False
+final_csv_flag = True
 
 
 if GENERATE_INTERMEDIATE_FLAG:
@@ -71,7 +72,7 @@ if GENERATE_INTERMEDIATE_FLAG:
 
 if final_csv_flag:
     print('Generating PC File')
-    proc.process_features(csv_filename, Results_Folder, date_prefix)
+    proc.process_features(csv_filename, Results_Folder, date_prefix, numCompPCA)
 
 print('TESTING')
 

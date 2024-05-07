@@ -50,7 +50,7 @@ default_dict = {
 }
 
 #TODO: Input Parameters for Cylinder Creation
-cylinder_height = 4
+cylinder_height = PointsExtractionTesting.findLargestZ()
 num_cylinder_points = 200
 
 '''

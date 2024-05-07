@@ -13,7 +13,7 @@ import csv
 import pandas as pd
 import PCA_data
 import os
-import predict_funtions as pf
+import predict_functions as pf
 import ShapeAnalysisVerification as sav
 import numpy as np
 import matplotlib.pyplot as plt
@@ -26,82 +26,84 @@ num_pts = 9
 spline_ordered = 0
 startingPointColHeader = 'inner_x'
 secondPartStart = 'outer_x'
-numCompPCA = 2
+numCompPCA = 6
 stringList = ['inner_x', 'outer_x']
 
-# TEST PROCESS FEATURES
-#TODO: finish this later today at the end so that we can use string list to go through and have the least amount of hard
-#      coding
+"""
+    Generate modified training CSV files with principal component scores from the original file.
 
-# def process_features(csv_file, Results_Folder, date_prefix):
-#     int_df = pd.read_csv(csv_file)
-#     for i, header in enumerate(stringList):
-#         if i < len(stringList) - 1:
-#             next_header = stringList[i + 1]
-#
-#         currentStartIndex = int_df.columns[int_df.columns.str.contains(header)].tolist()
-#         currentIndex = int_df.columns.get_loc(currentStartIndex[0])
-#         nextStartIndex = int_df.columns[int_df.columns.str.contains(next_header)].tolist()
-#         nextIndex = int_df.columns.get_loc(nextStartIndex[0])
-#         pc1_df = int_df.iloc[:, currentIndex:nextIndex] #TODO: HARD CODED _ CHANGE LATER
-#         pcbottom_df = int_df.iloc[:, nextIndex:len(int_df.columns)]
-#         # int_df = pd.read_csv("intermediate_pc_data", header=None)
-#         total_result_PC1, pca1 = PCA_data.PCA_(pc1_df, numCompPCA)
-#         total_result_PCB, pcaB = PCA_data.PCA_([pcbottom_df], numCompPCA)
-#
-#     #TODO: MAKE THESE WORK WITH ANY OBJECT NAME OR PC COMPONENT NUMBER
-#     PC_scores = total_result_PC1[['principal component 1', 'principal component 2']]
-#     PC_scores_bottom = total_result_PCB[['principal component 1', 'principal component 2']]
-#
-#     print("PC_Scores: ", PC_scores)
-#     print("PC_scores_bottom", PC_scores_bottom)
-#
-#     PC_scores = PC_scores.rename(columns = {'principal component 1': 'principal component 1 AVW','principal component 2':'principal component 2 AVW'})
-#     PC_scores_bottom  = PC_scores_bottom.rename(columns={'principal component 1': 'principal component 1 Bottom Tissue',
-#                                           'principal component 2': 'principal component 2 Bottom Tissue'})
-#
-#     final_df = pd.concat([int_df.loc[:, ["File Name", "E5", "Pressure", "Inner_Radius", "Outer_Radius"]], PC_scores, PC_scores_bottom], axis=1)
-#     if not os.path.exists(Results_Folder):
-#         os.makedirs(Results_Folder)
-#     file_name = pf.get_file_name(csv_file)
-#
-#     file_path = Results_Folder + '\\' + file_name + '_' + date_prefix + "_modified_train.csv"
-#
-#     final_df.to_csv(file_path, index=False)
-#     return file_path, pca1, pcaB
+    Parameters:
+        csv_file (str): The path to the original CSV file.
+        Results_Folder (str): The folder path where the modified CSV file will be saved.
+        date_prefix (str): The prefix to be added to the modified CSV file name.
+        numCompPCA (int): The number of principal components to retain.
 
-def process_features(csv_file, Results_Folder, date_prefix):
+    Returns:
+        file_path (str): The path of the generated modified training CSV file.
+        pca1 (object): The PCA model object for the top tissue.
+        pcaB (object): The PCA model object for the bottom tissue.
+
+    Example:
+        >>> csv_file = "data.csv"
+        >>> Results_Folder = "results"
+        >>> date_prefix = "2024_05_08"
+        >>> numCompPCA = 3
+        >>> file_path, pca1, pcaB = process_features(csv_file, Results_Folder, date_prefix, numCompPCA)
+    """
+def process_features(csv_file, Results_Folder, date_prefix, numCompPCA):
+    # Read the input CSV file into a pandas DataFrame
     int_df = pd.read_csv(csv_file)
-    pointStartIdx = int_df.columns[int_df.columns.str.contains(startingPointColHeader)].tolist()
-    startIdx = int_df.columns.get_loc(pointStartIdx[0])
-    secondStartIdx = int_df.columns[int_df.columns.str.contains(secondPartStart)].tolist()
-    secondIdx = int_df.columns.get_loc(secondStartIdx[0])
-    pc1_df = int_df.iloc[:, startIdx:secondIdx] #TODO: HARD CODED _ CHANGE LATER
-    pcbottom_df = int_df.iloc[:, secondIdx:len(int_df.columns)]
-    # int_df = pd.read_csv("intermediate_pc_data", header=None)
-    total_result_PC1, pca1 = PCA_data.PCA_(pc1_df, numCompPCA)
-    total_result_PCB, pcaB = PCA_data.PCA_([pcbottom_df], numCompPCA)
 
-    #TODO: MAKE THESE WORK WITH ANY OBJECT NAME OR PC COMPONENT NUMBER
-    PC_scores = total_result_PC1[['principal component 1', 'principal component 2']]
-    PC_scores_bottom = total_result_PCB[['principal component 1', 'principal component 2']]
+    # Iterate through the headers
+    for i, header in enumerate(stringList):
+        # If not the last header, get the next header
+        if i < len(stringList) - 1:
+            next_header = stringList[i + 1]
 
-    print("PC_Scores: ", PC_scores)
-    print("PC_scores_bottom", PC_scores_bottom)
+        # Get the start and end indices of the current header's columns
+        currentStartIndex = int_df.columns[int_df.columns.str.contains(header)].tolist()
+        currentIndex = int_df.columns.get_loc(currentStartIndex[0])
 
-    PC_scores = PC_scores.rename(columns = {'principal component 1': 'principal component 1 AVW','principal component 2':'principal component 2 AVW'})
-    PC_scores_bottom  = PC_scores_bottom.rename(columns={'principal component 1': 'principal component 1 Bottom Tissue',
-                                          'principal component 2': 'principal component 2 Bottom Tissue'})
+        nextStartIndex = int_df.columns[int_df.columns.str.contains(next_header)].tolist()
+        nextIndex = int_df.columns.get_loc(nextStartIndex[0])
 
-    final_df = pd.concat([int_df.loc[:, ["File Name", "E5", "Pressure", "Inner_Radius", "Outer_Radius"]], PC_scores, PC_scores_bottom], axis=1)
-    if not os.path.exists(Results_Folder):
-        os.makedirs(Results_Folder)
-    file_name = pf.get_file_name(csv_file)
+        # Slice the DataFrame to get the columns for the current header
+        pc1_df = int_df.iloc[:, currentIndex:nextIndex]  # TODO: HARD CODED _ CHANGE LATER
+        pcbottom_df = int_df.iloc[:, nextIndex:len(int_df.columns)]
 
-    file_path = Results_Folder + '\\' + file_name + '_' + date_prefix + "_modified_train.csv"
+        # Perform PCA on the sliced DataFrames
+        total_result_PC1, pca1 = PCA_data.PCA_(pc1_df, numCompPCA)
+        total_result_PCB, pcaB = PCA_data.PCA_([pcbottom_df], numCompPCA)
 
-    final_df.to_csv(file_path, index=False)
-    return file_path, pca1, pcaB
+        # Get the principal component scores
+        PC_scores = total_result_PC1.iloc[:, :numCompPCA]
+        PC_scores_bottom = total_result_PCB.iloc[:, :numCompPCA]
+
+        # Rename the column headers to "Principal Component i Inner/Outer Radius"
+        PC_scores = PC_scores.rename(
+            columns={f'inner_x{i + 1}': f'Principal Component {i + 1} Inner Radius' for i in range(numCompPCA)})
+        PC_scores_bottom = PC_scores_bottom.rename(
+            columns={f'outer_x{i + 1}': f'Principal Component {i + 1} Outer Radius' for i in range(numCompPCA)})
+
+        # Concatenate the DataFrames to create the final DataFrame
+        final_df = pd.concat([int_df.loc[:, ["File Name", "E5", "Pressure", "Inner_Radius", "Outer_Radius"]],
+                              PC_scores, PC_scores_bottom], axis=1)
+
+        # Create the directory if it doesn't exist
+        if not os.path.exists(Results_Folder):
+            os.makedirs(Results_Folder)
+
+        # Get the base file name
+        file_name = pf.get_file_name(csv_file)
+
+        # Construct the file path for the modified CSV
+        file_path = os.path.join(Results_Folder, f'{file_name}_{date_prefix}_modified_train.csv')
+
+        # Save the final DataFrame to a CSV file
+        final_df.to_csv(file_path, index=False)
+
+        # Return the file path and PCA models
+        return file_path, pca1, pcaB
 
 def find_apex(coordList):
     min_y = coordList[0][1][1]

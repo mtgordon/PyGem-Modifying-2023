@@ -6,7 +6,7 @@ import csv
 import pandas as pd
 import PCA_data
 import os
-import predict_funtions as pf
+import predict_functions as pf
 import matplotlib.pyplot as plt
 import PointsExtractionTesting
 import numpy as np
