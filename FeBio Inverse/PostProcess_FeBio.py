@@ -26,7 +26,7 @@ num_pts = 9
 spline_ordered = 0
 startingPointColHeader = 'inner_x'
 secondPartStart = 'outer_x'
-numCompPCA = 6
+numCompPCA = 2
 stringList = ['inner_x', 'outer_x']
 
 """
@@ -70,6 +70,9 @@ def process_features(csv_file, Results_Folder, date_prefix, numCompPCA):
         # Slice the DataFrame to get the columns for the current header
         pc1_df = int_df.iloc[:, currentIndex:nextIndex]  # TODO: HARD CODED _ CHANGE LATER
         pcbottom_df = int_df.iloc[:, nextIndex:len(int_df.columns)]
+
+        print(pcbottom_df)
+        pcbottom_df.to_csv('wowza.csv')
 
         # Perform PCA on the sliced DataFrames
         total_result_PC1, pca1 = PCA_data.PCA_(pc1_df, numCompPCA)

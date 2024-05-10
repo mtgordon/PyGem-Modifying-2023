@@ -31,19 +31,19 @@ import Bottom_Tissue_SA_Final as bts
 
 current_date = datetime.datetime.now()
 date_prefix = str(current_date.year) + '_' + str(current_date.month)  + '_' + str(current_date.day)
-Results_Folder = "D:\\Gordon\\Automate FEB Runs\\2024_4_29 auto"  # INTERMEDIATE CSV ENDS UP HERE
-Target_Folder = "D:\\Gordon\\Automate FEB Runs\\2024_4_29 auto\\*.feb"  # LOOK HERE FOR THE FEB FILES
+Results_Folder = "D:\\Gordon\\Automate FEB Runs\\2024_5_6_NewModel"  # INTERMEDIATE CSV ENDS UP HERE
+Target_Folder = "D:\\Gordon\\Automate FEB Runs\\2024_5_6_NewModel\\*.feb"  # LOOK HERE FOR THE FEB FILES
 csv_filename = Results_Folder + '\\' + date_prefix + '_intermediate.csv'
 date_prefix = str(current_date.year) + '_' + str(current_date.month)  + '_' + str(current_date.day)
 
-object_list = ['Object5']  # MAKE SURE THIS MATCHES THE OBJECTS IN THE CURRENTLY USED MODEL
+object_list = ['Object17']  # MAKE SURE THIS MATCHES THE OBJECTS IN THE CURRENTLY USED MODEL
 obj_coords_list = []
 file_num = 0
-numCompPCA = 6
+numCompPCA = 2
 
-first_file_flag = False
-GENERATE_INTERMEDIATE_FLAG = False
-final_csv_flag = True
+first_file_flag = True
+GENERATE_INTERMEDIATE_FLAG = True
+final_csv_flag = False
 
 
 if GENERATE_INTERMEDIATE_FLAG:
@@ -74,7 +74,7 @@ if final_csv_flag:
     print('Generating PC File')
     proc.process_features(csv_filename, Results_Folder, date_prefix, numCompPCA)
 
-print('TESTING')
+
 
 # use the generated csv to get the 2 PC scores
 #TODO: IGNORE THIS FUNCTION, USE THE ONE IN "PostProcess_FeBio"

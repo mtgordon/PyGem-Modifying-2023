@@ -529,7 +529,7 @@ def write_predicted_y_analysed_to_csv(output_csv_path, predicted_y, new_y):
     abs_output_csv_path = os.path.join(current_dir, output_csv_path)
 
     # Use the absolute file path when opening the file
-    with open(abs_output_csv_path, 'w') as file:
+    with open(abs_output_csv_path, 'x') as file:
         file.write(header_row + "\n")
         for row in combined_data:
             formatted_row = ",".join([f"{value:.18e}" if isinstance(value, (int, float)) else value for value in row])
@@ -551,13 +551,19 @@ def write_predicted_y_to_csv(output_csv_path, predicted_y):
         current_dir = os.getcwd()
 
         # Construct the absolute file path based on the current working directory
+        output_csv_path = 'PredictedData\\M_2024_5_6_intermediate_train_22_2024_5_7_modified_train_1el100003pat10000_c36_D_2024_5_6_intermediate_test_22_2024_5_7_modified_train_1\\Pre1.csv'
         abs_output_csv_path = os.path.join(current_dir, output_csv_path)
+        print()
+        print(abs_output_csv_path)
+        print()
 
         # Create the directory if it doesn't exist
         directory = os.path.dirname(abs_output_csv_path)
         os.makedirs(directory, exist_ok=True)
 
-        with open(abs_output_csv_path, 'w') as file:
+
+        #TODO: Temporary manual file path
+        with open(abs_output_csv_path, 'x') as file:
             for row in predicted_y:
                 formatted_row = ",".join("{:.18e}".format(value) for value in row)
                 file.write(formatted_row + "\n")
@@ -581,16 +587,17 @@ def generate_predicted_analysis_csv_paths(model_path, new_data_path, old_data=''
         os.makedirs(f'PredictedData\\{directory}')
 
     # Determine the file name
-    predicted_path = os.path.join('PredictedData', directory, f"M_{model_name}_D_{new_data}_Pre{suffix}.csv")
-    analysis_path = os.path.join('PredictedData', directory, f"M_{model_name}_D_{new_data}_Ana{suffix}.csv")
+    predicted_path = os.path.join('PredictedData', directory, f"Pre{suffix}.csv")
+    analysis_path = os.path.join('PredictedData', directory, f"Ana{suffix}.csv")
 
     while os.path.exists(predicted_path) or os.path.exists(analysis_path):
         suffix += 1
-        predicted_path = os.path.join('PredictedData', directory, f"M_{model_name}_D_{new_data}_Pre{suffix}.csv")
-        analysis_path = os.path.join('PredictedData', directory, f"M_{model_name}_D_{new_data}_Ana{suffix}.csv")
+        predicted_path = os.path.join('PredictedData', directory, f"Pre{suffix}.csv")
+        analysis_path = os.path.join('PredictedData', directory, f"Ana{suffix}.csv")
 
     predicted_path = predicted_path.replace(",", "").replace(" ", "")
     analysis_path = analysis_path.replace(",", "").replace(" ", "")
+
     return predicted_path, analysis_path
 
 
@@ -627,7 +634,6 @@ def generate_train_test_csv_path_from(file_path):
         output_test = os.path.join('csv_test', f"{file_name}_test_{suffix}.csv")
 
     return output_train, output_test
-
 
 def generate_train_test_csvs_files_from(file_name, not_print=False):
     """
@@ -1119,6 +1125,9 @@ def load_model_to_predict_analysis_plot(model_path, data, old_data='', type_dif=
         print(predicted_y)
 
     predicted_path, analysis_path = generate_predicted_analysis_csv_paths(model_path, data, old_data)
+    print()
+    print(predicted_path)
+    print()
 
 
     write_predicted_y_to_csv(predicted_path, predicted_y)

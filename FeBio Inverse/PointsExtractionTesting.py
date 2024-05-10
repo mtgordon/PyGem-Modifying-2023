@@ -121,7 +121,7 @@ def determineRadiiFromFEB(extracted_points):
             outer_radius = extract_points[i][0]
 
     # create cylinder using our found inner & outer radius
-    cylinderpoints = generate_annular_cylinder_points(inner_radius, outer_radius, height, num_points)
+    cylinderpoints = generate_annular_cylinder_points(0.625, 1.125, height, num_points)
 
     return cylinderpoints
 

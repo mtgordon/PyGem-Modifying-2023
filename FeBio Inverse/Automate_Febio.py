@@ -25,25 +25,25 @@ import numpy as np
 #TODO: ENTER IN VAR FILE --> SET PART NAMES FOR ALL MATERIALS --> DONE
 dictionary_file = 'feb_variables.csv' #DONE
 FeBioLocation = 'C:\\Program Files\\FEBioStudio2\\bin\\febio4.exe'
-originalFebFilePath = 'D:\\Gordon\\Automate FEB Runs\\2024_5_6_NewModel\\Base_File\\3 Tissue Model v5.feb' #DONE
-Results_Folder = 'D:\\Gordon\\Automate FEB Runs\\2024_5_6_NewModel' #DONE
-object_list = ['Object17'] #TODO: Get new names for flat, curve, GI Filler --> DONE
+originalFebFilePath = 'D:\\Gordon\\Automate FEB Runs\\2024_5_9_NewModel\\Base_File\\3 Tissue Model v6.feb' #DONE
+Results_Folder = 'D:\\Gordon\\Automate FEB Runs\\2024_5_9_NewModel' #DONE
+object_list = ['Object8'] #TODO: Get new names for flat, curve, GI Filler --> DONE
 # Currently being used to access base object, may need to be changed when looking to generate multiple objects at once
-object_name = 'Object17'
+object_name = 'Object8'
 
 # FLAGS
-first_int_file_flag = True
+first_int_file_flag = False
 final_csv_flag = False
 GENERATE_INTERMEDIATE_FLAG = True
 
 #Have the default material variables be 1 (100%) so they do not change if no variable is given
 #TODO: Update Everytime you want to change your base file
 default_dict = {
-    'Vaginal Wall_E': 1,
-    'Perineal Complex_E': 1,
-    'LA_E': 1,
-    'Part16_E': 1,
-    'Part17_E': 1,
+    'Part1_E': 1,
+    'Part2_E': 1,
+    'Part5_E': 1,
+    'Part7_E': 1,
+    'Part9_E': 1,
     'Pressure': 0,
     'Inner_Radius': 1,
     'Outer_Radius': 2
@@ -62,7 +62,7 @@ def RunFEBinFeBio(inputFileName, FeBioLocation, outputFileName=None):
     CallString = '\"' + FeBioLocation + '\" -i \"' + inputFileName + '\"'
     if outputFileName is not None:
         CallString += ' -o \"' + outputFileName + '\"'
-    print(CallString)
+    print("CallString: ", CallString)
     subprocess.call(CallString)
 
 '''
@@ -77,7 +77,6 @@ def updateProperties(origFile, fileTemp):
     tree = ET.parse(origFile)
     root = tree.getroot()
     extract_points = IOfunctions.extract_coordinates_list_from_feb(originalFebFilePath, object_name)
-
 
     # Go through each element which is within the csv
     for partProp in current_run_dict.keys():
@@ -103,12 +102,38 @@ def updateProperties(origFile, fileTemp):
             cylinder1points = PointsExtractionTesting.determineRadiiFromFEB(extract_points)
             # Generate Cylinder2 points using given Inner & Outer Radius from "feb_variables.csv"
             cylinder2points = PointsExtractionTesting.generate_annular_cylinder_points(inner_radius, outer_radius, cylinder_height, num_cylinder_points)
+
+            #TODO: *****************************CURRENTLY UNDER CONSTRUCTION**************************************
+
+            # node_coordinates = {}
+            #
+            # nodeset = root.find('.//NodeSet[@name="ZeroDisplacement2"]')  # Find the specific NodeSet tag within the root
+            # if nodeset is not None:  # Check if the NodeSet tag is found
+            #     numbers_text = nodeset.text.strip()  # Extract the text content containing the numbers
+            #     node_ids = [int(num.strip()) for num in numbers_text.split(',')]  # Convert text to list of integers
+            #
+            #         # Iterate over each node in the XML file
+            #     for node in root.findall('.//node'):
+            #         node_id = int(node.get('id'))  # Get the ID of the current node as an integer
+            #
+            #         # Check if the current node's ID is in the list of IDs from ZeroDisplacement2
+            #         if node_id in node_ids:
+            #             # Extract the coordinates of the current node
+            #             coordinates_text = node.text.strip()
+            #             coordinates = [float(coord.strip()) for coord in coordinates_text.split(',')]
+            #
+            #             # Append the coordinates array to both cylinder1points and cylinder2points
+            #             cylinder1points = np.append(cylinder1points, [coordinates], axis=0)
+            #             cylinder2points = np.append(cylinder2points, [coordinates], axis=0)
+
+            # TODO: *****************************CURRENTLY UNDER CONSTRUCTION**************************************
             # Use RBF to find differences between both cylinders
             rbf = RBF(cylinder1points, cylinder2points, func='thin_plate_spline')
             # Convert extract_points to np array to use rbf to get deformed_points
             extract_points = np.array(extract_points)
             # Call rbf to return deformed points given extract_points
             deformed_points = rbf(extract_points)
+            print()
 
             # Convert Array to tuples to 2D array to use "replace_node_in_feb_file" function
             deformed_points_list = []

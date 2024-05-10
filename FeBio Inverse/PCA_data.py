@@ -118,10 +118,7 @@ def PCA_(pca_trials_df, numComp):
 
     IDs = pca_trials_data_df.index
 
-    # print('#############################################')
-
     # Making a dataframe from the principle components
-    #TODO: MAKE LOOP BASED ON PC SCORE ARGUMENT (MAKE IT SO ANY NUMBER WORKS) -- THIS SHOULD SOLVE
     pc_columns = [f'principal component {i + 1}' for i in range(numComp)]
     pc_df = pd.DataFrame(principalComponents, columns=pc_columns, index=IDs)
     pca_df = pd.concat([pca_trials_data_df, pc_df], axis=1)
