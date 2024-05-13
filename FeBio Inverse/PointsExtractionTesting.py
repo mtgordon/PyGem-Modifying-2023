@@ -74,30 +74,28 @@ def generate_annular_cylinder_points(inner_radius, outer_radius, height, num_poi
   return points
 
 
+def plot_3d_points(pointslist):
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')  # Create subplot only once
 
-def plot_3d_points(points, fig):
-   #fig = plt.figure()
-   ax = fig.add_subplot(111, projection='3d')
+    colors = ['r', 'g', 'b', 'c', 'm', 'y', 'k', 'w']
+    markers = ['o', 's', '^', 'v', '<', '>', '1', '2']  # Define markers
+
+    for idx, points in enumerate(pointslist):
+        # Plot points with a unique color and marker
+        ax.scatter(points[:, 0], points[:, 1], points[:, 2], c=colors[idx], marker=markers[idx])
+
+    # Set labels
+    ax.set_xlabel('X')
+    ax.set_ylabel('Y')
+    ax.set_zlabel('Z')
+
+    # Set aspect ratio
+    ax.set_box_aspect([1, 1, 1])
+
+    plt.show()
 
 
-   # Plot points
-   ax.scatter(points[:, 0], points[:, 1], points[:, 2], c='b', marker='o')
-
-
-   # Set labels
-   ax.set_xlabel('X')
-   ax.set_ylabel('Y')
-   ax.set_zlabel('Z')
-
-
-   # Set aspect ratio
-   ax.set_box_aspect([1, 1, 1])
-
-
-   plt.show()
-
-
-#plot_3d_points(cylinder1points)
 
 
 """
@@ -157,3 +155,59 @@ for tuple in deformed_points:
 # print(deformed_points_list)
 # print(extract_points)
 IOfunctions.replace_node_in_new_feb_file(febio_file_name, node_name, "extract_cylinder.feb", deformed_points_list)
+
+"""
+Extracts coordinates from a surface with a given name and updates the initial and final control points.
+
+Parameters:
+    root (ElementTree.Element): The root element of the XML tree.
+    surface_name (str): The name of the surface to extract coordinates from.
+    initial_controlpoints (np.ndarray): Array to store initial control points.
+    final_controlpoints (np.ndarray): Array to store final control points.
+
+Returns:
+    None
+"""
+def extractCoordinatesFromSurfaceName(root, surface_name, initial_controlpoints, final_controlpoints):
+
+    # Set to store quad IDs
+    quad_ids_set = set()
+    coordinatesarray = []
+
+    # Find the specific Surface tag within the root
+    surface = root.find('.//Surface[@name="{}"]'.format(surface_name))
+
+    if surface is not None:  # Check if the Surface tag is found
+        # Find all quad4 elements within the Surface
+        quad4_elements = surface.findall('.//quad4')
+
+        # Iterate over each quad4 element
+        for quad in quad4_elements:
+            # Extract the text content containing the numbers
+            numbers_text = quad.text.strip()
+
+            # Convert text to list of integers
+            quad_ids = [int(num.strip()) for num in numbers_text.split(',')]
+
+            # Add the quad IDs to the set
+            quad_ids_set.update(quad_ids)
+
+        # Iterate over all nodes in the root
+        for node in root.findall('.//Nodes/node'):
+            # Get the ID of the current node
+            current_node_id = int(node.get('id'))
+
+            # Check if the current node ID is in the set of quad IDs
+            if current_node_id in quad_ids_set:
+                # Extract the inner text of the current node containing coordinates
+                inner_text = node.text.strip()
+
+                # Convert coordinates text to list of floats
+                coordinates = [float(coord) for coord in inner_text.split(',')]
+
+                # Append coordinates to initial and final control points arrays
+                coordinatesarray.append(coordinates)
+                # np.append(initial_controlpoints, coordinates)
+                # np.append(final_controlpoints, coordinates)
+
+        return coordinatesarray

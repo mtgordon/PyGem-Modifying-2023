@@ -1650,10 +1650,21 @@ def replace_node_in_feb_file(file_name, node_name, coordinates_list):
     tree = ET.parse(file_name)
     root = tree.getroot()
 
+    # We want i = part_names's first node id value
+    # Get the id of the first node element under the specified object
+    first_node_element = root.find('.//Nodes[@name="{}"]/node'.format(node_name))
+    print(" node name: ",node_name)
+    if first_node_element is not None:
+        first_node_id = first_node_element.get('id')
+        print("This should be id num:", first_node_id)
+    else:
+        print("No node found for the specified name.")
+
     # Find the 'Mesh' element
     mesh_element = root.find('Mesh')
 
     if mesh_element is not None:
+        print("if this prints we are less cooked")
         # Find the index of the 'Nodes' element with the specified 'name' attribute
         index = -1
         for i, nodes_element in enumerate(mesh_element):
@@ -1672,22 +1683,15 @@ def replace_node_in_feb_file(file_name, node_name, coordinates_list):
             new_nodes_element.text = "\n\t\t\t"
 
             # Iterate through the points in the coordinates_list and add them as 'node' elements
-            for i, coordinates in enumerate(coordinates_list):
+            for idx, coordinates in enumerate(coordinates_list, start=int(first_node_id)):
                 node_element = ET.SubElement(new_nodes_element, 'node')
-                node_element.set('id', str(i + 1))
+                node_element.set('id', str(idx))
                 coordinates_text = f"{coordinates[0]}, {coordinates[1]}, {coordinates[2]}"
                 node_element.text = coordinates_text
                 node_element.tail = "\n\t\t\t"
 
             new_nodes_element[-1].tail = "\n\t\t"
             mesh_element.insert(index, new_nodes_element)
-
-            # Write the updated XML tree back to the file
-            tree.write(file_name, encoding='utf-8', xml_declaration=True)
-        else:
-            print(f"No 'Nodes' element with the name '{node_name}' found.")
-    else:
-        print("No 'Mesh' element found.")
 
 
 def get_dataset_from_feb_file(file_name, node_name):
