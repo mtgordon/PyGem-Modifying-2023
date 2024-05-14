@@ -1613,13 +1613,13 @@ def replace_node_in_new_feb_file(file_name, node_name, new_file_name, coordinate
 
 
 # TODO: get Dataset3D!!!! Not coordinates list!
-def replace_node_in_feb_file(file_name, node_name, coordinates_list):
+def replace_node_in_feb_file(file_name, nodes_name, coordinates_list):
     """
     Replaces the coordinates of a specific 'Nodes' element in an FEBio file with new coordinates.
 
     Parameters:
         file_name (str): The name of the FEBio file.
-        node_name (str): The name of the 'Nodes' element to replace.
+        nodes_name (str): The name of the 'Nodes' element to replace.
         coordinates_list (list): A list of coordinate tuples [(x1, y1, z1), (x2, y2, z2), ...] for the new coordinates.
 
     Returns:
@@ -1637,7 +1637,7 @@ def replace_node_in_feb_file(file_name, node_name, coordinates_list):
         >>> file_name = "input.feb"
         >>> node_name = "MyNodes"
         >>> coordinates_list = [(1.0, 2.0, 3.0), (4.0, 5.0, 6.0), (7.0, 8.0, 9.0)]
-        >>> replace_node_in_feb_file(file_name, node_name, coordinates_list)
+        >>> replace_node_in_feb_file(file_name, nodes_name, coordinates_list)
 
     Note:
         - This function assumes that the FEBio file exists and is formatted correctly as an XML file.
@@ -1649,11 +1649,14 @@ def replace_node_in_feb_file(file_name, node_name, coordinates_list):
     # Read the existing FEBio file
     tree = ET.parse(file_name)
     root = tree.getroot()
+    print(coordinates_list)
 
     # We want i = part_names's first node id value
     # Get the id of the first node element under the specified object
-    first_node_element = root.find('.//Nodes[@name="{}"]/node'.format(node_name))
-    print(" node name: ",node_name)
+    first_node_element = root.find('.//Nodes[@name="{}"]/node'.format(nodes_name))
+    print("part nodes name: ", nodes_name)
+    print("first node element: ", first_node_element)
+
     if first_node_element is not None:
         first_node_id = first_node_element.get('id')
         print("This should be id num:", first_node_id)
@@ -1663,12 +1666,13 @@ def replace_node_in_feb_file(file_name, node_name, coordinates_list):
     # Find the 'Mesh' element
     mesh_element = root.find('Mesh')
 
+    print("mesh element: ", mesh_element)
+
     if mesh_element is not None:
-        print("if this prints we are less cooked")
         # Find the index of the 'Nodes' element with the specified 'name' attribute
         index = -1
         for i, nodes_element in enumerate(mesh_element):
-            if nodes_element.tag == 'Nodes' and nodes_element.get('name') == node_name:
+            if nodes_element.tag == 'Nodes' and nodes_element.get('name') == nodes_name:
                 index = i
                 break
 
@@ -1678,20 +1682,27 @@ def replace_node_in_feb_file(file_name, node_name, coordinates_list):
 
             # Create a new 'Nodes' element and set the 'name' attribute
             new_nodes_element = ET.Element('Nodes')
-            new_nodes_element.set('name', node_name)
+            new_nodes_element.set('name', nodes_name)
             new_nodes_element.tail = "\n\t\t"
             new_nodes_element.text = "\n\t\t\t"
 
             # Iterate through the points in the coordinates_list and add them as 'node' elements
             for idx, coordinates in enumerate(coordinates_list, start=int(first_node_id)):
+#            for i, coordinates in enumerate(coordinates_list):
                 node_element = ET.SubElement(new_nodes_element, 'node')
+                print(str(idx))
+                print(coordinates)
                 node_element.set('id', str(idx))
+#                node_element.set('id', str(i+1))
                 coordinates_text = f"{coordinates[0]}, {coordinates[1]}, {coordinates[2]}"
+                print(coordinates_text)
                 node_element.text = coordinates_text
                 node_element.tail = "\n\t\t\t"
 
             new_nodes_element[-1].tail = "\n\t\t"
             mesh_element.insert(index, new_nodes_element)
+            print("WRITE THE COORDINATES")
+            tree.write(file_name, encoding='utf-8', xml_declaration=True)
 
 
 def get_dataset_from_feb_file(file_name, node_name):

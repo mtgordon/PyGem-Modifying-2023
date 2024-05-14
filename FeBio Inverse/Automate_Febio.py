@@ -31,7 +31,7 @@ Results_Folder = 'D:\\Gordon\\Automate FEB Runs\\2024_5_9_NewModel\\TEST_FOLDER_
 # This is for output
 object_list = ['Object8'] #TODO: Get new names for flat, curve, GI Filler --> DONE
 # Currently being used to access base object, may need to be changed when looking to generate multiple objects at once
-#part_list = ['Object7']
+#part_list = ['Object7', "Object9"]
 part_list = ['Object1', 'Object2', 'Object7']
 
 # FLAGS
@@ -80,9 +80,9 @@ def updateProperties(origFile, fileTemp):
     # Parse original FEB file
     tree = ET.parse(origFile)
     root = tree.getroot()
+    #extract_points = IOfunctions.extract_coordinates_list_from_feb(originalFebFilePath, part)
 
-    for parts in part_list:
-        extract_points = IOfunctions.extract_coordinates_list_from_feb(originalFebFilePath, parts)
+    for part in part_list:
 
         # Go through each element which is within the csv
         for partProp in current_run_dict.keys():
@@ -104,7 +104,7 @@ def updateProperties(origFile, fileTemp):
                 # Assign outer_radius value from "feb_variables.csv"
                 outer_radius = float(current_run_dict["Outer_Radius"])
                 # Extract points from .feb file and return in array of tuples
-                extract_points = IOfunctions.extract_coordinates_list_from_feb(originalFebFilePath, parts)
+                extract_points = IOfunctions.extract_coordinates_list_from_feb(originalFebFilePath, part)
                 # Assign initial_controlpoints extract_points
                 initial_controlpoints = PointsExtractionTesting.determineRadiiFromFEB(extract_points)
                 # Generate Cylinder2 points using given Inner & Outer Radius from "feb_variables.csv"
@@ -139,7 +139,7 @@ def updateProperties(origFile, fileTemp):
                 partName = partProp.split('_')[0]
                 propName = partProp.split('_')[1]
 
-                # Locate the Mesh Domains section to find which parts have which materials
+                # Locate the Mesh Domains section to find which part have which materials
                 meshDomains = root.find('MeshDomains')
                 for domain in meshDomains:
                     if domain.attrib['name'] == partName:
@@ -148,9 +148,13 @@ def updateProperties(origFile, fileTemp):
                                 newValue = float(mat.find(propName).text) * float(current_run_dict[partProp])
                                 mat.find(propName).text = str(newValue)
 
+    print("length of extract: ", len(extract_points))
+    print("length of deformed: ", len(deformed_points_list))
+
     newInputFile = Results_Folder + '\\' + fileTemp + '.feb'
-    IOfunctions.replace_node_in_feb_file(newInputFile, "Object1", deformed_points_list)
     tree.write(newInputFile, xml_declaration=True, encoding='ISO-8859-1')
+    IOfunctions.replace_node_in_feb_file(newInputFile, part, deformed_points_list)
+
 
     return newInputFile
 
