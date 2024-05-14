@@ -38,6 +38,7 @@ part_list = ['Object1', 'Object2', 'Object7']
 first_int_file_flag = False
 final_csv_flag = False
 GENERATE_INTERMEDIATE_FLAG = True
+print_Log_File_Flag = True
 
 #Have the default material variables be 1 (100%) so they do not change if no variable is given
 #TODO: Update Everytime you want to change your base file
@@ -83,7 +84,21 @@ def updateProperties(origFile, fileTemp):
     #extract_points = IOfunctions.extract_coordinates_list_from_feb(originalFebFilePath, object_list[0])
 
     for partProp in current_run_dict.keys():
-        if "Pressure" in partProp:
+        # TODO: Update material property values
+        if "Part" in partProp:
+            # if it is not above names then it is a part
+            partName = partProp.split('_')[0]
+            propName = partProp.split('_')[1]
+
+            # Locate the Mesh Domains section to find which part have which materials
+            meshDomains = root.find('MeshDomains')
+            for domain in meshDomains:
+                if domain.attrib['name'] == partName:
+                    for mat in tree.find('Material'):
+                        if mat.attrib['name'] == domain.attrib['mat']:
+                            newValue = float(mat.find(propName).text) * float(current_run_dict[partProp])
+                            mat.find(propName).text = str(newValue)
+        elif "Pressure" in partProp:
             loads = root.find('Loads')
             for surface_load in loads:
                 pressure = surface_load.find('pressure')
@@ -101,7 +116,6 @@ def updateProperties(origFile, fileTemp):
             initial_controlpoints = PointsExtractionTesting.determineRadiiFromFEB(extract_points)
             # Generate Cylinder2 points using given Inner & Outer Radius from "feb_variables.csv"
             final_controlpoints = PointsExtractionTesting.generate_annular_cylinder_points(inner_radius, outer_radius, cylinder_height, num_cylinder_points)
-
 
             # Enter the name of surface you would like to get id's from and it will parse the id's and append the coords
             # from those nodes to initial and final cp for rbf
@@ -126,28 +140,9 @@ def updateProperties(origFile, fileTemp):
                 deformed_points_list.append(list(tuple))
 
             #TODO: BEGIN LOOP ON PARTS
-            #for part in part_list:
             tree.write(newInputFile, xml_declaration=True, encoding='ISO-8859-1')
             IOfunctions.replace_node_in_feb_file(newInputFile, object_list[0], deformed_points_list)
 
-        #TODO: Update material property values
-        else:
-            # if it is not above names then it is a part
-            partName = partProp.split('_')[0]
-            propName = partProp.split('_')[1]
-
-            # Locate the Mesh Domains section to find which part have which materials
-            meshDomains = root.find('MeshDomains')
-            for domain in meshDomains:
-                if domain.attrib['name'] == partName:
-                    for mat in tree.find('Material'):
-                        if mat.attrib['name'] == domain.attrib['mat']:
-                            newValue = float(mat.find(propName).text) * float(current_run_dict[partProp])
-                            mat.find(propName).text = str(newValue)
-    #
-    #
-    #
-    #
 
     # TODO: *********************************************UNDER CONSTRUCTION ********************************************
     # for part in part_list:
@@ -285,7 +280,9 @@ for row in DOE_dict:
 
     #TODO: CHANGE NODES FOR CYLINDER HERE
 
-    RunFEBinFeBio(workingInputFileName, FeBioLocation, logFile)
+    # Print Log file when flag is true
+    if print_Log_File_Flag:
+        RunFEBinFeBio(workingInputFileName, FeBioLocation, logFile)
 
     # Check for success of the feb run
     if new_check_normal_run(logFile):

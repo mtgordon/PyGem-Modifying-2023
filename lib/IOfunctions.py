@@ -1649,24 +1649,20 @@ def replace_node_in_feb_file(file_name, nodes_name, coordinates_list):
     # Read the existing FEBio file
     tree = ET.parse(file_name)
     root = tree.getroot()
-    print(coordinates_list)
 
     # We want i = part_names's first node id value
     # Get the id of the first node element under the specified object
     first_node_element = root.find('.//Nodes[@name="{}"]/node'.format(nodes_name))
-    print("part nodes name: ", nodes_name)
-    print("first node element: ", first_node_element)
+    # print("part nodes name: ", nodes_name)
+    # print("first node element: ", first_node_element)
 
     if first_node_element is not None:
         first_node_id = first_node_element.get('id')
-        print("This should be id num:", first_node_id)
     else:
         print("No node found for the specified name.")
 
     # Find the 'Mesh' element
     mesh_element = root.find('Mesh')
-
-    print("mesh element: ", mesh_element)
 
     if mesh_element is not None:
         # Find the index of the 'Nodes' element with the specified 'name' attribute
@@ -1690,18 +1686,14 @@ def replace_node_in_feb_file(file_name, nodes_name, coordinates_list):
             for idx, coordinates in enumerate(coordinates_list, start=int(first_node_id)):
 #            for i, coordinates in enumerate(coordinates_list):
                 node_element = ET.SubElement(new_nodes_element, 'node')
-                print(str(idx))
-                print(coordinates)
                 node_element.set('id', str(idx))
 #                node_element.set('id', str(i+1))
                 coordinates_text = f"{coordinates[0]}, {coordinates[1]}, {coordinates[2]}"
-                print(coordinates_text)
                 node_element.text = coordinates_text
                 node_element.tail = "\n\t\t\t"
 
             new_nodes_element[-1].tail = "\n\t\t"
             mesh_element.insert(index, new_nodes_element)
-            print("WRITE THE COORDINATES")
             tree.write(file_name, encoding='utf-8', xml_declaration=True)
 
 
