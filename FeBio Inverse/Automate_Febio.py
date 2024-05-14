@@ -80,81 +80,151 @@ def updateProperties(origFile, fileTemp):
     # Parse original FEB file
     tree = ET.parse(origFile)
     root = tree.getroot()
-    #extract_points = IOfunctions.extract_coordinates_list_from_feb(originalFebFilePath, part)
+    #extract_points = IOfunctions.extract_coordinates_list_from_feb(originalFebFilePath, object_list[0])
 
-    for part in part_list:
+    for partProp in current_run_dict.keys():
+        if "Pressure" in partProp:
+            loads = root.find('Loads')
+            for surface_load in loads:
+                pressure = surface_load.find('pressure')
+                pressure.text = str(current_run_dict["Pressure"])
+        elif "Inner_Radius" in partProp:
+            # Assign inner_radius value from "feb_variables.csv"
+            inner_radius = float(current_run_dict["Inner_Radius"])
 
-        # Go through each element which is within the csv
-        for partProp in current_run_dict.keys():
-
-
-
-            # Replace Pressure Value in .feb file with selected value from "feb_variables.csv"
-            if "Pressure" in partProp:
-                loads = root.find('Loads')
-                for surface_load in loads:
-                    pressure = surface_load.find('pressure')
-                    pressure.text = str(current_run_dict["Pressure"])
-
-            elif "Inner_Radius" in partProp:
-                # Assign inner_radius value from "feb_variables.csv"
-                inner_radius = float(current_run_dict["Inner_Radius"])
-
-            elif "Outer_Radius" in partProp:
-                # Assign outer_radius value from "feb_variables.csv"
-                outer_radius = float(current_run_dict["Outer_Radius"])
-                # Extract points from .feb file and return in array of tuples
-                extract_points = IOfunctions.extract_coordinates_list_from_feb(originalFebFilePath, part)
-                # Assign initial_controlpoints extract_points
-                initial_controlpoints = PointsExtractionTesting.determineRadiiFromFEB(extract_points)
-                # Generate Cylinder2 points using given Inner & Outer Radius from "feb_variables.csv"
-                final_controlpoints = PointsExtractionTesting.generate_annular_cylinder_points(inner_radius, outer_radius, cylinder_height, num_cylinder_points)
+        elif "Outer_Radius" in partProp:
+            # Assign outer_radius value from "feb_variables.csv"
+            outer_radius = float(current_run_dict["Outer_Radius"])
+            # Extract points from .feb file and return in array of tuples
+            extract_points = IOfunctions.extract_coordinates_list_from_feb(originalFebFilePath, object_list[0])
+            # Assign initial_controlpoints extract_points
+            initial_controlpoints = PointsExtractionTesting.determineRadiiFromFEB(extract_points)
+            # Generate Cylinder2 points using given Inner & Outer Radius from "feb_variables.csv"
+            final_controlpoints = PointsExtractionTesting.generate_annular_cylinder_points(inner_radius, outer_radius, cylinder_height, num_cylinder_points)
 
 
-                # Enter the name of surface you would like to get id's from and it will parse the id's and append the coords
-                # from those nodes to initial and final cp for rbf
-                coordinatesarray = PointsExtractionTesting.extractCoordinatesFromSurfaceName(root, "ZeroDisplacement1", initial_controlpoints, final_controlpoints)
-                coordinatesarray = np.array(coordinatesarray)
+            # Enter the name of surface you would like to get id's from and it will parse the id's and append the coords
+            # from those nodes to initial and final cp for rbf
+            coordinatesarray = PointsExtractionTesting.extractCoordinatesFromSurfaceName(root, "ZeroDisplacement1", initial_controlpoints, final_controlpoints)
+            coordinatesarray = np.array(coordinatesarray)
 
-                initial_controlpoints = np.concatenate((initial_controlpoints, coordinatesarray))
-                final_controlpoints = np.concatenate((final_controlpoints, coordinatesarray))
-                #print(final_controlpoints)
+            initial_controlpoints = np.concatenate((initial_controlpoints, coordinatesarray))
+            final_controlpoints = np.concatenate((final_controlpoints, coordinatesarray))
+            #print(final_controlpoints)
 
-                # Use RBF to find differences between both cylinders
-                rbf = RBF(initial_controlpoints, final_controlpoints, func='thin_plate_spline')
-                # Convert extract_points to np array to use rbf to get deformed_points
-                extract_points = np.array(extract_points)
-                # Call rbf to return deformed points given extract_points
-                deformed_points = rbf(extract_points)
-                #PointsExtractionTesting.plot_3d_points([initial_controlpoints, final_controlpoints])
+            # Use RBF to find differences between both cylinders
+            rbf = RBF(initial_controlpoints, final_controlpoints, func='thin_plate_spline')
+            # Convert extract_points to np array to use rbf to get deformed_points
+            extract_points = np.array(extract_points)
+            # Call rbf to return deformed points given extract_points
+            deformed_points = rbf(extract_points)
+            #PointsExtractionTesting.plot_3d_points([initial_controlpoints, final_controlpoints])
 
-                # Convert Array to tuples to 2D array to use "replace_node_in_feb_file" function
-                deformed_points_list = []
-                for tuple in deformed_points:
-                    deformed_points_list.append(list(tuple))
+            # Convert Array to tuples to 2D array to use "replace_node_in_feb_file" function
+            deformed_points_list = []
+            for tuple in deformed_points:
+                deformed_points_list.append(list(tuple))
 
+            #TODO: BEGIN LOOP ON PARTS
+            #for part in part_list:
+            tree.write(newInputFile, xml_declaration=True, encoding='ISO-8859-1')
+            IOfunctions.replace_node_in_feb_file(newInputFile, object_list[0], deformed_points_list)
 
-            else:
-                # if it is not above names then it is a part
-                partName = partProp.split('_')[0]
-                propName = partProp.split('_')[1]
+        #TODO: Update material property values
+        else:
+            # if it is not above names then it is a part
+            partName = partProp.split('_')[0]
+            propName = partProp.split('_')[1]
 
-                # Locate the Mesh Domains section to find which part have which materials
-                meshDomains = root.find('MeshDomains')
-                for domain in meshDomains:
-                    if domain.attrib['name'] == partName:
-                        for mat in tree.find('Material'):
-                            if mat.attrib['name'] == domain.attrib['mat']:
-                                newValue = float(mat.find(propName).text) * float(current_run_dict[partProp])
-                                mat.find(propName).text = str(newValue)
+            # Locate the Mesh Domains section to find which part have which materials
+            meshDomains = root.find('MeshDomains')
+            for domain in meshDomains:
+                if domain.attrib['name'] == partName:
+                    for mat in tree.find('Material'):
+                        if mat.attrib['name'] == domain.attrib['mat']:
+                            newValue = float(mat.find(propName).text) * float(current_run_dict[partProp])
+                            mat.find(propName).text = str(newValue)
+    #
+    #
+    #
+    #
 
-    print("length of extract: ", len(extract_points))
-    print("length of deformed: ", len(deformed_points_list))
-
-    newInputFile = Results_Folder + '\\' + fileTemp + '.feb'
-    tree.write(newInputFile, xml_declaration=True, encoding='ISO-8859-1')
-    IOfunctions.replace_node_in_feb_file(newInputFile, part, deformed_points_list)
-
+    # TODO: *********************************************UNDER CONSTRUCTION ********************************************
+    # for part in part_list:
+    #
+    #     # Go through each element which is within the csv
+    #     for partProp in current_run_dict.keys():
+    #
+    #         # Replace Pressure Value in .feb file with selected value from "feb_variables.csv"
+    #         if "Pressure" in partProp:
+    #             loads = root.find('Loads')
+    #             for surface_load in loads:
+    #                 pressure = surface_load.find('pressure')
+    #                 pressure.text = str(current_run_dict["Pressure"])
+    #
+    #         elif "Inner_Radius" in partProp:
+    #             # Assign inner_radius value from "feb_variables.csv"
+    #             inner_radius = float(current_run_dict["Inner_Radius"])
+    #
+    #         elif "Outer_Radius" in partProp:
+    #             # Assign outer_radius value from "feb_variables.csv"
+    #             outer_radius = float(current_run_dict["Outer_Radius"])
+    #             # Extract points from .feb file and return in array of tuples
+    #             extract_points = IOfunctions.extract_coordinates_list_from_feb(originalFebFilePath, 'Object8')
+    #             # Assign initial_controlpoints extract_points
+    #             initial_controlpoints = PointsExtractionTesting.determineRadiiFromFEB(extract_points)
+    #             # Generate Cylinder2 points using given Inner & Outer Radius from "feb_variables.csv"
+    #             final_controlpoints = PointsExtractionTesting.generate_annular_cylinder_points(inner_radius,
+    #                                                                                            outer_radius,
+    #                                                                                            cylinder_height,
+    #                                                                                            num_cylinder_points)
+    #
+    #             # Enter the name of surface you would like to get id's from and it will parse the id's and append the coords
+    #             # from those nodes to initial and final cp for rbf
+    #             coordinatesarray = PointsExtractionTesting.extractCoordinatesFromSurfaceName(root, "ZeroDisplacement1",
+    #                                                                                          initial_controlpoints,
+    #                                                                                          final_controlpoints)
+    #             coordinatesarray = np.array(coordinatesarray)
+    #
+    #             initial_controlpoints = np.concatenate((initial_controlpoints, coordinatesarray))
+    #             final_controlpoints = np.concatenate((final_controlpoints, coordinatesarray))
+    #             # print(final_controlpoints)
+    #
+    #             # Use RBF to find differences between both cylinders
+    #             rbf = RBF(initial_controlpoints, final_controlpoints, func='thin_plate_spline')
+    #             # Convert extract_points to np array to use rbf to get deformed_points
+    #             extract_points = np.array(extract_points)
+    #             # Call rbf to return deformed points given extract_points
+    #             deformed_points = rbf(extract_points)
+    #             # PointsExtractionTesting.plot_3d_points([initial_controlpoints, final_controlpoints])
+    #
+    #             # Convert Array to tuples to 2D array to use "replace_node_in_feb_file" function
+    #             deformed_points_list = []
+    #             for tuple in deformed_points:
+    #                 deformed_points_list.append(list(tuple))
+    #
+    #
+    #         else:
+    #             # if it is not above names then it is a part
+    #             partName = partProp.split('_')[0]
+    #             propName = partProp.split('_')[1]
+    #
+    #             # Locate the Mesh Domains section to find which part have which materials
+    #             meshDomains = root.find('MeshDomains')
+    #             for domain in meshDomains:
+    #                 if domain.attrib['name'] == partName:
+    #                     for mat in tree.find('Material'):
+    #                         if mat.attrib['name'] == domain.attrib['mat']:
+    #                             newValue = float(mat.find(propName).text) * float(current_run_dict[partProp])
+    #                             mat.find(propName).text = str(newValue)
+    #
+    # print("length of extract: ", len(extract_points))
+    # print("length of deformed: ", len(deformed_points_list))
+    #
+    # newInputFile = Results_Folder + '\\' + fileTemp + '.feb'
+    # tree.write(newInputFile, xml_declaration=True, encoding='ISO-8859-1')
+    # IOfunctions.replace_node_in_feb_file(newInputFile, "Object8", deformed_points_list)
+    #TODO: *********************************************UNDER CONSTRUCTION ********************************************
 
     return newInputFile
 
