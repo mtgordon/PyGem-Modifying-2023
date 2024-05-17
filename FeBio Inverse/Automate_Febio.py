@@ -32,7 +32,7 @@ Results_Folder = 'D:\\Gordon\\Automate FEB Runs\\2024_5_9_NewModel\\RUNNING_FOLD
 object_list = ['Object8'] #TODO: Get new names for flat, curve, GI Filler --> DONE
 # Currently being used to access base object, may need to be changed when looking to generate multiple objects at once
 #part_list = ['Object7', "Object9"]
-part_list = ['Object1', 'Object2', 'Object7']
+part_list = ['Part1', 'Part7']
 
 # FLAGS
 Create_New_Feb_Flag = True
@@ -78,13 +78,14 @@ then saves a new input file with the name relating to the changed part (part, pr
 Update 4/29: Can now take in Pressure, Inner & Outer Radius for generating 3D Cylinders 
 '''
 def updateProperties(origFile, fileTemp):
-
+    newInputFile = Results_Folder + '\\' + fileTemp + '.feb'
     # Parse original FEB file
     tree = ET.parse(origFile)
     root = tree.getroot()
     #extract_points = IOfunctions.extract_coordinates_list_from_feb(originalFebFilePath, object_list[0])
 
     for partProp in current_run_dict.keys():
+
         # TODO: Update material property values
         if "Part" in partProp:
             # if it is not above names then it is a part
@@ -115,6 +116,7 @@ def updateProperties(origFile, fileTemp):
             outer_radius = float(current_run_dict["Outer_Radius"])
             # Extract points from .feb file and return in array of tuples
             extract_points = IOfunctions.extract_coordinates_list_from_feb(originalFebFilePath, object_list[0])
+            #print("EXTRACTPOINTS: ", extract_points)
             # Assign initial_controlpoints extract_points
             initial_controlpoints = PointsExtractionTesting.determineRadiiFromFEB(extract_points)
             # Generate Cylinder2 points using given Inner & Outer Radius from "feb_variables.csv"
@@ -122,7 +124,7 @@ def updateProperties(origFile, fileTemp):
 
             # Enter the name of surface you would like to get id's from and it will parse the id's and append the coords
             # from those nodes to initial and final cp for rbf
-            coordinatesarray = PointsExtractionTesting.extractCoordinatesFromSurfaceName(root, "ZeroDisplacement1", initial_controlpoints, final_controlpoints)
+            coordinatesarray = PointsExtractionTesting.extractCoordinatesFromSurfaceName(root, "ZeroDisplacement1")
             coordinatesarray = np.array(coordinatesarray)
 
             initial_controlpoints = np.concatenate((initial_controlpoints, coordinatesarray))
@@ -139,13 +141,20 @@ def updateProperties(origFile, fileTemp):
 
             # Convert Array to tuples to 2D array to use "replace_node_in_feb_file" function
             deformed_points_list = []
-            for tuple in deformed_points:
-                deformed_points_list.append(list(tuple))
+            for i, coords in enumerate(deformed_points, start=1):
+                deformed_points_list.append([i, list(coords)])
 
-            #TODO: BEGIN LOOP ON PARTS
-            newInputFile = Results_Folder + '\\' + fileTemp + '.feb'
-            tree.write(newInputFile, xml_declaration=True, encoding='ISO-8859-1')
-            IOfunctions.replace_node_in_feb_file(newInputFile, object_list[0], deformed_points_list)
+            deformed_parts = []
+            for partname in part_list:
+                deformed_parts.extend(PointsExtractionTesting.extractCoordinatesFromPart(root, partname))
+
+            #TODO: REPLACE NODES
+            PointsExtractionTesting.replaceCoordinatesGivenNodeId(newInputFile, deformed_parts)
+
+            # IOfunctions.replace_node_in_feb_file(newInputFile, object_list[0], deformed_parts)
+
+    # Write the updated tree to the new FEB file
+    tree.write(newInputFile, xml_declaration=True, encoding='ISO-8859-1')
 
     return newInputFile
 
