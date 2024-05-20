@@ -158,7 +158,7 @@ for tuple in deformed_points:
 IOfunctions.replace_node_in_new_feb_file(febio_file_name, node_name, "extract_cylinder.feb", deformed_points_list)
 
 #TODO: ************************************** Under Construction ******************************************************
-def extractCoordinatesFromPart(root, partname):
+def extractCoordinatesFromPart(root, partname, deformed_points_list):
     elements = root.find('.//Elements[@type="hex8"][@name="{}"]'.format(partname))
     elem_ids_set = set()
     coordinatesarray = []
@@ -171,10 +171,8 @@ def extractCoordinatesFromPart(root, partname):
         for elem in elem_elements:
             # Extract the text content containing the numbers
             numbers_text = elem.text.strip()
-
             # Convert text to list of integers
             elem_ids = [int(num.strip()) for num in numbers_text.split(',')]
-
             # Add the elem IDs to the set
             elem_ids_set.update(elem_ids)
 
@@ -185,43 +183,39 @@ def extractCoordinatesFromPart(root, partname):
         # Check if the current node ID is in the set of quad IDs
         if current_node_id in elem_ids_set:
             current = []
-            # Extract the inner text of the current node containing coordinates
             inner_text = node.text.strip()
 
-            # Convert coordinates text to list of floats
-            coordinates = [float(coord) for coord in inner_text.split(',')]
+            # Find the coordinates from deformed_points_list using current_node_id
+            for item in deformed_points_list:
+                if item[0] == current_node_id:
+                    coordinates = item[1]  # Extract coordinates from deformed_points_list
 
-            # Append coordinates to initial and final control points arrays
-            current.append(current_node_id)
-            current.append(coordinates)
-            coordinatesarray.append(current)
+                    # Append coordinates to current
+                    current.append(current_node_id)
+                    current.append(coordinates)
+                    coordinatesarray.append(current)
 
     return coordinatesarray
 
-def replaceCoordinatesGivenNodeId(file_name, coordinates):
-    tree = ET.parse(file_name)
-    root = tree.getroot()
 
-    for coordinatesincoordsarray in coordinates:
-        updates_dict = {coordinatesincoordsarray[0]: coordinatesincoordsarray[1]}
 
-        # Iterate over all node elements in the XML
-        for node in root.findall('.//Nodes/node'):
-            # Get the id of the current node
-            node_id = int(node.get('id'))
+def replaceCoordinatesGivenNodeId(root, coordinates):
 
-            # Check if this node id is in the updates
-            if node_id in updates_dict:
-                # Get the new coordinates for this node
-                new_coords = updates_dict[node_id]
+    updates_dict = {node_id: coords for node_id, coords in coordinates}
+    # Iterate over all node elements in the XML
+    for node in root.findall('.//Nodes/node'):
+        # Get the id of the current node
+        node_id = int(node.get('id'))
 
-                # Update the text of the node with the new coordinates
-                node.text = ','.join(map(str, new_coords))
+        # Check if this node id is in the updates
+        if node_id in updates_dict:
+            # Get the new coordinates for this node
+            new_coords = updates_dict[node_id]
 
-                tree.write(file_name, encoding='utf-8', xml_declaration=True)
+            # Update the text of the node with the new coordinates
+            node.text = ','.join(map(str, new_coords))
 
-    tree.write(file_name, encoding='utf-8', xml_declaration=True)
-
+# Devinn Function
 def replace_specific_nodes(file_name, modified_coordinates_list):
     tree = ET.parse(file_name)
     root = tree.getroot()

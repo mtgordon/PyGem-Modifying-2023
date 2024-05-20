@@ -27,12 +27,12 @@ import PointsExtractionTesting
 dictionary_file = 'feb_variables.csv' #DONE
 FeBioLocation = 'C:\\Program Files\\FEBioStudio2\\bin\\febio4.exe'
 originalFebFilePath = 'D:\\Gordon\\Automate FEB Runs\\2024_5_9_NewModel\\Base_File\\3 Tissue Model v6.feb' #DONE
-Results_Folder = 'D:\\Gordon\\Automate FEB Runs\\2024_5_9_NewModel\\RUNNING_FOLDER_5.14' #DONE
+Results_Folder = 'D:\\Gordon\\Automate FEB Runs\\2024_5_9_NewModel\\Test_Folder_5.20' #DONE
 # This is for output
 object_list = ['Object8'] #TODO: Get new names for flat, curve, GI Filler --> DONE
 # Currently being used to access base object, may need to be changed when looking to generate multiple objects at once
 #part_list = ['Object7', "Object9"]
-part_list = ['Part1', 'Part7']
+part_list = ['Part1', 'Part7', 'Part8']
 
 # FLAGS
 Create_New_Feb_Flag = True
@@ -48,7 +48,7 @@ default_dict = {
     'Part2_E': 1,
     'Part5_E': 1,
     'Part7_E': 1,
-    'Part9_E': 1,
+    'Part8_E': 1,
     'Pressure': 0,
     'Inner_Radius': 1,
     'Outer_Radius': 2
@@ -146,10 +146,10 @@ def updateProperties(origFile, fileTemp):
 
             deformed_parts = []
             for partname in part_list:
-                deformed_parts.extend(PointsExtractionTesting.extractCoordinatesFromPart(root, partname))
+                deformed_parts.extend(PointsExtractionTesting.extractCoordinatesFromPart(root, partname, deformed_points_list))
 
-            #TODO: REPLACE NODES
-            PointsExtractionTesting.replaceCoordinatesGivenNodeId(newInputFile, deformed_parts)
+            #TODO: REPLACE NODES from original file
+            PointsExtractionTesting.replaceCoordinatesGivenNodeId(root, deformed_parts)
 
             # IOfunctions.replace_node_in_feb_file(newInputFile, object_list[0], deformed_parts)
 
