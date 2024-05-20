@@ -16,10 +16,10 @@ import re
 import time
 import PCA_data
 from lib import IOfunctions
-import PointsExtractionTesting
+import CylinderFunctions
 from pygem import RBF
 import numpy as np
-import PointsExtractionTesting
+import CylinderFunctions
 
 
 # FeBio Variables
@@ -55,7 +55,7 @@ default_dict = {
 }
 
 #TODO: Input Parameters for Cylinder Creation
-cylinder_height = PointsExtractionTesting.findLargestZ()
+cylinder_height = CylinderFunctions.findLargestZ()
 num_cylinder_points = 200
 
 '''
@@ -118,13 +118,13 @@ def updateProperties(origFile, fileTemp):
             extract_points = IOfunctions.extract_coordinates_list_from_feb(originalFebFilePath, object_list[0])
             #print("EXTRACTPOINTS: ", extract_points)
             # Assign initial_controlpoints extract_points
-            initial_controlpoints = PointsExtractionTesting.determineRadiiFromFEB(extract_points)
+            initial_controlpoints = CylinderFunctions.determineRadiiFromFEB(extract_points)
             # Generate Cylinder2 points using given Inner & Outer Radius from "feb_variables.csv"
-            final_controlpoints = PointsExtractionTesting.generate_annular_cylinder_points(inner_radius, outer_radius, cylinder_height, num_cylinder_points)
+            final_controlpoints = CylinderFunctions.generate_annular_cylinder_points(inner_radius, outer_radius, cylinder_height, num_cylinder_points)
 
             # Enter the name of surface you would like to get id's from and it will parse the id's and append the coords
             # from those nodes to initial and final cp for rbf
-            coordinatesarray = PointsExtractionTesting.extractCoordinatesFromSurfaceName(root, "ZeroDisplacement1")
+            coordinatesarray = CylinderFunctions.extractCoordinatesFromSurfaceName(root, "ZeroDisplacement1")
             coordinatesarray = np.array(coordinatesarray)
 
             initial_controlpoints = np.concatenate((initial_controlpoints, coordinatesarray))
@@ -137,7 +137,7 @@ def updateProperties(origFile, fileTemp):
             extract_points = np.array(extract_points)
             # Call rbf to return deformed points given extract_points
             deformed_points = rbf(extract_points)
-            #PointsExtractionTesting.plot_3d_points([initial_controlpoints, final_controlpoints])
+            #CylinderFunctions.plot_3d_points([initial_controlpoints, final_controlpoints])
 
             # Convert Array to tuples to 2D array to use "replace_node_in_feb_file" function
             deformed_points_list = []
@@ -146,10 +146,10 @@ def updateProperties(origFile, fileTemp):
 
             deformed_parts = []
             for partname in part_list:
-                deformed_parts.extend(PointsExtractionTesting.extractCoordinatesFromPart(root, partname, deformed_points_list))
+                deformed_parts.extend(CylinderFunctions.extractCoordinatesFromPart(root, partname, deformed_points_list))
 
             #TODO: REPLACE NODES from original file
-            PointsExtractionTesting.replaceCoordinatesGivenNodeId(root, deformed_parts)
+            CylinderFunctions.replaceCoordinatesGivenNodeId(root, deformed_parts)
 
             # IOfunctions.replace_node_in_feb_file(newInputFile, object_list[0], deformed_parts)
 

@@ -8,7 +8,7 @@ import PCA_data
 import os
 import predict_functions as pf
 import matplotlib.pyplot as plt
-import PointsExtractionTesting
+import CylinderFunctions
 import numpy as np
 from math import hypot
 from scipy import interpolate
