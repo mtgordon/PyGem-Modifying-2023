@@ -9,6 +9,7 @@ from lib import IOfunctions
 import numpy as np
 import math
 from pygem import RBF
+import xml.etree.ElementTree as ET
 
 
 febio_file_name = "D:\\Gordon\\Automate FEB Runs\\2024_4_29 auto\\Base File\\Basic_Cylinder_Pressure.feb"
@@ -156,6 +157,83 @@ for tuple in deformed_points:
 # print(extract_points)
 IOfunctions.replace_node_in_new_feb_file(febio_file_name, node_name, "extract_cylinder.feb", deformed_points_list)
 
+#TODO: ************************************** Under Construction ******************************************************
+def extractCoordinatesFromPart(root, partname):
+    elements = root.find('.//Elements[@type="hex8"][@name="{}"]'.format(partname))
+    elem_ids_set = set()
+    coordinatesarray = []
+
+    if elements is not None:  # Check if the Elements tag is found
+        # Find all elem elements within the Elements
+        elem_elements = elements.findall('elem')
+
+        # Iterate over each elem element
+        for elem in elem_elements:
+            # Extract the text content containing the numbers
+            numbers_text = elem.text.strip()
+
+            # Convert text to list of integers
+            elem_ids = [int(num.strip()) for num in numbers_text.split(',')]
+
+            # Add the elem IDs to the set
+            elem_ids_set.update(elem_ids)
+
+    for node in root.findall('.//Nodes/node'):
+        # Get the ID of the current node
+        current_node_id = int(node.get('id'))
+
+        # Check if the current node ID is in the set of quad IDs
+        if current_node_id in elem_ids_set:
+            current = []
+            # Extract the inner text of the current node containing coordinates
+            inner_text = node.text.strip()
+
+            # Convert coordinates text to list of floats
+            coordinates = [float(coord) for coord in inner_text.split(',')]
+
+            # Append coordinates to initial and final control points arrays
+            current.append(current_node_id)
+            current.append(coordinates)
+            coordinatesarray.append(current)
+
+    return coordinatesarray
+
+def replaceCoordinatesGivenNodeId(file_name, coordinates):
+    tree = ET.parse(file_name)
+    root = tree.getroot()
+
+    for coordinatesincoordsarray in coordinates:
+        updates_dict = {coordinatesincoordsarray[0]: coordinatesincoordsarray[1]}
+
+        # Iterate over all node elements in the XML
+        for node in root.findall('.//Nodes/node'):
+            # Get the id of the current node
+            node_id = int(node.get('id'))
+
+            # Check if this node id is in the updates
+            if node_id in updates_dict:
+                # Get the new coordinates for this node
+                new_coords = updates_dict[node_id]
+
+                # Update the text of the node with the new coordinates
+                node.text = ','.join(map(str, new_coords))
+
+                tree.write(file_name, encoding='utf-8', xml_declaration=True)
+
+    tree.write(file_name, encoding='utf-8', xml_declaration=True)
+
+def replace_specific_nodes(file_name, modified_coordinates_list):
+    tree = ET.parse(file_name)
+    root = tree.getroot()
+    for nodes in root.findall('.//Nodes'):
+        for node in nodes.findall('node'):
+            node_id = int(node.attrib['id'])
+            if node_id in modified_coordinates_list:
+                coordinates = ','.join(map(str, modified_coordinates_list[node_id]))
+                node.text = coordinates
+    tree.write(file_name, encoding='utf-8', xml_declaration=True)
+
+#TODO: ********************************************** Under Construction **********************************************
 """
 Extracts coordinates from a surface with a given name and updates the initial and final control points.
 
@@ -168,7 +246,7 @@ Parameters:
 Returns:
     None
 """
-def extractCoordinatesFromSurfaceName(root, surface_name, initial_controlpoints, final_controlpoints):
+def extractCoordinatesFromSurfaceName(root, surface_name):
 
     # Set to store quad IDs
     quad_ids_set = set()
@@ -207,7 +285,5 @@ def extractCoordinatesFromSurfaceName(root, surface_name, initial_controlpoints,
 
                 # Append coordinates to initial and final control points arrays
                 coordinatesarray.append(coordinates)
-                # np.append(initial_controlpoints, coordinates)
-                # np.append(final_controlpoints, coordinates)
 
         return coordinatesarray
