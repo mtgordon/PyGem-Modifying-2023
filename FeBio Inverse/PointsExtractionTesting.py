@@ -157,8 +157,39 @@ for tuple in deformed_points:
 # print(extract_points)
 IOfunctions.replace_node_in_new_feb_file(febio_file_name, node_name, "extract_cylinder.feb", deformed_points_list)
 
-#TODO: ************************************** Under Construction ******************************************************
 def extractCoordinatesFromPart(root, partname, deformed_points_list):
+    """
+        Extracts coordinates of nodes belonging to a specific part from an XML representation.
+
+        Parameters:
+            root (ElementTree.Element): The root element of the XML representing the finite element model.
+            partname (str): The name of the part from which coordinates need to be extracted.
+            deformed_points_list (list): A list of tuples [(node_id, coordinates), ...] containing node IDs and their
+            corresponding coordinates.
+
+        Returns:
+            list: A list of lists containing node IDs and their corresponding coordinates, e.g.,
+                                                            [[node_id1, (x1, y1, z1)], [node_id2, (x2, y2, z2)], ...].
+
+        Description:
+            This function searches for the elements representing hexahedral finite elements of the specified 'partname'
+            in the XML structure.
+            It then iterates through each element to extract the node IDs associated with them.
+            After that, it looks for nodes in the XML structure and checks if their IDs match with the extracted node
+            IDs.
+            If a match is found, it retrieves the coordinates from the 'deformed_points_list' and adds them to the
+            output list.
+            The function finally returns a list containing the node IDs and their corresponding coordinates for
+            the specified part.
+
+        Note:
+            - The function assumes the XML structure contains elements representing finite elements with
+             hexahedral (hex8) type.
+            - It also assumes that the XML structure includes node elements with IDs corresponding to those specified
+             in the element definitions.
+            - The 'deformed_points_list' should contain tuples of node IDs and their coordinates.
+        """
+
     elements = root.find('.//Elements[@type="hex8"][@name="{}"]'.format(partname))
     elem_ids_set = set()
     coordinatesarray = []
@@ -200,6 +231,37 @@ def extractCoordinatesFromPart(root, partname, deformed_points_list):
 
 
 def replaceCoordinatesGivenNodeId(root, coordinates):
+    """
+        Replaces the coordinates of a specific 'Nodes' element in an FEBio file with new coordinates.
+
+        Parameters:
+            file_name (str): The name of the FEBio file.
+            nodes_name (str): The name of the 'Nodes' element to replace.
+            coordinates_list (list): A list of coordinate tuples [(x1, y1, z1), (x2, y2, z2), ...] for the new coordinates.
+
+        Returns:
+            None
+
+        Description:
+            This function reads the FEBio file specified by 'file_name' and finds the 'Mesh' element.
+            It searches for the 'Nodes' element with the specified 'name' attribute and removes it if found.
+            Then, a new 'Nodes' element is created with the same 'name' attribute, and 'node' elements are added with the new coordinates.
+            The updated XML tree is then written back to the file.
+
+            If the 'Mesh' element or the 'Nodes' element with the specified 'name' attribute is not found, an appropriate message is printed.
+
+        Example:
+            >>> file_name = "input.feb"
+            >>> node_name = "MyNodes"
+            >>> coordinates_list = [(1.0, 2.0, 3.0), (4.0, 5.0, 6.0), (7.0, 8.0, 9.0)]
+            >>> replace_node_in_feb_file(file_name, nodes_name, coordinates_list)
+
+        Note:
+            - This function assumes that the FEBio file exists and is formatted correctly as an XML file.
+            - The 'node_name' should match the 'name' attribute of the 'Nodes' element to be replaced.
+            - The 'coordinates_list' should contain coordinate tuples in the order [(x1, y1, z1), (x2, y2, z2), ...].
+            - The function modifies the FEBio file in-place and does not create a new file.
+        """
 
     updates_dict = {node_id: coords for node_id, coords in coordinates}
     # Iterate over all node elements in the XML
@@ -215,32 +277,30 @@ def replaceCoordinatesGivenNodeId(root, coordinates):
             # Update the text of the node with the new coordinates
             node.text = ','.join(map(str, new_coords))
 
-# Devinn Function
-def replace_specific_nodes(file_name, modified_coordinates_list):
-    tree = ET.parse(file_name)
-    root = tree.getroot()
-    for nodes in root.findall('.//Nodes'):
-        for node in nodes.findall('node'):
-            node_id = int(node.attrib['id'])
-            if node_id in modified_coordinates_list:
-                coordinates = ','.join(map(str, modified_coordinates_list[node_id]))
-                node.text = coordinates
-    tree.write(file_name, encoding='utf-8', xml_declaration=True)
 
-#TODO: ********************************************** Under Construction **********************************************
-"""
-Extracts coordinates from a surface with a given name and updates the initial and final control points.
 
-Parameters:
-    root (ElementTree.Element): The root element of the XML tree.
-    surface_name (str): The name of the surface to extract coordinates from.
-    initial_controlpoints (np.ndarray): Array to store initial control points.
-    final_controlpoints (np.ndarray): Array to store final control points.
-
-Returns:
-    None
-"""
 def extractCoordinatesFromSurfaceName(root, surface_name):
+    """
+        Extracts coordinates of nodes belonging to a specific surface from an XML representation.
+
+        Parameters:
+            root (ElementTree.Element): The root element of the XML representing the finite element model.
+            surface_name (str): The name of the surface from which coordinates need to be extracted.
+
+        Returns:
+            list: A list of lists containing coordinates of nodes belonging to the specified surface.
+
+        Description:
+            This function searches for the specified 'surface_name' within the XML structure.
+            It then iterates through each 'quad4' element within the surface to extract the node IDs associated with them.
+            After that, it looks for nodes in the XML structure and checks if their IDs match with the extracted node IDs.
+            If a match is found, it retrieves the coordinates and adds them to the output list.
+            The function finally returns a list containing the coordinates of nodes belonging to the specified surface.
+
+        Note:
+            - The function assumes the XML structure contains 'Surface' tags with 'quad4' elements representing surface elements.
+            - It also assumes that the XML structure includes node elements with IDs corresponding to those specified in the 'quad4' elements.
+        """
 
     # Set to store quad IDs
     quad_ids_set = set()
