@@ -83,65 +83,69 @@ def updateProperties(origFile, fileTemp):
     tree = ET.parse(origFile)
     root = tree.getroot()
 
-    for partProp in current_run_dict.keys():
+    print("current run dictionary: ", current_run_dict)
 
-        # TODO: Update material property values
-        if "Part" in partProp:
-            # if it is not above names then it is a part
-            partName = partProp.split('_')[0]
-            propName = partProp.split('_')[1]
 
-            # Locate the Mesh Domains section to find which part have which materials
-            meshDomains = root.find('MeshDomains')
-            for domain in meshDomains:
-                if domain.attrib['name'] == partName:
-                    for mat in tree.find('Material'):
-                        if mat.attrib['name'] == domain.attrib['mat']:
-                            newValue = float(mat.find(propName).text) * float(current_run_dict[partProp])
-                            mat.find(propName).text = str(newValue)
+        # Todo: ************************************* Under contruction *************************************
 
-        elif "Pressure" in partProp:
-            loads = root.find('Loads')
-            for surface_load in loads:
-                pressure = surface_load.find('pressure')
-                pressure.text = str(current_run_dict["Pressure"])
-
-        elif "Inner_Radius" in partProp:
-            # Assign inner_radius value from "feb_variables.csv"
-            inner_radius = float(current_run_dict["Inner_Radius"])
-
-        elif "Outer_Radius" in partProp:
-            # Assign outer_radius value from "feb_variables.csv"
-            outer_radius = float(current_run_dict["Outer_Radius"])
-
-            # Extract points from .feb file and return in array of tuples
-            extract_points = CylinderFunctions.get_inital_points_from_parts(root, part_list)
-
-            # Convert extract_points to a dictionary for easier manipulation
-            extract_points_dict = {point[0]: point[1] for point in extract_points}
-
-            # Extract only the coordinates for RBF
-            initial_coordinates = np.array([coords for coords in extract_points_dict.values()])
-
-            # Assign initial_controlpoints extract_points
-            initial_controlpoints = CylinderFunctions.determineRadiiFromFEB(initial_coordinates)
-            final_controlpoints = CylinderFunctions.generate_annular_cylinder_points(inner_radius, outer_radius, cylinder_height, num_cylinder_points)
-
-            # Enter the name of surface you would like to get id's from, and it will parse the id's and append the
-            # coords from those nodes to initial and final cp for rbf
-            zeroDisplacement = np.array(CylinderFunctions.extractCoordinatesFromSurfaceName(root, ZeroDisplacement))
-
-            initial_controlpoints = np.concatenate((initial_controlpoints, zeroDisplacement))
-            final_controlpoints = np.concatenate((final_controlpoints, zeroDisplacement))
-
-            # Call the new morph_points function
-            deformed_points = CylinderFunctions.morph_points(initial_controlpoints, final_controlpoints, initial_coordinates, extract_points_dict)
-
-            # Replace coordinates in the original file with the deformed points
-            CylinderFunctions.replaceCoordinatesGivenNodeId(root, deformed_points)
-
-    # Write the updated tree to the new FEB file
-    tree.write(newInputFile, xml_declaration=True, encoding='ISO-8859-1')
+    #
+    #     # TODO: Update material property values
+    #     if "Part" in partProp:
+    #         # if it is not above names then it is a part
+    #         partName = partProp.split('_')[0]
+    #         propName = partProp.split('_')[1]
+    #
+    #         # Locate the Mesh Domains section to find which part have which materials
+    #         meshDomains = root.find('MeshDomains')
+    #         for domain in meshDomains:
+    #             if domain.attrib['name'] == partName:
+    #                 for mat in tree.find('Material'):
+    #                     if mat.attrib['name'] == domain.attrib['mat']:
+    #                         newValue = float(mat.find(propName).text) * float(current_run_dict[partProp])
+    #                         mat.find(propName).text = str(newValue)
+    #
+    #     elif "Pressure" in partProp:
+    #         loads = root.find('Loads')
+    #         for surface_load in loads:
+    #             pressure = surface_load.find('pressure')
+    #             pressure.text = str(current_run_dict["Pressure"])
+    #
+    #     elif "Inner_Radius" in partProp:
+    #         # Assign inner_radius value from "feb_variables.csv"
+    #         inner_radius = float(current_run_dict["Inner_Radius"])
+    #
+    #     elif "Outer_Radius" in partProp:
+    #         # Assign outer_radius value from "feb_variables.csv"
+    #         outer_radius = float(current_run_dict["Outer_Radius"])
+    #
+    #         # Extract points from .feb file and return in array of tuples
+    #         extract_points = CylinderFunctions.get_inital_points_from_parts(root, part_list)
+    #
+    #         # Convert extract_points to a dictionary for easier manipulation
+    #         extract_points_dict = {point[0]: point[1] for point in extract_points}
+    #
+    #         # Extract only the coordinates for RBF
+    #         initial_coordinates = np.array([coords for coords in extract_points_dict.values()])
+    #
+    #         # Assign initial_controlpoints extract_points
+    #         initial_controlpoints = CylinderFunctions.determineRadiiFromFEB(initial_coordinates)
+    #         final_controlpoints = CylinderFunctions.generate_annular_cylinder_points(inner_radius, outer_radius, cylinder_height, num_cylinder_points)
+    #
+    #         # Enter the name of surface you would like to get id's from, and it will parse the id's and append the
+    #         # coords from those nodes to initial and final cp for rbf
+    #         zeroDisplacement = np.array(CylinderFunctions.extractCoordinatesFromSurfaceName(root, ZeroDisplacement))
+    #
+    #         initial_controlpoints = np.concatenate((initial_controlpoints, zeroDisplacement))
+    #         final_controlpoints = np.concatenate((final_controlpoints, zeroDisplacement))
+    #
+    #         # Call the new morph_points function
+    #         deformed_points = CylinderFunctions.morph_points(initial_controlpoints, final_controlpoints, initial_coordinates, extract_points_dict)
+    #
+    #         # Replace coordinates in the original file with the deformed points
+    #         CylinderFunctions.replaceCoordinatesGivenNodeId(root, deformed_points)
+    #
+    # # Write the updated tree to the new FEB file
+    # tree.write(newInputFile, xml_declaration=True, encoding='ISO-8859-1')
 
     return newInputFile
 
