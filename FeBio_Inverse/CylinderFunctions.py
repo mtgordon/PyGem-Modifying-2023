@@ -118,7 +118,8 @@ def determineRadiiFromFEB(extracted_points):
             outer_radius = extract_points[i][0]
 
     # create cylinder using our found inner & outer radius
-    cylinderpoints = generate_annular_cylinder_points(0.625, 1.125, height, num_points)
+    #TODO: Determine the radii for use later
+    cylinderpoints = generate_annular_cylinder_points(inner_radius, outer_radius, height, num_points)
 
     return cylinderpoints
 
@@ -307,3 +308,41 @@ def extractCoordinatesFromSurfaceName(root, surface_name):
                 coordinatesarray.append(coordinates)
 
         return coordinatesarray
+
+def get_inital_points_from_parts(root, part_list):
+    control_points = []
+
+    for part in part_list:
+        elements = root.find('.//Elements[@type="hex8"][@name="{}"]'.format(part))
+        elem_ids_set = set()
+        if elements is not None:
+            elem_elements = elements.findall('elem')
+            for elem in elem_elements:
+                numbers_text = elem.text.strip()
+                elem_ids = [int(num.strip()) for num in numbers_text.split(',')]
+                elem_ids_set.update(elem_ids)
+        for node in root.findall('.//Nodes/node'):
+            current_node_id = int(node.get('id'))
+            if current_node_id in elem_ids_set:
+                coordinates = [float(coordinate) for coordinate in node.text.split(',')]
+                control_points.append([current_node_id, coordinates])
+
+    return control_points
+
+
+
+
+
+# Define the new function for point morphing
+def morph_points(initial_controlpoints, final_controlpoints, initial_coordinates, extract_points_dict):
+
+    # Use RBF to find differences between both cylinders
+    rbf = RBF(initial_controlpoints, final_controlpoints, func='thin_plate_spline')
+
+    # Call rbf to return deformed points given extract_points
+    deformed_coordinates = rbf(initial_coordinates)
+
+    deformed_points_dict = {key: deformed_coordinates[i] for i, key in enumerate(extract_points_dict.keys())}
+    deformed_points = [[key, value] for key, value in deformed_points_dict.items()]
+
+    return deformed_points

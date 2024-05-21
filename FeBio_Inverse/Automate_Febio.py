@@ -31,8 +31,8 @@ Results_Folder = 'D:\\Gordon\\Automate FEB Runs\\2024_5_9_NewModel\\Test_Folder_
 # This is for output
 object_list = ['Object8'] #TODO: Get new names for flat, curve, GI Filler --> DONE
 # Currently being used to access base object, may need to be changed when looking to generate multiple objects at once
-#part_list = ['Object7', "Object9"]
-part_list = ['Part1', 'Part7', 'Part8']
+part_list = ['Part2', 'Part7']
+ZeroDisplacement = "ZeroDisplacement1"
 
 # FLAGS
 Create_New_Feb_Flag = True
@@ -82,7 +82,6 @@ def updateProperties(origFile, fileTemp):
     # Parse original FEB file
     tree = ET.parse(origFile)
     root = tree.getroot()
-    #extract_points = IOfunctions.extract_coordinates_list_from_feb(originalFebFilePath, object_list[0])
 
     for partProp in current_run_dict.keys():
 
@@ -114,44 +113,32 @@ def updateProperties(origFile, fileTemp):
         elif "Outer_Radius" in partProp:
             # Assign outer_radius value from "feb_variables.csv"
             outer_radius = float(current_run_dict["Outer_Radius"])
+
             # Extract points from .feb file and return in array of tuples
-            extract_points = IOfunctions.extract_coordinates_list_from_feb(originalFebFilePath, object_list[0])
-            #print("EXTRACTPOINTS: ", extract_points)
+            extract_points = CylinderFunctions.get_inital_points_from_parts(root, part_list)
+
+            # Convert extract_points to a dictionary for easier manipulation
+            extract_points_dict = {point[0]: point[1] for point in extract_points}
+
+            # Extract only the coordinates for RBF
+            initial_coordinates = np.array([coords for coords in extract_points_dict.values()])
+
             # Assign initial_controlpoints extract_points
-            initial_controlpoints = CylinderFunctions.determineRadiiFromFEB(extract_points)
-            # Generate Cylinder2 points using given Inner & Outer Radius from "feb_variables.csv"
+            initial_controlpoints = CylinderFunctions.determineRadiiFromFEB(initial_coordinates)
             final_controlpoints = CylinderFunctions.generate_annular_cylinder_points(inner_radius, outer_radius, cylinder_height, num_cylinder_points)
 
-            # Enter the name of surface you would like to get id's from and it will parse the id's and append the coords
-            # from those nodes to initial and final cp for rbf
-            coordinatesarray = CylinderFunctions.extractCoordinatesFromSurfaceName(root, "ZeroDisplacement1")
-            coordinatesarray = np.array(coordinatesarray)
+            # Enter the name of surface you would like to get id's from, and it will parse the id's and append the
+            # coords from those nodes to initial and final cp for rbf
+            zeroDisplacement = np.array(CylinderFunctions.extractCoordinatesFromSurfaceName(root, ZeroDisplacement))
 
-            initial_controlpoints = np.concatenate((initial_controlpoints, coordinatesarray))
-            final_controlpoints = np.concatenate((final_controlpoints, coordinatesarray))
-            #print(final_controlpoints)
+            initial_controlpoints = np.concatenate((initial_controlpoints, zeroDisplacement))
+            final_controlpoints = np.concatenate((final_controlpoints, zeroDisplacement))
 
-            # Use RBF to find differences between both cylinders
-            rbf = RBF(initial_controlpoints, final_controlpoints, func='thin_plate_spline')
-            # Convert extract_points to np array to use rbf to get deformed_points
-            extract_points = np.array(extract_points)
-            # Call rbf to return deformed points given extract_points
-            deformed_points = rbf(extract_points)
-            #CylinderFunctions.plot_3d_points([initial_controlpoints, final_controlpoints])
+            # Call the new morph_points function
+            deformed_points = CylinderFunctions.morph_points(initial_controlpoints, final_controlpoints, initial_coordinates, extract_points_dict)
 
-            # Convert Array to tuples to 2D array to use "replace_node_in_feb_file" function
-            deformed_points_list = []
-            for i, coords in enumerate(deformed_points, start=1):
-                deformed_points_list.append([i, list(coords)])
-
-            deformed_parts = []
-            for partname in part_list:
-                deformed_parts.extend(CylinderFunctions.extractCoordinatesFromPart(root, partname, deformed_points_list))
-
-            #TODO: REPLACE NODES from original file
-            CylinderFunctions.replaceCoordinatesGivenNodeId(root, deformed_parts)
-
-            # IOfunctions.replace_node_in_feb_file(newInputFile, object_list[0], deformed_parts)
+            # Replace coordinates in the original file with the deformed points
+            CylinderFunctions.replaceCoordinatesGivenNodeId(root, deformed_points)
 
     # Write the updated tree to the new FEB file
     tree.write(newInputFile, xml_declaration=True, encoding='ISO-8859-1')

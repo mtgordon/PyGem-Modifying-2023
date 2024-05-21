@@ -1,13 +1,14 @@
 from math import floor
-
+from pygem import RBF
 import linecache
 import numpy as np
 
 import xml.etree.ElementTree as ET
 import shutil
-
+# from FeBio_Inverse import CylinderFunctions
 from lib.Scar_Generate import get_points_below, get_points_x_from_mid
 from lib.workingWith3dDataSets import DataSet3d
+
 
 '''
 Function: openFile
@@ -1784,14 +1785,63 @@ def get_interconnections_feb(file_name, node_name):  # connections-between-mater
             break
 
     return connections
-'''
-Simple Method to return the largest Z value given a point dictionary
-'''
+
+
 def findLargestZ(point_dict):
+    """
+    Extracts the interconnections between nodes in a specified 'Nodes' element from an FEB file.
+
+    Parameters:
+        file_name (str): The name of the FEB file.
+        node_name (str): The name of the 'Nodes' element from which interconnections should be extracted.
+
+    Returns:
+        list: A list of lists, where each sublist contains the node numbers connected to the corresponding node.
+    """
+
+    # Initialize the maximum z-coordinate to 0
     maxz = 0
+
+    # Iterate through each key-value pair in the dictionary
     for key, coords in point_dict.items():
-        # Ensure the coordinates have length 3
+        # Check if the z-coordinate of the current point is greater than the current maximum z-coordinate
         if coords[2] > maxz:
+            # If it is, update the maximum z-coordinate to the z-coordinate of the current point
             maxz = coords[2]
 
+    # Return the maximum z-coordinate found
     return maxz
+#
+# def morph_CoordinatesUsingRBF(root, extract_points, inner_radius, outer_radius, cylinder_height, num_cylinder_points, ZeroDisplacement):
+#     extract_points_dict = {point[0]: point[1] for point in extract_points}
+#     print(extract_points_dict)
+#
+#     initial_coordinates = np.array([coords for coords in extract_points_dict.values()])
+#
+#     # Assign initial_controlpoints extract_points
+#     initial_controlpoints = CylinderFunctions.determineRadiiFromFEB(initial_coordinates)
+#
+#     # Generate Cylinder2 points using given Inner & Outer Radius from "feb_variables.csv"
+#     # TODO: try to separate so that we can cylindrical control points for any radius(write a new function that takes a radius and a height)
+#     final_controlpoints = CylinderFunctions.generate_annular_cylinder_points(inner_radius, outer_radius,
+#                                                                              cylinder_height, num_cylinder_points)
+#     # Enter the name of surface you would like to get id's from, and it will parse the id's and append the
+#     # coords from those nodes to initial and final cp for rbf
+#     zeroDisplacement = CylinderFunctions.extractCoordinatesFromSurfaceName(root, ZeroDisplacement)
+#     zeroDisplacement = np.array(zeroDisplacement)
+#
+#     initial_controlpoints = np.concatenate((initial_controlpoints, zeroDisplacement))
+#     final_controlpoints = np.concatenate((final_controlpoints, zeroDisplacement))
+#
+#     # Use RBF to find differences between both cylinders
+#     rbf = RBF(initial_controlpoints, final_controlpoints, func='thin_plate_spline')
+#     # Convert extract_points to np array to use rbf to get deformed_points
+#     # Call rbf to return deformed points given extract_points
+#     deformed_coordinates = rbf(initial_coordinates)
+#     # CylinderFunctions.plot_3d_points([initial_controlpoints, final_controlpoints])
+#
+#     deformed_points_dict = {key: deformed_coordinates[i] for i, key in enumerate(extract_points_dict.keys())}
+#     deformed_points = [[key, value] for key, value in deformed_points_dict.items()]
+#
+#     return deformed_points
+#
