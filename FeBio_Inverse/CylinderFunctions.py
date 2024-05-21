@@ -118,6 +118,7 @@ def determineRadiiFromFEB(extracted_points):
             outer_radius = extract_points[i][0]
 
     # create cylinder using our found inner & outer radius
+    #TODO: Determine the radii for use later
     cylinderpoints = generate_annular_cylinder_points(0.625, 1.125, height, num_points)
 
     return cylinderpoints
@@ -307,3 +308,23 @@ def extractCoordinatesFromSurfaceName(root, surface_name):
                 coordinatesarray.append(coordinates)
 
         return coordinatesarray
+
+def get_inital_points_from_parts(root, part_list):
+    control_points = []
+
+    for part in part_list:
+        elements = root.find('.//Elements[@type="hex8"][@name="{}"]'.format(part))
+        elem_ids_set = set()
+        if elements is not None:
+            elem_elements = elements.findall('elem')
+            for elem in elem_elements:
+                numbers_text = elem.text.strip()
+                elem_ids = [int(num.strip()) for num in numbers_text.split(',')]
+                elem_ids_set.update(elem_ids)
+        for node in root.findall('.//Nodes/node'):
+            current_node_id = int(node.get('id'))
+            if current_node_id in elem_ids_set:
+                coordinates = [float(coordinate) for coordinate in node.text.split(',')]
+                control_points.append([current_node_id, coordinates])
+
+    return control_points
