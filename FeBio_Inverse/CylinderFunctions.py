@@ -107,21 +107,37 @@ TEST INPUT: [(x1, y1, z1), (x2, y2, z2)]
 TEST OUTPUT: [Inner_Radius, Outer_Radius]
 """
 def determineRadiiFromFEB(extracted_points):
-    # convert array containing tuples to np array
-    extract_points = np.array(extracted_points)
+   # convert array containing tuples to np array
+   extract_points = np.array(extracted_points)
+   print("extract points: ", extract_points)
+   largest_y = 0
+   smallest_y = float('inf')
+   y_coordinates = extract_points[:,1]
+   for y in y_coordinates:
+       if y > largest_y:
+           largest_y = y
+       if y < smallest_y:
+           smallest_y = y
+   print("smallest_y: ", smallest_y)
+   print("largest_y: ", largest_y)
+   inner_radius = smallest_y
+   outer_radius = largest_y
 
-    for i in range(2):  # Loop over the range from 0 to 1 (inclusive)
-        if i == 0:
-            inner_radius = extract_points[i][0]
 
-        if i == 1:
-            outer_radius = extract_points[i][0]
 
-    # create cylinder using our found inner & outer radius
-    #TODO: Determine the radii for use later
-    cylinderpoints = generate_annular_cylinder_points(inner_radius, outer_radius, height, num_points)
+   # for i in range(2):  # Loop over the range from 0 to 1 (inclusive)
+   #     if i == 0:
+   #         inner_radius = extract_points[i][0]
+   #
+   #     if i == 1:
+   #         outer_radius = extract_points[i][0]
+   #
+   # # create cylinder using our found inner & outer radius
+   # #TODO: Determine the radii for use later
+   cylinderpoints = generate_annular_cylinder_points(inner_radius, outer_radius, height, num_points)
 
-    return cylinderpoints
+
+   return cylinderpoints
 
 
 def extractCoordinatesFromPart(root, partname, deformed_points_list):

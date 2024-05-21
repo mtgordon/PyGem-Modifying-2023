@@ -31,7 +31,7 @@ Results_Folder = 'D:\\Gordon\\Automate FEB Runs\\2024_5_9_NewModel\\Test_Folder_
 # This is for output
 object_list = ['Object8'] #TODO: Get new names for flat, curve, GI Filler --> DONE
 # Currently being used to access base object, may need to be changed when looking to generate multiple objects at once
-part_list = ['Part2', 'Part7']
+part_list = ['Part1', 'Part7']
 ZeroDisplacement = "ZeroDisplacement1"
 
 # FLAGS
@@ -119,6 +119,7 @@ def updateProperties(origFile, fileTemp):
 
             # Convert extract_points to a dictionary for easier manipulation
             extract_points_dict = {point[0]: point[1] for point in extract_points}
+            print("EXTRACT_POINTS_DICT: ", extract_points_dict)
 
             # Extract only the coordinates for RBF
             initial_coordinates = np.array([coords for coords in extract_points_dict.values()])
