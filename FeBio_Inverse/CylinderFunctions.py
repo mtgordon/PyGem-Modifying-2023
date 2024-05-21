@@ -119,7 +119,7 @@ def determineRadiiFromFEB(extracted_points):
 
     # create cylinder using our found inner & outer radius
     #TODO: Determine the radii for use later
-    cylinderpoints = generate_annular_cylinder_points(0.625, 1.125, height, num_points)
+    cylinderpoints = generate_annular_cylinder_points(inner_radius, outer_radius, height, num_points)
 
     return cylinderpoints
 
@@ -328,3 +328,21 @@ def get_inital_points_from_parts(root, part_list):
                 control_points.append([current_node_id, coordinates])
 
     return control_points
+
+
+
+
+
+# Define the new function for point morphing
+def morph_points(initial_controlpoints, final_controlpoints, initial_coordinates, extract_points_dict):
+
+    # Use RBF to find differences between both cylinders
+    rbf = RBF(initial_controlpoints, final_controlpoints, func='thin_plate_spline')
+
+    # Call rbf to return deformed points given extract_points
+    deformed_coordinates = rbf(initial_coordinates)
+
+    deformed_points_dict = {key: deformed_coordinates[i] for i, key in enumerate(extract_points_dict.keys())}
+    deformed_points = [[key, value] for key, value in deformed_points_dict.items()]
+
+    return deformed_points

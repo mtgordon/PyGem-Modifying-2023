@@ -31,8 +31,7 @@ Results_Folder = 'D:\\Gordon\\Automate FEB Runs\\2024_5_9_NewModel\\Test_Folder_
 # This is for output
 object_list = ['Object8'] #TODO: Get new names for flat, curve, GI Filler --> DONE
 # Currently being used to access base object, may need to be changed when looking to generate multiple objects at once
-#part_list = ['Object7', "Object9"]
-part_list = ['Part1', 'Part2']
+part_list = ['Part2', 'Part7']
 ZeroDisplacement = "ZeroDisplacement1"
 
 # FLAGS
@@ -118,17 +117,14 @@ def updateProperties(origFile, fileTemp):
             # Extract points from .feb file and return in array of tuples
             extract_points = CylinderFunctions.get_inital_points_from_parts(root, part_list)
 
-            #TODO: Get all of this into a separate function in IOFunctions
-            # (INPUT: extract pts [id, [x,y,z]...]; OUTPUT: Deformed pts [id, [x,y,z]...])
-
-            # print(extract_points)
+            # Convert extract_points to a dictionary for easier manipulation
             extract_points_dict = {point[0]: point[1] for point in extract_points}
 
+            # Extract only the coordinates for RBF
             initial_coordinates = np.array([coords for coords in extract_points_dict.values()])
 
             # Assign initial_controlpoints extract_points
             initial_controlpoints = CylinderFunctions.determineRadiiFromFEB(initial_coordinates)
-
             final_controlpoints = CylinderFunctions.generate_annular_cylinder_points(inner_radius, outer_radius, cylinder_height, num_cylinder_points)
 
             # Enter the name of surface you would like to get id's from, and it will parse the id's and append the
@@ -138,19 +134,10 @@ def updateProperties(origFile, fileTemp):
             initial_controlpoints = np.concatenate((initial_controlpoints, zeroDisplacement))
             final_controlpoints = np.concatenate((final_controlpoints, zeroDisplacement))
 
-            # Use RBF to find differences between both cylinders
-            rbf = RBF(initial_controlpoints, final_controlpoints, func='thin_plate_spline')
+            # Call the new morph_points function
+            deformed_points = CylinderFunctions.morph_points(initial_controlpoints, final_controlpoints, initial_coordinates, extract_points_dict)
 
-            # Call rbf to return deformed points given extract_points
-            deformed_coordinates = rbf(initial_coordinates)
-            #CylinderFunctions.plot_3d_points([initial_controlpoints, final_controlpoints])
-
-            deformed_points_dict = {key: deformed_coordinates[i] for i, key in enumerate(extract_points_dict.keys())}
-            deformed_points = [[key, value] for key, value in deformed_points_dict.items()]
-
-            #TODO: *****************************************************************************************************
-
-            #TODO: REPLACE NODES from original file
+            # Replace coordinates in the original file with the deformed points
             CylinderFunctions.replaceCoordinatesGivenNodeId(root, deformed_points)
 
     # Write the updated tree to the new FEB file
