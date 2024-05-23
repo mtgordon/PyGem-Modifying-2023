@@ -31,7 +31,7 @@ Results_Folder = 'D:\\Gordon\\Automate FEB Runs\\2024_5_9_NewModel\\Test_Folder_
 # This is for output
 object_list = ['Object8'] #TODO: Get new names for flat, curve, GI Filler --> DONE
 # Currently being used to access base object, may need to be changed when looking to generate multiple objects at once
-part_list = ['Part1', 'Part2', 'Part5', 'Part7', 'Part8']
+part_list = ['Part1', 'Part2']
 cylinder_parts = ['Part1']
 ZeroDisplacement = "ZeroDisplacement1"
 
@@ -41,6 +41,9 @@ Run_FeBio_File_Flag = True
 first_int_file_flag = False
 GENERATE_INTERMEDIATE_FLAG = False
 Post_Processing_Flag = False
+
+#TODO: Input Parameters for Cylinder Creation
+num_cylinder_points = 200
 
 #Have the default material variables be 1 (100%) so they do not change if no variable is given
 #TODO: Update Everytime you want to change your base file
@@ -54,11 +57,6 @@ default_dict = {
     'Inner_Radius': 1,
     'Outer_Radius': 2
 }
-
-#TODO: Input Parameters for Cylinder Creation
-cylinder_height = CylinderFunctions.findLargestZ()
-
-num_cylinder_points = 200
 
 '''
 Function: RunFEBinFeBio
@@ -118,6 +116,8 @@ def updateProperties(origFile, fileTemp):
 
             # Extract points from .feb file and return in array of tuples
             extract_points = CylinderFunctions.get_initial_points_from_parts(root, part_list)
+
+            cylinder_height = CylinderFunctions.findLargestZ(extract_points)
 
             # Convert extract_points to a dictionary for easier manipulation
             extract_points_dict = {point[0]: point[1] for point in extract_points}

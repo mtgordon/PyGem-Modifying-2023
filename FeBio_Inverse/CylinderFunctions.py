@@ -11,29 +11,18 @@ import math
 from pygem import RBF
 import xml.etree.ElementTree as ET
 
-febio_file_name = "D:\\Gordon\\Automate FEB Runs\\2024_4_29 auto\\Base File\\Basic_Cylinder_Pressure.feb"
-node_name = "Object5"
-extract_points = IOfunctions.extract_coordinates_list_from_feb(febio_file_name, node_name)
-# TODO: Input Parameters for Cylinder Creation
-num_points = 200
-
-
-def findLargestZ():  # Uses extract_points within function
+def findLargestZ(extract_points):  # Uses extract_points within function
     maxz = 0
-    for tuple in extract_points:
-        maxz = max(maxz, tuple[2])
+    for array in extract_points:
+        maxz = max(maxz, array[1][2])
 
     return maxz
 
-
-height = findLargestZ()
 
 '''
    This function utilizes the "extract_coordinates_dic_from_feb" function which returns a dictionary of x,y,z coordinates
    To make these coords more useful this function sorts the dictionary into 3 arrays containing all x-values, y-values, & z-values.
 '''
-
-
 def separate_xyz_coords(point_dict):
     # Initialize empty arrays to hold x, y, and z coordinates
     x_values = []

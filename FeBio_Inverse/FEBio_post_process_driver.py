@@ -31,12 +31,12 @@ import Bottom_Tissue_SA_Final as bts
 
 current_date = datetime.datetime.now()
 date_prefix = str(current_date.year) + '_' + str(current_date.month)  + '_' + str(current_date.day)
-Results_Folder = "D:\\Gordon\\Automate FEB Runs\\2024_5_6_NewModel"  # INTERMEDIATE CSV ENDS UP HERE
-Target_Folder = "D:\\Gordon\\Automate FEB Runs\\2024_5_6_NewModel\\*.feb"  # LOOK HERE FOR THE FEB FILES
+Results_Folder = "D:\\Gordon\\Automate FEB Runs\\2024_5_9_NewModel\\Test_Folder_5.20"  # INTERMEDIATE CSV ENDS UP HERE
+Target_Folder = "D:\\Gordon\\Automate FEB Runs\\2024_5_9_NewModel\\Test_Folder_5.20\\*.feb"  # LOOK HERE FOR THE FEB FILES
 csv_filename = Results_Folder + '\\' + date_prefix + '_intermediate.csv'
 date_prefix = str(current_date.year) + '_' + str(current_date.month)  + '_' + str(current_date.day)
 
-object_list = ['Object17']  # MAKE SURE THIS MATCHES THE OBJECTS IN THE CURRENTLY USED MODEL
+object_list = ['Object8']  # MAKE SURE THIS MATCHES THE OBJECTS IN THE CURRENTLY USED MODEL
 obj_coords_list = []
 file_num = 0
 numCompPCA = 2
