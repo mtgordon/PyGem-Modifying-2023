@@ -11,66 +11,64 @@ import math
 from pygem import RBF
 import xml.etree.ElementTree as ET
 
-
 febio_file_name = "D:\\Gordon\\Automate FEB Runs\\2024_4_29 auto\\Base File\\Basic_Cylinder_Pressure.feb"
 node_name = "Object5"
 extract_points = IOfunctions.extract_coordinates_list_from_feb(febio_file_name, node_name)
-#TODO: Input Parameters for Cylinder Creation
+# TODO: Input Parameters for Cylinder Creation
 num_points = 200
 
-def findLargestZ(): # Uses extract_points within function
+
+def findLargestZ():  # Uses extract_points within function
     maxz = 0
     for tuple in extract_points:
         maxz = max(maxz, tuple[2])
 
     return maxz
 
-height = findLargestZ()
 
+height = findLargestZ()
 
 '''
    This function utilizes the "extract_coordinates_dic_from_feb" function which returns a dictionary of x,y,z coordinates
    To make these coords more useful this function sorts the dictionary into 3 arrays containing all x-values, y-values, & z-values.
 '''
+
+
 def separate_xyz_coords(point_dict):
-   # Initialize empty arrays to hold x, y, and z coordinates
-   x_values = []
-   y_values = []
-   z_values = []
+    # Initialize empty arrays to hold x, y, and z coordinates
+    x_values = []
+    y_values = []
+    z_values = []
 
+    # Loop through the dictionary items
+    for key, coords in point_dict.items():
+        # Ensure the coordinates have length 3
+        if len(coords) == 3:
+            x_values.append(coords[0])
+            y_values.append(coords[1])
+            z_values.append(coords[2])
 
-   # Loop through the dictionary items
-   for key, coords in point_dict.items():
-       # Ensure the coordinates have length 3
-       if len(coords) == 3:
-           x_values.append(coords[0])
-           y_values.append(coords[1])
-           z_values.append(coords[2])
-
-
-   return x_values, y_values, z_values
-
+    return x_values, y_values, z_values
 
 
 def generate_annular_cylinder_points(inner_radius, outer_radius, height, num_points):
-  x = []
-  y = []
-  z = []
-  for i in np.arange(0, height, .2):
-     for j in range(num_points):
-        x.append(outer_radius * (np.cos(j * 2 * np.pi / num_points)))
-        y.append(outer_radius * (np.sin(j * 2 * np.pi / num_points)))
-        z.append(i)
+    x = []
+    y = []
+    z = []
+    for i in np.arange(0, height, .2):
+        for j in range(num_points):
+            x.append(outer_radius * (np.cos(j * 2 * np.pi / num_points)))
+            y.append(outer_radius * (np.sin(j * 2 * np.pi / num_points)))
+            z.append(i)
 
-        x.append(inner_radius * (np.cos(j * 2 * np.pi / num_points)))
-        y.append(inner_radius * (np.sin(j * 2 * np.pi / num_points)))
-        z.append(i)
+            x.append(inner_radius * (np.cos(j * 2 * np.pi / num_points)))
+            y.append(inner_radius * (np.sin(j * 2 * np.pi / num_points)))
+            z.append(i)
 
-  # Combine x, y, and z coordinates
-  points = np.column_stack((x, y, z))
+    # Combine x, y, and z coordinates
+    points = np.column_stack((x, y, z))
 
-
-  return points
+    return points
 
 
 def plot_3d_points(pointslist):
@@ -95,58 +93,71 @@ def plot_3d_points(pointslist):
     plt.show()
 
 
+def determineRadiiFromFEB(root, cylinder_part):
+    """
+       Determines the inner and outer radii of a cylinder from a point cloud.
+
+       Parameters:
+           root (ElementTree.Element): The root element of the XML representing the finite element model.
+           cylinder_part (list): A list containing the names of parts representing the cylinder.
+
+       Returns:
+           float: The inner radius of the cylinder.
+           float: The outer radius of the cylinder.
+
+       Description:
+           This function extracts the coordinates of nodes belonging to a specific part of the cylinder from the XML
+           representation. It then calculates the midline of the cylinder by averaging the x and y coordinates of all
+           points. Using this midline, it calculates the Euclidean distance of each point from the midline and identifies
+           the smallest and largest distances, which correspond to the inner and outer radii of the cylinder, respectively.
+       """
+    # extract coordinates from the part that is a cylinder
+    cylinder = np.array(get_initial_points_from_parts(root, cylinder_part), dtype=object)
+
+    # Extract coordinates from the points
+    coordinates = np.array([point[1] for point in cylinder])
+
+    # Calculate the midline of the cylinder (assuming cylinder axis along z-axis)
+    mid_x = np.mean(coordinates[:, 0])
+    mid_y = np.mean(coordinates[:, 1])
+
+    # Calculate distances from each point to the midline
+    distances = np.array([distance_to_midline(x, y, mid_x, mid_y) for x, y, z in coordinates])
+
+    # Find the smallest and largest distances
+    inner_radius = np.min(distances)
+    outer_radius = np.max(distances)
+
+    return inner_radius, outer_radius
 
 
-"""
-Function: determineRadiiFromFEB
-This method utilizes the .feb files extracted points which are parsed from the .feb file previously using
-IOfunctions.extract_coordinates_list_from_feb, We then convert this to a np array and take the first
-two nodes x-values which are the inner and outer radius correspondingly.
+def distance_to_midline(x, y, mid_x, mid_y):
+    """
+       Helper function to compute the Euclidean distance from a point to the midline (cylinder axis).
 
-TEST INPUT: [(x1, y1, z1), (x2, y2, z2)]
-TEST OUTPUT: [Inner_Radius, Outer_Radius]
-"""
-def determineRadiiFromFEB(extracted_points):
-   # convert array containing tuples to np array
-   extract_points = np.array(extracted_points)
-   print("extract points: ", extract_points)
-   largest_y = 0
-   smallest_y = float('inf')
-   y_coordinates = extract_points[:,1]
-   for y in y_coordinates:
-       if y > largest_y:
-           largest_y = y
-       if y < smallest_y:
-           smallest_y = y
-   print("smallest_y: ", smallest_y)
-   print("largest_y: ", largest_y)
-   inner_radius = smallest_y
-   outer_radius = largest_y
+       Parameters:
+           x (float): The x-coordinate of the point.
+           y (float): The y-coordinate of the point.
+           mid_x (float): The x-coordinate of the midline.
+           mid_y (float): The y-coordinate of the midline.
+
+       Returns:
+           float: The Euclidean distance from the point to the midline.
+
+       Description:
+           This function calculates the Euclidean distance from a given point (x, y) to the midline of the cylinder,
+           defined by the average x and y coordinates (mid_x, mid_y).
+       """
+    return np.sqrt((x - mid_x) ** 2 + (y - mid_y) ** 2)
 
 
-
-   # for i in range(2):  # Loop over the range from 0 to 1 (inclusive)
-   #     if i == 0:
-   #         inner_radius = extract_points[i][0]
-   #
-   #     if i == 1:
-   #         outer_radius = extract_points[i][0]
-   #
-   # # create cylinder using our found inner & outer radius
-   # #TODO: Determine the radii for use later
-   cylinderpoints = generate_annular_cylinder_points(inner_radius, outer_radius, height, num_points)
-
-
-   return cylinderpoints
-
-
-def extractCoordinatesFromPart(root, partname, deformed_points_list):
+def extractCoordinatesFromPart(root, part_name, deformed_points_list):
     """
         Extracts coordinates of nodes belonging to a specific part from an XML representation.
 
         Parameters:
             root (ElementTree.Element): The root element of the XML representing the finite element model.
-            partname (str): The name of the part from which coordinates need to be extracted.
+            part_name (str): The name of the part from which coordinates need to be extracted.
             deformed_points_list (list): A list of tuples [(node_id, coordinates), ...] containing node IDs and their
             corresponding coordinates.
 
@@ -173,7 +184,7 @@ def extractCoordinatesFromPart(root, partname, deformed_points_list):
             - The 'deformed_points_list' should contain tuples of node IDs and their coordinates.
         """
 
-    elements = root.find('.//Elements[@type="hex8"][@name="{}"]'.format(partname))
+    elements = root.find('.//Elements[@type="hex8"][@name="{}"]'.format(part_name))
     elem_ids_set = set()
     coordinatesarray = []
 
@@ -212,39 +223,34 @@ def extractCoordinatesFromPart(root, partname, deformed_points_list):
     return coordinatesarray
 
 
-
 def replaceCoordinatesGivenNodeId(root, coordinates):
     """
-        Replaces the coordinates of a specific 'Nodes' element in an FEBio file with new coordinates.
+    Replaces the coordinates of nodes in an FEBio file based on node IDs with new coordinates.
 
-        Parameters:
-            file_name (str): The name of the FEBio file.
-            nodes_name (str): The name of the 'Nodes' element to replace.
-            coordinates_list (list): A list of coordinate tuples [(x1, y1, z1), (x2, y2, z2), ...] for the new coordinates.
+    Parameters:
+        root (ElementTree.Element): The root element of the XML representing the finite element model.
+        coordinates (list): A list of tuples containing node IDs and their corresponding coordinates, e.g.,
+                            [(node_id1, (x1, y1, z1)), (node_id2, (x2, y2, z2)), ...].
 
-        Returns:
-            None
+    Returns:
+        None
 
-        Description:
-            This function reads the FEBio file specified by 'file_name' and finds the 'Mesh' element.
-            It searches for the 'Nodes' element with the specified 'name' attribute and removes it if found.
-            Then, a new 'Nodes' element is created with the same 'name' attribute, and 'node' elements are added with the new coordinates.
-            The updated XML tree is then written back to the file.
+    Description:
+        This function iterates through all 'node' elements within the 'Nodes' section of the provided XML root.
+        It updates the coordinates of each node based on the provided list of coordinates.
+        Each tuple in the coordinates list contains a node ID and a tuple of new coordinates.
+        The function finds the 'node' elements matching the node IDs and updates their text with the new coordinates.
 
-            If the 'Mesh' element or the 'Nodes' element with the specified 'name' attribute is not found, an appropriate message is printed.
+    Example:
+        >>> root = ...  # Parse your XML root element
+        >>> coordinates = [(1, (1.0, 2.0, 3.0)), (2, (4.0, 5.0, 6.0)), (3, (7.0, 8.0, 9.0))]
+        >>> replaceCoordinatesGivenNodeId(root, coordinates)
 
-        Example:
-            >>> file_name = "input.feb"
-            >>> node_name = "MyNodes"
-            >>> coordinates_list = [(1.0, 2.0, 3.0), (4.0, 5.0, 6.0), (7.0, 8.0, 9.0)]
-            >>> replace_node_in_feb_file(file_name, nodes_name, coordinates_list)
-
-        Note:
-            - This function assumes that the FEBio file exists and is formatted correctly as an XML file.
-            - The 'node_name' should match the 'name' attribute of the 'Nodes' element to be replaced.
-            - The 'coordinates_list' should contain coordinate tuples in the order [(x1, y1, z1), (x2, y2, z2), ...].
-            - The function modifies the FEBio file in-place and does not create a new file.
-        """
+    Note:
+        - This function assumes that the XML structure includes 'node' elements with 'id' attributes within a 'Nodes' section.
+        - The 'coordinates' list should contain tuples with node IDs and coordinate tuples in the format [(node_id, (x, y, z)), ...].
+        - The function modifies the XML tree in-place.
+    """
 
     updates_dict = {node_id: coords for node_id, coords in coordinates}
     # Iterate over all node elements in the XML
@@ -259,7 +265,6 @@ def replaceCoordinatesGivenNodeId(root, coordinates):
 
             # Update the text of the node with the new coordinates
             node.text = ','.join(map(str, new_coords))
-
 
 
 def extractCoordinatesFromSurfaceName(root, surface_name):
@@ -287,7 +292,7 @@ def extractCoordinatesFromSurfaceName(root, surface_name):
 
     # Set to store quad IDs
     quad_ids_set = set()
-    coordinatesarray = []
+    coordinates_array = []
 
     # Find the specific Surface tag within the root
     surface = root.find('.//Surface[@name="{}"]'.format(surface_name))
@@ -321,11 +326,12 @@ def extractCoordinatesFromSurfaceName(root, surface_name):
                 coordinates = [float(coord) for coord in inner_text.split(',')]
 
                 # Append coordinates to initial and final control points arrays
-                coordinatesarray.append(coordinates)
+                coordinates_array.append(coordinates)
 
-        return coordinatesarray
+        return coordinates_array
 
-def get_inital_points_from_parts(root, part_list):
+
+def get_initial_points_from_parts(root, part_list):
     control_points = []
 
     for part in part_list:
@@ -346,14 +352,10 @@ def get_inital_points_from_parts(root, part_list):
     return control_points
 
 
-
-
-
 # Define the new function for point morphing
-def morph_points(initial_controlpoints, final_controlpoints, initial_coordinates, extract_points_dict):
-
+def morph_points(initial_control_points, final_control_points, initial_coordinates, extract_points_dict):
     # Use RBF to find differences between both cylinders
-    rbf = RBF(initial_controlpoints, final_controlpoints, func='thin_plate_spline')
+    rbf = RBF(initial_control_points, final_control_points, func='thin_plate_spline')
 
     # Call rbf to return deformed points given extract_points
     deformed_coordinates = rbf(initial_coordinates)
