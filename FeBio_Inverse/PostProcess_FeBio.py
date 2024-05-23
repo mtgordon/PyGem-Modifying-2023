@@ -71,9 +71,6 @@ def process_features(csv_file, Results_Folder, date_prefix, numCompPCA):
         pc1_df = int_df.iloc[:, currentIndex:nextIndex]  # TODO: HARD CODED _ CHANGE LATER
         pcbottom_df = int_df.iloc[:, nextIndex:len(int_df.columns)]
 
-        print(pcbottom_df)
-        pcbottom_df.to_csv('wowza.csv')
-
         # Perform PCA on the sliced DataFrames
         total_result_PC1, pca1 = PCA_data.PCA_(pc1_df, numCompPCA)
         total_result_PCB, pcaB = PCA_data.PCA_([pcbottom_df], numCompPCA)
