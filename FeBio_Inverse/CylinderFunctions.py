@@ -11,19 +11,41 @@ import math
 from pygem import RBF
 import xml.etree.ElementTree as ET
 
-def findLargestZ(extract_points):  # Uses extract_points within function
-    maxz = 0
-    for array in extract_points:
-        maxz = max(maxz, array[1][2])
+def findLargestZ(extract_points_dict):
+    """
+    Finds the largest z-coordinate value from a dictionary of points.
+
+    Parameters:
+        extract_points_dict (dict): A dictionary where each key is a node ID and the value is a list of coordinates, e.g.,
+                                    {node_id1: [x1, y1, z1], node_id2: [x2, y2, z2], ...}.
+
+    Returns:
+        float: The largest z-coordinate value found in the dictionary of points.
+    """
+    maxz = float('-inf')  # Initialize to negative infinity to handle all possible z-values
+    for coords in extract_points_dict.values():
+        maxz = max(maxz, coords[2])
 
     return maxz
 
-
-'''
-   This function utilizes the "extract_coordinates_dic_from_feb" function which returns a dictionary of x,y,z coordinates
-   To make these coords more useful this function sorts the dictionary into 3 arrays containing all x-values, y-values, & z-values.
-'''
 def separate_xyz_coords(point_dict):
+    """
+        Separates the x, y, and z coordinates from a dictionary of coordinates.
+
+        Parameters:
+            point_dict (dict): A dictionary containing node IDs as keys and their corresponding coordinates as values,
+                               e.g., {node_id1: (x1, y1, z1), node_id2: (x2, y2, z2), ...}.
+
+        Returns:
+            list: An array containing all x-values.
+            list: An array containing all y-values.
+            list: An array containing all z-values.
+
+        Description:
+            This function takes a dictionary of coordinates where the keys are node IDs and the values are tuples of
+            (x, y, z) coordinates. It separates these coordinates into three arrays containing all x-values, y-values, and
+            z-values, respectively.
+    """
     # Initialize empty arrays to hold x, y, and z coordinates
     x_values = []
     y_values = []
@@ -41,6 +63,24 @@ def separate_xyz_coords(point_dict):
 
 
 def generate_annular_cylinder_points(inner_radius, outer_radius, height, num_points):
+    """
+        Generates points to create an annular cylinder mesh.
+
+        Parameters:
+            inner_radius (float): The inner radius of the annular cylinder.
+            outer_radius (float): The outer radius of the annular cylinder.
+            height (float): The height of the annular cylinder.
+            num_points (int): The number of points to generate around the circumference of the cylinder.
+
+        Returns:
+            numpy.ndarray: An array containing the generated points with shape (N, 3), where N is the total number of points
+                           and each row represents the (x, y, z) coordinates of a point.
+
+        Description:
+            This function generates points to create an annular cylinder mesh. It iterates over the height of the cylinder
+            and generates points at each height level around the circumference. For each height level, it generates
+            'num_points' points evenly spaced around the circumference at both the inner and outer radii.
+    """
     x = []
     y = []
     z = []
@@ -61,6 +101,20 @@ def generate_annular_cylinder_points(inner_radius, outer_radius, height, num_poi
 
 
 def plot_3d_points(pointslist):
+    """
+        Plots 3D points.
+
+        Parameters:
+            pointslist (list): A list of numpy arrays where each array contains 3D points with shape (N, 3),
+                               representing (x, y, z) coordinates.
+
+        Returns:
+            None
+
+        Description:
+            This function plots 3D points using matplotlib. It takes a list of numpy arrays, where each array
+            represents a set of 3D points. It plots each set of points with a unique color and marker.
+    """
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')  # Create subplot only once
 
@@ -84,27 +138,27 @@ def plot_3d_points(pointslist):
 
 def determineRadiiFromFEB(root, cylinder_part):
     """
-       Determines the inner and outer radii of a cylinder from a point cloud.
+    Determines the inner and outer radii of a cylinder from a point cloud.
 
-       Parameters:
-           root (ElementTree.Element): The root element of the XML representing the finite element model.
-           cylinder_part (list): A list containing the names of parts representing the cylinder.
+    Parameters:
+        root (ElementTree.Element): The root element of the XML representing the finite element model.
+        cylinder_part (list): A list containing the names of parts representing the cylinder.
 
-       Returns:
-           float: The inner radius of the cylinder.
-           float: The outer radius of the cylinder.
+    Returns:
+        float: The inner radius of the cylinder.
+        float: The outer radius of the cylinder.
 
-       Description:
-           This function extracts the coordinates of nodes belonging to a specific part of the cylinder from the XML
-           representation. It then calculates the midline of the cylinder by averaging the x and y coordinates of all
-           points. Using this midline, it calculates the Euclidean distance of each point from the midline and identifies
-           the smallest and largest distances, which correspond to the inner and outer radii of the cylinder, respectively.
-       """
-    # extract coordinates from the part that is a cylinder
-    cylinder = np.array(get_initial_points_from_parts(root, cylinder_part), dtype=object)
+    Description:
+        This function extracts the coordinates of nodes belonging to a specific part of the cylinder from the XML
+        representation. It then calculates the midline of the cylinder by averaging the x and y coordinates of all
+        points. Using this midline, it calculates the Euclidean distance of each point from the midline and identifies
+        the smallest and largest distances, which correspond to the inner and outer radii of the cylinder, respectively.
+    """
+    # Extract coordinates from the part that is a cylinder
+    cylinder_dict = get_initial_points_from_parts(root, cylinder_part)
 
-    # Extract coordinates from the points
-    coordinates = np.array([point[1] for point in cylinder])
+    # Extract coordinates from the dictionary
+    coordinates = np.array(list(cylinder_dict.values()))
 
     # Calculate the midline of the cylinder (assuming cylinder axis along z-axis)
     mid_x = np.mean(coordinates[:, 0])
@@ -142,40 +196,33 @@ def distance_to_midline(x, y, mid_x, mid_y):
 
 def extractCoordinatesFromPart(root, part_name, deformed_points_list):
     """
-        Extracts coordinates of nodes belonging to a specific part from an XML representation.
+    Extracts coordinates of nodes belonging to a specific part from an XML representation.
 
-        Parameters:
-            root (ElementTree.Element): The root element of the XML representing the finite element model.
-            part_name (str): The name of the part from which coordinates need to be extracted.
-            deformed_points_list (list): A list of tuples [(node_id, coordinates), ...] containing node IDs and their
-            corresponding coordinates.
+    Parameters:
+        root (ElementTree.Element): The root element of the XML representing the finite element model.
+        part_name (str): The name of the part from which coordinates need to be extracted.
+        deformed_points_list (list): A list of tuples [(node_id, coordinates), ...] containing node IDs and their
+        corresponding coordinates.
 
-        Returns:
-            list: A list of lists containing node IDs and their corresponding coordinates, e.g.,
-                                                            [[node_id1, (x1, y1, z1)], [node_id2, (x2, y2, z2)], ...].
+    Returns:
+        dict: A dictionary containing node IDs as keys and their corresponding coordinates as values, e.g.,
+              {node_id1: (x1, y1, z1), node_id2: (x2, y2, z2), ...}.
 
-        Description:
-            This function searches for the elements representing hexahedral finite elements of the specified 'partname'
-            in the XML structure.
-            It then iterates through each element to extract the node IDs associated with them.
-            After that, it looks for nodes in the XML structure and checks if their IDs match with the extracted node
-            IDs.
-            If a match is found, it retrieves the coordinates from the 'deformed_points_list' and adds them to the
-            output list.
-            The function finally returns a list containing the node IDs and their corresponding coordinates for
-            the specified part.
-
-        Note:
-            - The function assumes the XML structure contains elements representing finite elements with
-             hexahedral (hex8) type.
-            - It also assumes that the XML structure includes node elements with IDs corresponding to those specified
-             in the element definitions.
-            - The 'deformed_points_list' should contain tuples of node IDs and their coordinates.
-        """
+    Description:
+        This function searches for the elements representing hexahedral finite elements of the specified 'partname'
+        in the XML structure.
+        It then iterates through each element to extract the node IDs associated with them.
+        After that, it looks for nodes in the XML structure and checks if their IDs match with the extracted node
+        IDs.
+        If a match is found, it retrieves the coordinates from the 'deformed_points_list' and adds them to the
+        output dictionary.
+        The function finally returns a dictionary containing the node IDs and their corresponding coordinates for
+        the specified part.
+    """
 
     elements = root.find('.//Elements[@type="hex8"][@name="{}"]'.format(part_name))
     elem_ids_set = set()
-    coordinatesarray = []
+    coordinates_dict = {}
 
     if elements is not None:  # Check if the Elements tag is found
         # Find all elem elements within the Elements
@@ -194,63 +241,52 @@ def extractCoordinatesFromPart(root, part_name, deformed_points_list):
         # Get the ID of the current node
         current_node_id = int(node.get('id'))
 
-        # Check if the current node ID is in the set of quad IDs
+        # Check if the current node ID is in the set of elem IDs
         if current_node_id in elem_ids_set:
-            current = []
-            inner_text = node.text.strip()
-
             # Find the coordinates from deformed_points_list using current_node_id
             for item in deformed_points_list:
                 if item[0] == current_node_id:
                     coordinates = item[1]  # Extract coordinates from deformed_points_list
 
-                    # Append coordinates to current
-                    current.append(current_node_id)
-                    current.append(coordinates)
-                    coordinatesarray.append(current)
+                    # Add to dictionary
+                    coordinates_dict[current_node_id] = coordinates
 
-    return coordinatesarray
+    return coordinates_dict
 
 
-def replaceCoordinatesGivenNodeId(root, coordinates):
+def replaceCoordinatesGivenNodeId(root, coordinates_dict):
     """
     Replaces the coordinates of nodes in an FEBio file based on node IDs with new coordinates.
 
     Parameters:
         root (ElementTree.Element): The root element of the XML representing the finite element model.
-        coordinates (list): A list of tuples containing node IDs and their corresponding coordinates, e.g.,
-                            [(node_id1, (x1, y1, z1)), (node_id2, (x2, y2, z2)), ...].
+        coordinates_dict (dict): A dictionary containing node IDs as keys and their corresponding coordinates as values, e.g.,
+                                 {node_id1: (x1, y1, z1), node_id2: (x2, y2, z2), ...}.
 
     Returns:
-        None
+        None (The feb file is updated)
 
     Description:
         This function iterates through all 'node' elements within the 'Nodes' section of the provided XML root.
-        It updates the coordinates of each node based on the provided list of coordinates.
-        Each tuple in the coordinates list contains a node ID and a tuple of new coordinates.
+        It updates the coordinates of each node based on the provided dictionary of coordinates.
+        Each key in the dictionary is a node ID, and its value is a tuple of new coordinates.
         The function finds the 'node' elements matching the node IDs and updates their text with the new coordinates.
 
     Example:
         >>> root = ...  # Parse your XML root element
-        >>> coordinates = [(1, (1.0, 2.0, 3.0)), (2, (4.0, 5.0, 6.0)), (3, (7.0, 8.0, 9.0))]
-        >>> replaceCoordinatesGivenNodeId(root, coordinates)
-
-    Note:
-        - This function assumes that the XML structure includes 'node' elements with 'id' attributes within a 'Nodes' section.
-        - The 'coordinates' list should contain tuples with node IDs and coordinate tuples in the format [(node_id, (x, y, z)), ...].
-        - The function modifies the XML tree in-place.
+        >>> coordinates_dict = {1: (1.0, 2.0, 3.0), 2: (4.0, 5.0, 6.0), 3: (7.0, 8.0, 9.0)}
+        >>> replaceCoordinatesGivenNodeId(root, coordinates_dict)
     """
 
-    updates_dict = {node_id: coords for node_id, coords in coordinates}
     # Iterate over all node elements in the XML
     for node in root.findall('.//Nodes/node'):
         # Get the id of the current node
         node_id = int(node.get('id'))
 
         # Check if this node id is in the updates
-        if node_id in updates_dict:
+        if node_id in coordinates_dict:
             # Get the new coordinates for this node
-            new_coords = updates_dict[node_id]
+            new_coords = coordinates_dict[node_id]
 
             # Update the text of the node with the new coordinates
             node.text = ','.join(map(str, new_coords))
@@ -321,28 +357,91 @@ def extractCoordinatesFromSurfaceName(root, surface_name):
 
 
 def get_initial_points_from_parts(root, part_list):
-    control_points = []
+    """
+    Extracts initial coordinates of nodes belonging to specified parts from an XML representation.
+
+    Parameters:
+        root (ElementTree.Element): The root element of the XML representing the finite element model.
+        part_list (list): A list of part names from which coordinates need to be extracted.
+
+    Returns:
+        dict: A dictionary containing node IDs as keys and their corresponding coordinates as values, e.g.,
+              {node_id1: [x1, y1, z1], node_id2: [x2, y2, z2], ...}.
+
+    Description:
+        This function searches for the elements representing hexahedral finite elements of the specified parts
+        in the XML structure.
+        It then iterates through each element to extract the node IDs associated with them.
+        After that, it looks for nodes in the XML structure and checks if their IDs match with the extracted node IDs.
+        If a match is found, it retrieves the coordinates from the node elements and adds them to the output dictionary.
+        The function finally returns a dictionary containing the node IDs and their corresponding coordinates for
+        the specified parts.
+
+    Example:
+        >>> root = ...  # Parse your XML root element
+        >>> part_list = ['part1', 'part2']
+        >>> initial_points_dict = get_initial_points_from_parts(root, part_list)
+
+    Note:
+        - This function assumes that the XML structure includes 'node' elements with 'id' attributes within a 'Nodes' section.
+        - The function modifies the XML tree in-place.
+    """
+
+    control_points = {}
 
     for part in part_list:
+        # Find the Elements tag for the current part
         elements = root.find('.//Elements[@type="hex8"][@name="{}"]'.format(part))
         elem_ids_set = set()
+
         if elements is not None:
+            # Find all elem elements within the Elements
             elem_elements = elements.findall('elem')
+
+            # Iterate over each elem element
             for elem in elem_elements:
+                # Extract the text content containing the numbers
                 numbers_text = elem.text.strip()
+                # Convert text to list of integers
                 elem_ids = [int(num.strip()) for num in numbers_text.split(',')]
+                # Add the elem IDs to the set
                 elem_ids_set.update(elem_ids)
+
+        # Iterate over all node elements in the XML
         for node in root.findall('.//Nodes/node'):
+            # Get the ID of the current node
             current_node_id = int(node.get('id'))
+
+            # Check if the current node ID is in the set of elem IDs
             if current_node_id in elem_ids_set:
+                # Extract coordinates from the node text
                 coordinates = [float(coordinate) for coordinate in node.text.split(',')]
-                control_points.append([current_node_id, coordinates])
+                # Add the node ID and coordinates to the dictionary
+                control_points[current_node_id] = coordinates
 
     return control_points
 
 
-# Define the new function for point morphing
 def morph_points(initial_control_points, final_control_points, initial_coordinates, extract_points_dict):
+    """
+        Morphs points from the initial state to the final state using radial basis function (RBF) interpolation.
+
+        Parameters:
+            initial_control_points (numpy.ndarray)
+            final_control_points (numpy.ndarray)
+            initial_coordinates (numpy.ndarray)
+            extract_points_dict (dict)
+
+        Returns:
+            list: A list of lists containing node IDs and their corresponding deformed coordinates after morphing,
+                  e.g., [[node_id1, [x1', y1', z1']], [node_id2, [x2', y2', z2']], ...].
+
+        Description:
+            This function performs point morphing from the initial state to the final state using radial basis function
+            (RBF) interpolation. It uses the initial and final control points to define the transformation between the
+            two states. The RBF interpolation is applied to all initial coordinates to obtain their deformed positions
+            in the final state.
+    """
     # Use RBF to find differences between both cylinders
     rbf = RBF(initial_control_points, final_control_points, func='thin_plate_spline')
 

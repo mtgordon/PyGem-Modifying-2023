@@ -83,6 +83,9 @@ def updateProperties(origFile, fileTemp):
     tree = ET.parse(origFile)
     root = tree.getroot()
 
+    # Verify log file exists, if not add log file to be 'x;y;z'
+    IOfunctions.checkForLogFile(root)
+
     for part_prop in current_run_dict.keys():
 
         # TODO: Update material property values
@@ -108,23 +111,19 @@ def updateProperties(origFile, fileTemp):
 
         elif "Inner_Radius" in part_prop:
             # Assign inner_radius value from "feb_variables.csv"
-            inner_radius = float(current_run_dict["Inner_Radius"])
+            final_inner_radius = float(current_run_dict["Inner_Radius"])
 
         elif "Outer_Radius" in part_prop:
             # Assign outer_radius value from "feb_variables.csv"
-            outer_radius = float(current_run_dict["Outer_Radius"])
+            final_outer_radius = float(current_run_dict["Outer_Radius"])
 
             # Extract points from .feb file and return in array of tuples
             extract_points = CylinderFunctions.get_initial_points_from_parts(root, part_list)
 
             cylinder_height = CylinderFunctions.findLargestZ(extract_points)
 
-            # Convert extract_points to a dictionary for easier manipulation
-            extract_points_dict = {point[0]: point[1] for point in extract_points}
-
-
             # Extract only the coordinates for RBF
-            initial_coordinates = np.array([coords for coords in extract_points_dict.values()])
+            initial_coordinates = np.array([coords for coords in extract_points.values()])
 
             # Assign initial_control_points extract_points
             initial_inner_radius, initial_outer_radius = CylinderFunctions.determineRadiiFromFEB(root, cylinder_parts)
@@ -133,7 +132,7 @@ def updateProperties(origFile, fileTemp):
                                                                                         cylinder_height,
                                                                                         num_cylinder_points)
 
-            final_control_points = CylinderFunctions.generate_annular_cylinder_points(inner_radius, outer_radius,
+            final_control_points = CylinderFunctions.generate_annular_cylinder_points(final_inner_radius, final_outer_radius,
                                                                                       cylinder_height,
                                                                                       num_cylinder_points)
 
@@ -147,7 +146,7 @@ def updateProperties(origFile, fileTemp):
             # Call the new morph_points function
             deformed_points = CylinderFunctions.morph_points(initial_control_points, final_control_points,
                                                              initial_coordinates,
-                                                             extract_points_dict)
+                                                             extract_points)
 
             # Replace coordinates in the original file with the deformed points
             CylinderFunctions.replaceCoordinatesGivenNodeId(root, deformed_points)
@@ -202,10 +201,17 @@ for row in DOE_dict:
 
     #generation of current run file template based on attributes
     fileTemplate = ''
-    for key in current_run_dict:
-        param = '_' + str(key) + '(' + str(current_run_dict[key]) + ')'
-        fileTemplate += param
+    csv_template = ''
 
+    for key in current_run_dict:
+        if float(current_run_dict[key]) != float(default_dict[key]):
+            param = '' + str(key) + '(' + str(current_run_dict[key]) + ')'
+            fileTemplate += param
+
+    print("filetemplate: ", fileTemplate)
+
+    # Generate Log CSV File into Results Folder
+    IOfunctions.generate_log_csv(current_run_dict, Results_Folder, fileTemplate + '_log' + '.csv')
 
     #Update properties, create new input file
     workingInputFileName = updateProperties(originalFebFilePath, fileTemplate)

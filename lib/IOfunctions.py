@@ -1,3 +1,5 @@
+import csv
+import os
 from math import floor
 from pygem import RBF
 import linecache
@@ -1786,62 +1788,49 @@ def get_interconnections_feb(file_name, node_name):  # connections-between-mater
 
     return connections
 
+def checkForLogFile(root):
+    output = root.find('Output')
+    # Check if the logfile element exists
+    logfile = output.find('logfile')
+    if logfile is None:
+        # Create the logfile element since it does not exist
+        logfile = ET.SubElement(output, 'logfile')
 
-def findLargestZ(point_dict):
-    """
-    Extracts the interconnections between nodes in a specified 'Nodes' element from an FEB file.
+        # Create the node_data element within logfile
+        node_data = ET.SubElement(logfile, 'node_data')
+        node_data.set('data', 'x;y;z')
 
-    Parameters:
-        file_name (str): The name of the FEB file.
-        node_name (str): The name of the 'Nodes' element from which interconnections should be extracted.
 
-    Returns:
-        list: A list of lists, where each sublist contains the node numbers connected to the corresponding node.
-    """
 
-    # Initialize the maximum z-coordinate to 0
-    maxz = 0
+def generate_log_csv(data_dict, directory, filename):
+    # Define the output CSV file path
+    csv_file = os.path.join(directory, filename)
 
-    # Iterate through each key-value pair in the dictionary
-    for key, coords in point_dict.items():
-        # Check if the z-coordinate of the current point is greater than the current maximum z-coordinate
-        if coords[2] > maxz:
-            # If it is, update the maximum z-coordinate to the z-coordinate of the current point
-            maxz = coords[2]
+    # Define a function to generate unique codes for each property
 
-    # Return the maximum z-coordinate found
-    return maxz
-#
-# def morph_CoordinatesUsingRBF(root, extract_points, inner_radius, outer_radius, cylinder_height, num_cylinder_points, ZeroDisplacement):
-#     extract_points_dict = {point[0]: point[1] for point in extract_points}
-#     print(extract_points_dict)
-#
-#     initial_coordinates = np.array([coords for coords in extract_points_dict.values()])
-#
-#     # Assign initial_controlpoints extract_points
-#     initial_controlpoints = CylinderFunctions.determineRadiiFromFEB(initial_coordinates)
-#
-#     # Generate Cylinder2 points using given Inner & Outer Radius from "feb_variables.csv"
-#     # TODO: try to separate so that we can cylindrical control points for any radius(write a new function that takes a radius and a height)
-#     final_controlpoints = CylinderFunctions.generate_annular_cylinder_points(inner_radius, outer_radius,
-#                                                                              cylinder_height, num_cylinder_points)
-#     # Enter the name of surface you would like to get id's from, and it will parse the id's and append the
-#     # coords from those nodes to initial and final cp for rbf
-#     zeroDisplacement = CylinderFunctions.extractCoordinatesFromSurfaceName(root, ZeroDisplacement)
-#     zeroDisplacement = np.array(zeroDisplacement)
-#
-#     initial_controlpoints = np.concatenate((initial_controlpoints, zeroDisplacement))
-#     final_controlpoints = np.concatenate((final_controlpoints, zeroDisplacement))
-#
-#     # Use RBF to find differences between both cylinders
-#     rbf = RBF(initial_controlpoints, final_controlpoints, func='thin_plate_spline')
-#     # Convert extract_points to np array to use rbf to get deformed_points
-#     # Call rbf to return deformed points given extract_points
-#     deformed_coordinates = rbf(initial_coordinates)
-#     # CylinderFunctions.plot_3d_points([initial_controlpoints, final_controlpoints])
-#
-#     deformed_points_dict = {key: deformed_coordinates[i] for i, key in enumerate(extract_points_dict.keys())}
-#     deformed_points = [[key, value] for key, value in deformed_points_dict.items()]
-#
-#     return deformed_points
-#
+    # TODO: REMOVE generate_code Create Base_Code to New Codes dictionary then use that for setting codes in csv.
+    def generate_code(property_name, existing_codes):
+        base_code = ''.join([word[0].upper() for word in property_name.split('_')])
+        code = base_code
+        suffix = 1
+        while code in existing_codes:
+            code = f"{base_code}{suffix}"
+            suffix += 1
+        return code
+
+    # Create the CSV file and write the data
+    with open(csv_file, mode='w', newline='') as file:
+        writer = csv.writer(file)
+        # Write the header
+        writer.writerow(['Property', 'Code', 'Value'])
+
+        # Existing entries (to ensure unique codes)
+        existing_codes = set()
+
+        # Add the dictionary entries to the CSV
+        for property_name, value in data_dict.items():
+            code = generate_code(property_name, existing_codes)
+            existing_codes.add(code)
+            writer.writerow([property_name, code, value])
+
+    print(f"CSV file '{csv_file}' has been created successfully.")
