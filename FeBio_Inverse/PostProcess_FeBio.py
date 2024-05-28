@@ -3,11 +3,11 @@ This file is designed to use the IO functions relating to FeBio, which can entai
 and log files that are txt output files. The goal is to replicate the same process as the post-processing currently
 implemented for the INP files with Abaqus.
 """
+from collections import OrderedDict
 
 import test_yutian.functions.IOfunctions_Feb as IO
 import generate_pca_points_AVW as gic
 import re
-import Bottom_Tissue_SA_Final as bts
 import time
 import csv
 import pandas as pd
@@ -15,10 +15,10 @@ import PCA_data
 import os
 import predict_functions as pf
 import ShapeAnalysisVerification as sav
+import CylinderFunctions as cf
+import xml.etree.ElementTree as ET
 import numpy as np
 import matplotlib.pyplot as plt
-
-
 
 #TODO: Change the following to preffered numbers
 window_width = 0.3
@@ -50,6 +50,8 @@ stringList = ['inner_x', 'outer_x']
         >>> numCompPCA = 3
         >>> file_path, pca1, pcaB = process_features(csv_file, Results_Folder, date_prefix, numCompPCA)
     """
+
+
 def process_features(csv_file, Results_Folder, date_prefix, numCompPCA):
     # Read the input CSV file into a pandas DataFrame
     int_df = pd.read_csv(csv_file)
@@ -105,6 +107,7 @@ def process_features(csv_file, Results_Folder, date_prefix, numCompPCA):
         # Return the file path and PCA models
         return file_path, pca1, pcaB
 
+
 def find_apex(coordList):
     min_y = coordList[0][1][1]
     for coord in coordList:
@@ -112,8 +115,6 @@ def find_apex(coordList):
             min_y = coord[1][1]
 
     return min_y
-
-
 
 
 """
@@ -125,14 +126,15 @@ this was done by commenting out the line "pc_points_bottom = bts.generate_2d_bot
 and line "apex = find_apex(obj_coords_list[1])" To revert back to old model simply change headers and then uncomment the lines metioned 
 above. Also uncomment the second for loop starting at "coord = 'Bx'"
 """
-def generate_int_csvs(file_params,object_list,log_name,feb_name,first_int_file_flag,csv_filename):
+
+
+def generate_int_csvs(file_params, object_list, log_name, feb_name, first_int_file_flag, csv_filename):
     obj_coords_list = []
 
     csv_row = []
     csv_header = []
 
     # Get the pure file name that just has the material parameters
-
 
     # Get the changed material properties
     paren_pattern = re.compile(r'(?<=\().*?(?=\))')  # find digits in parentheses
@@ -150,7 +152,6 @@ def generate_int_csvs(file_params,object_list,log_name,feb_name,first_int_file_f
 
     #TODO: THIS IS WHERE THE INT CSV DATA IS OBTAINED
 
-
     # gets obj_coords_list to [[x, y, z]]
     object_coords_list = []
     for ele in obj_coords_list[0]:
@@ -166,12 +167,9 @@ def generate_int_csvs(file_params,object_list,log_name,feb_name,first_int_file_f
     outer_points = sav.generate_outer_cylinder_bottom(num_pts, obj_coords_list[0], window_width)
     inner_points = sav.generate_inner_cylinder_bottom(num_pts, obj_coords_list[0], window_width)
     outer_pc_points = sav.generate_2d_coords_for_cylinder_pca(outer_points)
-    inner_pc_points = sav.generate_2d_coords_for_cylinder_pca(inner_points) #REPLACE WITH CYLINDER POINTS
-
-
+    inner_pc_points = sav.generate_2d_coords_for_cylinder_pca(inner_points)  #REPLACE WITH CYLINDER POINTS
 
     #pc_points_bottom = bts.generate_2d_bottom_tissue(bts.extract_ten_coordinates_block(obj_coords_list[2])) #TODO: Errors due to not enough objects (0, 2, 1 idx should be looked at)
-
 
     # Get the PC points for Object2
     # Begin building the row to be put into the intermediate csv
@@ -192,8 +190,6 @@ def generate_int_csvs(file_params,object_list,log_name,feb_name,first_int_file_f
         csv_header.append('Pressure')
         csv_header.append('Inner_Radius')
         csv_header.append('Outer_Radius')
-
-
 
         #coord = 'inner_x'
         coord = startingPointColHeader
@@ -232,3 +228,65 @@ def generate_int_csvs(file_params,object_list,log_name,feb_name,first_int_file_f
     time.sleep(1)
 
     return csv_filename
+
+
+def get_coords_of_part_from_final_step(feb_file, log_file, part_name, object_name):
+    """
+    Extracts coordinates of nodes belonging to a specific part from the final step of a finite element analysis.
+
+    Parameters:
+        feb_file (str): Path to the FEB file containing the finite element model.
+        log_file (str): Path to the log file generated during the finite element analysis.
+        part_name (str): The name of the part from which coordinates need to be extracted.
+        object_name (str): The name of the object whose coordinates are being extracted.
+
+    Returns:
+        dict: A dictionary containing node IDs as keys and their corresponding coordinates as values, e.g.,
+              {node_id1: (x1, y1, z1), node_id2: (x2, y2, z2), ...}.
+
+    Description:
+        This function parses the FEB file to extract coordinates from the final step of the finite element analysis.
+        It uses another function 'extract_coordinates_from_final_step' to obtain all coordinates from the log file.
+        It then searches for the elements representing hexahedral finite elements of the specified 'part_name'
+        in the FEB file.
+        If the part is found, it iterates through each element to extract the node IDs associated with them.
+        After that, it matches the node IDs with the coordinates obtained from the log file.
+        If a match is found, it adds the coordinates to the output dictionary.
+        If the specified part is not found in the FEB file, a message is printed indicating that the part has no coordinates.
+        Finally, it returns a dictionary containing the node IDs and their corresponding coordinates for the specified part.
+    """
+
+    tree = ET.parse(feb_file)
+    root = tree.getroot()
+
+    # Extract coordinates from final step
+    all_coords = gic.extract_coordinates_from_final_step(log_file, feb_file, object_name)
+
+    # Find elements associated with part_name
+    elements = root.find('.//Elements[@type="hex8"][@name="{}"]'.format(part_name))
+    coordinates_dict = {}
+
+    if elements is not None:  # Check if the Elements tag is found
+        # Find all elem elements within the Elements
+        elem_elements = elements.findall('elem')
+
+        # Iterate over each elem element
+        for elem in elem_elements:
+            # Extract the text content containing the numbers
+            numbers_text = elem.text.strip()
+            # Convert text to list of integers
+            elem_ids = [int(num.strip()) for num in numbers_text.split(',')]
+
+            # Iterate over each node ID in the elem
+            for node_id in elem_ids:
+                # Find the coordinates from all_coords using current_node_id
+                for item in all_coords:
+                    if str(item[0]) == str(node_id):
+                        coordinates = item[1]  # Extract coordinates from all_coords
+
+                        # Add to dictionary
+                        coordinates_dict[node_id] = coordinates
+    else:
+        print("Part {} has no coordinates".format(part_name))
+
+    return coordinates_dict

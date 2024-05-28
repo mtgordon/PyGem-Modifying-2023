@@ -87,7 +87,7 @@ def extract_node_id_list_from_feb(file_name, node_name, get_connections=False):
     return node_id_list
 
 def extract_coordinates_from_final_step(log_file_path,feb_file_path,object_value):
-    index_list=extract_node_id_list_from_feb(feb_file_path,object_value)
+    index_list = extract_node_id_list_from_feb(feb_file_path,object_value)
     with open(log_file_path) as file:
         lines = file.readlines()
 
