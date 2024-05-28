@@ -100,7 +100,7 @@ def generate_annular_cylinder_points(inner_radius, outer_radius, height, num_poi
     return points
 
 
-def plot_3d_points(pointslist):
+def plot_3d_points(points_dict):
     """
         Plots 3D points.
 
@@ -121,9 +121,11 @@ def plot_3d_points(pointslist):
     colors = ['r', 'g', 'b', 'c', 'm', 'y', 'k', 'w']
     markers = ['o', 's', '^', 'v', '<', '>', '1', '2']  # Define markers
 
-    for idx, points in enumerate(pointslist):
+    for idx, (id, points) in enumerate(points_dict.items()):
+
         # Plot points with a unique color and marker
-        ax.scatter(points[:, 0], points[:, 1], points[:, 2], c=colors[idx], marker=markers[idx])
+        ax.scatter(points[0], points[1], points[2], c=colors[0],
+                   marker=markers[0], label=f'ID {id}')
 
     # Set labels
     ax.set_xlabel('X')

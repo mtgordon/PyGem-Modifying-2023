@@ -28,15 +28,18 @@ import PCA_data
 import pandas as pd
 import re
 import Bottom_Tissue_SA_Final as bts
+import CylinderFunctions
+import lib.IOfunctions as IO
 
 current_date = datetime.datetime.now()
 date_prefix = str(current_date.year) + '_' + str(current_date.month)  + '_' + str(current_date.day)
 Results_Folder = "D:\\Gordon\\Automate FEB Runs\\2024_5_9_NewModel\\Test_Folder_5.20"  # INTERMEDIATE CSV ENDS UP HERE
-Target_Folder = "D:\\Gordon\\Automate FEB Runs\\2024_5_9_NewModel\\Test_Folder_5.20\\*.feb"  # LOOK HERE FOR THE FEB FILES
+Target_Folder = "D:\\Gordon\\Automate FEB Runs\\2024_5_9_NewModel\\Test_Folder_5.20\\Part1_E(2.37)Part2_E(1.3)Part5_E(2.02)Part7_E(1.94)Part8_E(2.85)Pressure(0.08)Inner_Radius(0.5812)Outer_Radius(1.3154).feb"  # LOOK HERE FOR THE FEB FILES
 csv_filename = Results_Folder + '\\' + date_prefix + '_intermediate.csv'
 date_prefix = str(current_date.year) + '_' + str(current_date.month)  + '_' + str(current_date.day)
 
-object_list = ['Object8']  # MAKE SURE THIS MATCHES THE OBJECTS IN THE CURRENTLY USED MODEL
+object_list = ["Object8"]  # MAKE SURE THIS MATCHES THE OBJECTS IN THE CURRENTLY USED MODEL
+part_list = ["Part1"]
 obj_coords_list = []
 file_num = 0
 numCompPCA = 2
@@ -44,6 +47,92 @@ numCompPCA = 2
 first_file_flag = True
 GENERATE_INTERMEDIATE_FLAG = True
 final_csv_flag = False
+
+
+def getCylinderEdgePoints(feb_file, part_list):
+    if isinstance(part_list, str):
+        part_list = [part_list]
+
+    tree = ET.parse(feb_file)
+    root = tree.getroot()
+
+    element_counts = {}
+
+    for part in part_list:
+        # Debug: print the part being processed
+        print(f"Processing part: {part}")
+
+        # Find the Elements tag for the current part
+        elements = root.find('.//Elements[@type="hex8"][@name="{}"]'.format(part))
+
+        if elements is not None:
+            # Debug: confirm Elements tag found
+            print(f"Found Elements tag for part: {part}")
+
+            # Find all elem elements within the Elements
+            elem_elements = elements.findall('elem')
+
+            # Iterate over each elem element
+            for elem in elem_elements:
+                # Extract the text content containing the numbers
+                numbers_text = elem.text.strip()
+                # Convert text to list of integers
+                elem_ids = [int(num.strip()) for num in numbers_text.split(',')]
+
+                # Increment the count for each node ID
+                for node_id in elem_ids:
+                    if node_id in element_counts:
+                        element_counts[node_id] += 1
+                    else:
+                        element_counts[node_id] = 1
+
+    edge_elements_dictionary = {}
+    edge_element_ids = []
+    for elem in element_counts:
+        if (element_counts[elem] == 2):
+            edge_element_ids.append(elem)
+
+    for node in root.findall('.//Nodes/node'):
+        # Get the ID of the current node
+        current_node_id = int(node.get('id'))
+
+        # Check if the current node ID is in the set of elem IDs
+        if current_node_id in edge_element_ids:
+            # Extract coordinates from the node text
+            coordinates = [float(coordinate) for coordinate in node.text.split(',')]
+            # Add the node ID and coordinates to the dictionary
+            edge_elements_dictionary[current_node_id] = coordinates
+    print("All edges: ", edge_elements_dictionary)
+    return edge_elements_dictionary
+
+def getRadiiFromEdges(edge_elements_dictionary):
+    # Get dictionary containing nodes of top inner & outer radii
+    topedges_dictionary = {}
+    for edge, value in edge_elements_dictionary.items():
+        if value[2] == 4:
+            topedges_dictionary[edge] = value
+
+    CylinderFunctions.plot_3d_points(topedges_dictionary)
+    max_value = -float('inf')
+    for key, value in topedges_dictionary.items():
+        if value[1] > max_value:
+            max_key = key
+            max_value = value[1]
+
+    startpoint = max_key
+
+    #TODO: dictionary starting point value messes up, dictionaries are perfect except one point
+    outer_radius_dict, inner_radius_dict = IO.find_closest_points(topedges_dictionary, startpoint, 0.2)
+    CylinderFunctions.plot_3d_points(outer_radius_dict)
+    CylinderFunctions.plot_3d_points(inner_radius_dict)
+
+
+    return topedges_dictionary
+
+edge_elements_dictionary = getCylinderEdgePoints(Target_Folder, part_list)
+getRadiiFromEdges(edge_elements_dictionary)
+
+
 
 
 if GENERATE_INTERMEDIATE_FLAG:
@@ -73,19 +162,3 @@ if GENERATE_INTERMEDIATE_FLAG:
 if final_csv_flag:
     print('Generating PC File')
     proc.process_features(csv_filename, Results_Folder, date_prefix, numCompPCA)
-
-
-
-# use the generated csv to get the 2 PC scores
-#TODO: IGNORE THIS FUNCTION, USE THE ONE IN "PostProcess_FeBio"
-def process_features(csv_file):
-    int_df = pd.read_csv(csv_file)
-    pc_df = int_df.iloc[:, 4:len(int_df.columns)]
-    # int_df = pd.read_csv("intermediate_pc_data", header=None)
-    total_result_PC, pca = PCA_data.PCA_(pc_df)
-
-    PC_scores = total_result_PC[['principal component 1', 'principal component 2']]
-    print(PC_scores)
-
-    final_df = pd.concat([int_df.loc[:, ["File Name", "Apex", "E1", "E2"]], PC_scores], axis=1)
-    final_df.to_csv(Results_Folder + '\\' + date_prefix + "_features.csv", index=False)

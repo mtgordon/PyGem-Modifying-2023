@@ -4,7 +4,7 @@ from math import floor
 from pygem import RBF
 import linecache
 import numpy as np
-
+import math
 import xml.etree.ElementTree as ET
 import shutil
 # from FeBio_Inverse import CylinderFunctions
@@ -1802,21 +1802,11 @@ def checkForLogFile(root):
 
 
 
-def generate_log_csv(data_dict, directory, filename):
+def generate_log_csv(data_dict, code_dict, directory, filename):
     # Define the output CSV file path
     csv_file = os.path.join(directory, filename)
 
     # Define a function to generate unique codes for each property
-
-    # TODO: REMOVE generate_code Create Base_Code to New Codes dictionary then use that for setting codes in csv.
-    def generate_code(property_name, existing_codes):
-        base_code = ''.join([word[0].upper() for word in property_name.split('_')])
-        code = base_code
-        suffix = 1
-        while code in existing_codes:
-            code = f"{base_code}{suffix}"
-            suffix += 1
-        return code
 
     # Create the CSV file and write the data
     with open(csv_file, mode='w', newline='') as file:
@@ -1829,8 +1819,56 @@ def generate_log_csv(data_dict, directory, filename):
 
         # Add the dictionary entries to the CSV
         for property_name, value in data_dict.items():
-            code = generate_code(property_name, existing_codes)
+            code = code_dict[property_name]
             existing_codes.add(code)
             writer.writerow([property_name, code, value])
 
     print(f"CSV file '{csv_file}' has been created successfully.")
+
+
+def distance(point1, point2):
+    """
+    Calculate the Euclidean distance between two points in 3D space.
+    """
+    return math.sqrt((point1[0] - point2[0]) ** 2 + (point1[1] - point2[1]) ** 2 + (point1[2] - point2[2]) ** 2)
+
+
+def closest_point(dictionary, current_point):
+    """
+    Find the closest point to the current point in the dictionary.
+    """
+    min_distance = float('inf')
+    closest_id = None
+    closest_value = None
+    print(current_point)
+    for point_id, value in dictionary.items():
+        dist = distance(current_point, value)
+        if dist < min_distance:
+            min_distance = dist
+            closest_id = point_id
+            closest_value = value
+    print(closest_value)
+    return closest_id, closest_value
+
+
+def find_closest_points(dictionary, start_point_id, threshold):
+    start_point = dictionary[start_point_id]
+    outer_radius = {start_point_id: start_point}  # Include the starting point in outer_radius
+    inner_radius = {}
+    del dictionary[start_point_id]
+
+    current_point = start_point
+    inner_radius_flag = False
+    while dictionary:
+        closest_id, closest_value = closest_point(dictionary, current_point)
+
+        if distance(current_point, closest_value) > threshold:
+            inner_radius_flag = True
+        if inner_radius_flag:
+            inner_radius[closest_id] = closest_value
+        else:
+            outer_radius[closest_id] = closest_value
+        current_point = closest_value
+        del dictionary[closest_id]
+
+    return outer_radius, inner_radius

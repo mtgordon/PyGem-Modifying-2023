@@ -27,7 +27,7 @@ import CylinderFunctions
 dictionary_file = 'feb_variables.csv' #DONE
 FeBioLocation = 'C:\\Program Files\\FEBioStudio2\\bin\\febio4.exe'
 originalFebFilePath = 'D:\\Gordon\\Automate FEB Runs\\2024_5_9_NewModel\\Base_File\\3 Tissue Model v6.feb' #DONE
-Results_Folder = 'D:\\Gordon\\Automate FEB Runs\\2024_5_9_NewModel\\Test_Folder_5.20' #DONE
+Results_Folder = 'D:\\Gordon\\Automate FEB Runs\\2024_5_9_NewModel\\Test_Folder5.28' #DONE
 # This is for output
 object_list = ['Object8'] #TODO: Get new names for flat, curve, GI Filler --> DONE
 # Currently being used to access base object, may need to be changed when looking to generate multiple objects at once
@@ -56,6 +56,16 @@ default_dict = {
     'Pressure': 0,
     'Inner_Radius': 1,
     'Outer_Radius': 2
+}
+default_code_dict = {
+    'Part1_E': 'P1_E',
+    'Part2_E': 'P2_E',
+    'Part5_E': 'P5_E',
+    'Part7_E': 'P7_E',
+    'Part8_E': 'P8_E',
+    'Pressure': 'Pre',
+    'Inner_Radius': 'IR',
+    'Outer_Radius': 'OR'
 }
 
 '''
@@ -86,11 +96,10 @@ def updateProperties(origFile, fileTemp):
     # Verify log file exists, if not add log file to be 'x;y;z'
     IOfunctions.checkForLogFile(root)
 
+    # Update material property values
     for part_prop in current_run_dict.keys():
-
-        # TODO: Update material property values
+        # if it is not above names then it is a part
         if "Part" in part_prop:
-            # if it is not above names then it is a part
             part_name = part_prop.split('_')[0]
             prop_name = part_prop.split('_')[1]
 
@@ -103,53 +112,51 @@ def updateProperties(origFile, fileTemp):
                             new_value = float(mat.find(prop_name).text) * float(current_run_dict[part_prop])
                             mat.find(prop_name).text = str(new_value)
 
-        elif "Pressure" in part_prop:
-            loads = root.find('Loads')
-            for surface_load in loads:
-                pressure = surface_load.find('pressure')
-                pressure.text = str(current_run_dict["Pressure"])
+    # Update Pressure Value
+    loads = root.find('Loads')
+    for surface_load in loads:
+        pressure = surface_load.find('pressure')
+        pressure.text = str(current_run_dict["Pressure"])
 
-        elif "Inner_Radius" in part_prop:
-            # Assign inner_radius value from "feb_variables.csv"
-            final_inner_radius = float(current_run_dict["Inner_Radius"])
+    # Assign inner_radius value from "feb_variables.csv"
+    final_inner_radius = float(current_run_dict["Inner_Radius"])
 
-        elif "Outer_Radius" in part_prop:
-            # Assign outer_radius value from "feb_variables.csv"
-            final_outer_radius = float(current_run_dict["Outer_Radius"])
+    # Assign outer_radius value from "feb_variables.csv"
+    final_outer_radius = float(current_run_dict["Outer_Radius"])
 
-            # Extract points from .feb file and return in array of tuples
-            extract_points = CylinderFunctions.get_initial_points_from_parts(root, part_list)
+    # Extract points from .feb file and return in array of tuples
+    extract_points = CylinderFunctions.get_initial_points_from_parts(root, part_list)
 
-            cylinder_height = CylinderFunctions.findLargestZ(extract_points)
+    cylinder_height = CylinderFunctions.findLargestZ(extract_points)
 
-            # Extract only the coordinates for RBF
-            initial_coordinates = np.array([coords for coords in extract_points.values()])
+    # Extract only the coordinates for RBF
+    initial_coordinates = np.array([coords for coords in extract_points.values()])
 
-            # Assign initial_control_points extract_points
-            initial_inner_radius, initial_outer_radius = CylinderFunctions.determineRadiiFromFEB(root, cylinder_parts)
-            initial_control_points = CylinderFunctions.generate_annular_cylinder_points(initial_inner_radius,
+    # Assign initial_control_points extract_points
+    initial_inner_radius, initial_outer_radius = CylinderFunctions.determineRadiiFromFEB(root, cylinder_parts)
+    initial_control_points = CylinderFunctions.generate_annular_cylinder_points(initial_inner_radius,
                                                                                         initial_outer_radius,
                                                                                         cylinder_height,
                                                                                         num_cylinder_points)
 
-            final_control_points = CylinderFunctions.generate_annular_cylinder_points(final_inner_radius, final_outer_radius,
+    final_control_points = CylinderFunctions.generate_annular_cylinder_points(final_inner_radius, final_outer_radius,
                                                                                       cylinder_height,
                                                                                       num_cylinder_points)
 
-            # Enter the name of surface you would like to get id's from, and it will parse the id's and append the
-            # coords from those nodes to initial and final cp for rbf
-            zero_displacement = np.array(CylinderFunctions.extractCoordinatesFromSurfaceName(root, ZeroDisplacement))
+    # Enter the name of surface you would like to get id's from, and it will parse the id's and append the
+    # coords from those nodes to initial and final cp for rbf
+    zero_displacement = np.array(CylinderFunctions.extractCoordinatesFromSurfaceName(root, ZeroDisplacement))
 
-            initial_control_points = np.concatenate((initial_control_points, zero_displacement))
-            final_control_points = np.concatenate((final_control_points, zero_displacement))
+    initial_control_points = np.concatenate((initial_control_points, zero_displacement))
+    final_control_points = np.concatenate((final_control_points, zero_displacement))
 
-            # Call the new morph_points function
-            deformed_points = CylinderFunctions.morph_points(initial_control_points, final_control_points,
+    # Call the new morph_points function
+    deformed_points = CylinderFunctions.morph_points(initial_control_points, final_control_points,
                                                              initial_coordinates,
                                                              extract_points)
 
-            # Replace coordinates in the original file with the deformed points
-            CylinderFunctions.replaceCoordinatesGivenNodeId(root, deformed_points)
+    # Replace coordinates in the original file with the deformed points
+    CylinderFunctions.replaceCoordinatesGivenNodeId(root, deformed_points)
 
     # Write the updated tree to the new FEB file
     tree.write(new_input_file, xml_declaration=True, encoding='ISO-8859-1')
@@ -211,7 +218,7 @@ for row in DOE_dict:
     print("filetemplate: ", fileTemplate)
 
     # Generate Log CSV File into Results Folder
-    IOfunctions.generate_log_csv(current_run_dict, Results_Folder, fileTemplate + '_log' + '.csv')
+    IOfunctions.generate_log_csv(current_run_dict, default_code_dict, Results_Folder, fileTemplate + '_log' + '.csv')
 
     #Update properties, create new input file
     workingInputFileName = updateProperties(originalFebFilePath, fileTemplate)
