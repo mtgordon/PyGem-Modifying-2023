@@ -138,6 +138,61 @@ def plot_3d_points(points_dict):
     plt.show()
 
 
+def plot_pc_points(coords_array, z_value=0, color='b', marker='o', label='Points'):
+    """
+    Plots 3D points.
+
+    Parameters:
+        coords_array (list): A list of 2D points, where each point is a list or tuple [x, y].
+        z_value (float): The z-coordinate value to be used for all points (default is 0).
+        color (str): Color of the points.
+        marker (str): Marker style for the points.
+        label (str): Label for the points in the plot legend.
+
+    Returns:
+        None
+
+    Description:
+        This function plots 3D points using matplotlib. It takes a list of 2D points (x and y coordinates).
+        It assigns the specified z-coordinate value to all points and plots them.
+    """
+    points = np.array(coords_array)
+
+    x, y = points[:, 0], points[:, 1]
+    z = np.full_like(x, z_value)
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+
+    ax.scatter(x, y, z, c=color, marker=marker, label=label)
+
+    ax.set_xlabel('X')
+    ax.set_ylabel('Y')
+    ax.set_zlabel('Z')
+
+    ax.set_box_aspect([1, 1, 1])
+
+    plt.legend()
+    plt.show()
+
+
+def pair_points(points):
+    # Convert all elements to floats
+    cleaned_points = [float(item) if isinstance(item, np.ndarray) else item for item in points]
+
+    # Determine the midpoint for splitting into x and y values
+    midpoint = len(cleaned_points) // 2
+
+    # Split the list into x and y values
+    x_values = cleaned_points[:midpoint]
+    y_values = cleaned_points[midpoint:]
+
+    # Pair the x and y values
+    paired_points = list(zip(x_values, y_values))
+    print('paired_points: ', paired_points)
+    print('\n')
+    return paired_points
+
 def determineRadiiFromFEB(root, cylinder_part):
     """
     Determines the inner and outer radii of a cylinder from a point cloud.
@@ -279,7 +334,6 @@ def replaceCoordinatesGivenNodeId(root, coordinates_dict):
         >>> coordinates_dict = {1: (1.0, 2.0, 3.0), 2: (4.0, 5.0, 6.0), 3: (7.0, 8.0, 9.0)}
         >>> replaceCoordinatesGivenNodeId(root, coordinates_dict)
     """
-
     # Iterate over all node elements in the XML
     for node in root.findall('.//Nodes/node'):
         # Get the id of the current node

@@ -8,39 +8,41 @@ import os.path
 import sys
 import subprocess
 import xml.etree.ElementTree as ET
-import generate_pca_points_AVW as gic
 import PostProcess_FeBio as proc
 import Bottom_Tissue_SA_Final as bts
 import pandas as pd
 import re
 import time
 import PCA_data
+import ShapeAnalysisVerification as sav
 from lib import IOfunctions
 import CylinderFunctions
 from pygem import RBF
 import numpy as np
 import CylinderFunctions
 
-
 # FeBio Variables
 #TODO: ENTER IN VAR FILE --> SET PART NAMES FOR ALL MATERIALS --> DONE
 dictionary_file = 'feb_variables.csv' #DONE
 FeBioLocation = 'C:\\Program Files\\FEBioStudio2\\bin\\febio4.exe'
-originalFebFilePath = 'D:\\Gordon\\Automate FEB Runs\\2024_5_9_NewModel\\Base_File\\3 Tissue Model v6.feb' #DONE
-Results_Folder = 'D:\\Gordon\\Automate FEB Runs\\2024_5_9_NewModel\\Test_Folder5.28' #DONE
+originalFebFilePath = 'D:\\Gordon\\Automate FEB Runs\\2024_5_9_NewModel\\Base_File\\3 Tissue Model v2.feb'
+Results_Folder = 'D:\\Gordon\\Automate FEB Runs\\2024_5_9_NewModel\\TEST_WEEKEND_FOLDER_5.30'
 # This is for output
-object_list = ['Object8'] #TODO: Get new names for flat, curve, GI Filler --> DONE
+object_list = ['Levator Ani Side 2'] #TODO: Get new names for flat, curve, GI Filler --> DONE
 # Currently being used to access base object, may need to be changed when looking to generate multiple objects at once
-part_list = ['Part1', 'Part2']
-cylinder_parts = ['Part1']
+part_list = ['Part1', 'Part3', 'Part7', 'Part10', 'Part11']
+cylinder_parts = ['Part3']
 ZeroDisplacement = "ZeroDisplacement1"
 
 # FLAGS
 Create_New_Feb_Flag = True
 Run_FeBio_File_Flag = True
-first_int_file_flag = False
-GENERATE_INTERMEDIATE_FLAG = False
+first_int_file_flag = True
+GENERATE_INTERMEDIATE_FLAG = True
 Post_Processing_Flag = False
+
+# PLOTTING
+plot_points_on_spline = False
 
 #TODO: Input Parameters for Cylinder Creation
 num_cylinder_points = 200
@@ -49,20 +51,20 @@ num_cylinder_points = 200
 #TODO: Update Everytime you want to change your base file
 default_dict = {
     'Part1_E': 1,
-    'Part2_E': 1,
-    'Part5_E': 1,
+    'Part3_E': 1,
     'Part7_E': 1,
-    'Part8_E': 1,
+    'Part10_E': 1,
+    'Part11_E': 1,
     'Pressure': 0,
-    'Inner_Radius': 1,
-    'Outer_Radius': 2
+    'Inner_Radius': 1.25,
+    'Outer_Radius': 1.75
 }
 default_code_dict = {
     'Part1_E': 'P1_E',
-    'Part2_E': 'P2_E',
-    'Part5_E': 'P5_E',
+    'Part3_E': 'P3_E',
     'Part7_E': 'P7_E',
-    'Part8_E': 'P8_E',
+    'Part10_E': 'P10_E',
+    'Part11_E': 'P11_E',
     'Pressure': 'Pre',
     'Inner_Radius': 'IR',
     'Outer_Radius': 'OR'
@@ -127,6 +129,7 @@ def updateProperties(origFile, fileTemp):
     # Extract points from .feb file and return in array of tuples
     extract_points = CylinderFunctions.get_initial_points_from_parts(root, part_list)
 
+    global cylinder_height
     cylinder_height = CylinderFunctions.findLargestZ(extract_points)
 
     # Extract only the coordinates for RBF
@@ -138,6 +141,7 @@ def updateProperties(origFile, fileTemp):
                                                                                         initial_outer_radius,
                                                                                         cylinder_height,
                                                                                         num_cylinder_points)
+
 
     final_control_points = CylinderFunctions.generate_annular_cylinder_points(final_inner_radius, final_outer_radius,
                                                                                       cylinder_height,
@@ -154,6 +158,8 @@ def updateProperties(origFile, fileTemp):
     deformed_points = CylinderFunctions.morph_points(initial_control_points, final_control_points,
                                                              initial_coordinates,
                                                              extract_points)
+    #changes deformed points to be a dictionary
+    deformed_points = {item[0]: item[1] for item in deformed_points}
 
     # Replace coordinates in the original file with the deformed points
     CylinderFunctions.replaceCoordinatesGivenNodeId(root, deformed_points)
@@ -215,8 +221,6 @@ for row in DOE_dict:
             param = '' + str(key) + '(' + str(current_run_dict[key]) + ')'
             fileTemplate += param
 
-    print("filetemplate: ", fileTemplate)
-
     # Generate Log CSV File into Results Folder
     IOfunctions.generate_log_csv(current_run_dict, default_code_dict, Results_Folder, fileTemplate + '_log' + '.csv')
 
@@ -225,9 +229,6 @@ for row in DOE_dict:
 
     # TODO: to easily get input files from anywhere, do the shutil move to working directory
     logFile = Results_Folder + '\\' + fileTemplate + '.log'
-
-
-    #TODO: CHANGE NODES FOR CYLINDER HERE
 
     # Print Log file when flag is true
     if Run_FeBio_File_Flag:
@@ -238,12 +239,25 @@ for row in DOE_dict:
         # Post process
         if GENERATE_INTERMEDIATE_FLAG:
             if first_int_file_flag:
+
+                edge_elements_dictionary = sav.getCylinderEdgePoints(workingInputFileName, cylinder_parts)
+                # CylinderFunctions.plot_3d_points(edge_elements_dictionary)
+
+                inner_radius, outer_radius = sav.getRadiiFromEdges(edge_elements_dictionary, cylinder_height)
+
                 proc.generate_int_csvs(fileTemplate, object_list, logFile, workingInputFileName, first_int_file_flag,
-                                       csv_filename)
+                                       csv_filename, inner_radius, outer_radius, current_run_dict, plot_points_on_spline)
+
                 first_int_file_flag = False
+
             else:
+
+                edge_elements_dictionary = sav.getCylinderEdgePoints(workingInputFileName, cylinder_parts)
+
+                inner_radius, outer_radius = sav.getRadiiFromEdges(edge_elements_dictionary, cylinder_height)
+
                 proc.generate_int_csvs(fileTemplate, object_list, logFile, workingInputFileName, first_int_file_flag,
-                                       csv_filename)
+                                       csv_filename, inner_radius, outer_radius, current_run_dict, plot_points_on_spline)
 
         file_num += 1
         print('Completed Iteration ' + str(file_num) + ": " + fileTemplate)

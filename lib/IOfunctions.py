@@ -1799,6 +1799,7 @@ def checkForLogFile(root):
         # Create the node_data element within logfile
         node_data = ET.SubElement(logfile, 'node_data')
         node_data.set('data', 'x;y;z')
+        print("log file added")
 
 
 
@@ -1823,8 +1824,6 @@ def generate_log_csv(data_dict, code_dict, directory, filename):
             existing_codes.add(code)
             writer.writerow([property_name, code, value])
 
-    print(f"CSV file '{csv_file}' has been created successfully.")
-
 
 def distance(point1, point2):
     """
@@ -1840,14 +1839,14 @@ def closest_point(dictionary, current_point):
     min_distance = float('inf')
     closest_id = None
     closest_value = None
-    print(current_point)
+    #print(current_point)
     for point_id, value in dictionary.items():
         dist = distance(current_point, value)
         if dist < min_distance:
             min_distance = dist
             closest_id = point_id
             closest_value = value
-    print(closest_value)
+    #print(closest_value)
     return closest_id, closest_value
 
 

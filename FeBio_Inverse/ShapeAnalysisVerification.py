@@ -9,27 +9,18 @@ import os
 import predict_functions as pf
 import matplotlib.pyplot as plt
 import CylinderFunctions
+import xml.etree.ElementTree as ET
 import numpy as np
+from lib import IOfunctions as IO
 from math import hypot
 from scipy import interpolate
+import math
 
 """"
 This files purpose is to verify the shape of the generated cylinders from "automate_febio.py",
 we generate the bottom pca points given the .feb  &+ .log file for both the inner and outer radius of the given cylinder
 """
 
-# File path to .feb & log file
-feb_name = 'D:\\Gordon\\Automate FEB Runs\\2024_4_29 auto\\_Part5_E(0.78)_Pressure(0.06)_Inner_Radius(2.3)_Outer_Radius(4.5).feb'
-log_name = 'D:\\Gordon\\Automate FEB Runs\\2024_4_29 auto\\_Part5_E(0.78)_Pressure(0.06)_Inner_Radius(2.3)_Outer_Radius(4.5).log'
-
-# Parameters for functions below
-obj = 'Object5'
-window_width = 0.3
-num_pts = 9
-spline_ordered = 0
-
-logCoordinates = []
-logCoordinates.append(gic.extract_coordinates_from_final_step(log_name, feb_name, obj))
 
 """
    Function: generate_outer_cylinder_bottom
@@ -51,7 +42,6 @@ def generate_outer_cylinder_bottom(numpts, extract_pts, window_width):
     best_points = []  # List to store the selected points
     maxz = 0  # Maximum z-value encountered in the point cloud
     minz = np.infty  # Minimum z-value encountered in the point cloud
-
     # Iterate through each element within extract_pts
     for ele in extract_pts:
         # Update maxz if the current element's z-value is greater than maxz
@@ -67,10 +57,13 @@ def generate_outer_cylinder_bottom(numpts, extract_pts, window_width):
     # Determine the width of the second search window
     window2_width = ((maxz - minz) / (numpts - 1)) / 2
 
+    zvalue = 0
     # Iterate through each z-value in z_values
     for i, z in enumerate(z_values):
         # Initialize ymin to infinity
         ymin = np.infty
+
+
         # Iterate through each element within extract_pts
         for ele in extract_pts:
             # Determine whether the absolute value of X is less than window_width
@@ -87,9 +80,6 @@ def generate_outer_cylinder_bottom(numpts, extract_pts, window_width):
 
     return best_points
 
-
-# assign cylinder_bottom equal to generate_outer_cylinder_bottom given parameters.
-# cylinder_bottom = generate_outer_cylinder_bottom(num_pts, logCoordinates[0], window_width)
 
 
 """
@@ -128,10 +118,13 @@ def generate_inner_cylinder_bottom(numpts, extract_pts, window_width):
     # Determine the width of the second search window
     window2_width = ((maxz - minz) / (numpts - 1)) / 2
 
+    zvalue = 0
     # Iterate through each z-value in z_values
     for i, z in enumerate(z_values):
         # Initialize ymin to infinity
         ymin = np.infty
+
+
         # Iterate through each element within extract_pts
         for ele in extract_pts:
             # Determine whether the absolute value of X is less than window_width
@@ -203,8 +196,8 @@ Returns:
    
 """
 
-
-def generate_2d_coords_for_cylinder_pca(coords_list):
+#TODO: EVENTUALLY CHANGE NAME TO get_spline_from_2d_coords
+def generate_2d_coords_for_cylinder_pca(coords_list, num_pts):
     dist_array = get_distance_and_coords(coords_list)
 
     # gets all of the ys and zs and inserts them into their own arrays
@@ -272,3 +265,96 @@ def plot_cylinder_bottom(cylinder, cylinder_bottom):
 
 # Call plot function
 # plot_cylinder_bottom(logStripped, cylinder_bottom)
+def get_2d_coords_from_dictionary(radii):
+    # Initialize an empty list to store the extracted [x, y] coordinates
+    two_d_coords = []
+
+    # Iterate through the dictionary items
+    for key, coords in radii.items():
+        # Extract the x and y coordinates (assuming coords is a list [x, y, z])
+        x, y = coords[:2]  # Get the first two elements (x and y)
+        # Append the [x, y] coordinates to the list
+        two_d_coords.append([x, y])
+
+    return two_d_coords
+
+
+def getCylinderEdgePoints(feb_file, part_list):
+    if isinstance(part_list, str):
+        part_list = [part_list]
+
+    tree = ET.parse(feb_file)
+    root = tree.getroot()
+
+    element_counts = {}
+
+    for part in part_list:
+        # Debug: print the part being processed
+        print(f"Processing part: {part}")
+
+        # Find the Elements tag for the current part
+        elements = root.find('.//Elements[@type="hex8"][@name="{}"]'.format(part))
+
+        if elements is not None:
+            # Debug: confirm Elements tag found
+            #print(f"Found Elements tag for part: {part}")
+
+            # Find all elem elements within the Elements
+            elem_elements = elements.findall('elem')
+
+            # Iterate over each elem element
+            for elem in elem_elements:
+                # Extract the text content containing the numbers
+                numbers_text = elem.text.strip()
+                # Convert text to list of integers
+                elem_ids = [int(num.strip()) for num in numbers_text.split(',')]
+
+                # Increment the count for each node ID
+                for node_id in elem_ids:
+                    if node_id in element_counts:
+                        element_counts[node_id] += 1
+                    else:
+                        element_counts[node_id] = 1
+
+    edge_elements_dictionary = {}
+    edge_element_ids = []
+    for elem in element_counts:
+        if element_counts[elem] == 2:
+            edge_element_ids.append(elem)
+
+    for node in root.findall('.//Nodes/node'):
+        # Get the ID of the current node
+        current_node_id = int(node.get('id'))
+
+        # Check if the current node ID is in the set of elem IDs
+        if current_node_id in edge_element_ids:
+            # Extract coordinates from the node text
+            coordinates = [float(coordinate) for coordinate in node.text.split(',')]
+            # Add the node ID and coordinates to the dictionary
+            edge_elements_dictionary[current_node_id] = coordinates
+
+    return edge_elements_dictionary
+
+
+def getRadiiFromEdges(edge_elements_dictionary, cylinder_height):
+    # Get dictionary containing nodes of top inner & outer radii
+    topedges_dictionary = {}
+    for edge, value in edge_elements_dictionary.items():
+        if math.isclose(value[2], cylinder_height, abs_tol=5e-6):
+            topedges_dictionary[edge] = value
+
+
+    #CylinderFunctions.plot_3d_points(topedges_dictionary)
+    max_value = -float('inf')
+    for key, value in topedges_dictionary.items():
+        if value[1] > max_value:
+            max_key = key
+            max_value = value[1]
+
+    startpoint = max_key
+    #TODO: dictionary starting point value messes up, dictionaries are perfect except one point
+    outer_radius_dict, inner_radius_dict = IO.find_closest_points(topedges_dictionary, startpoint, 0.3)
+    # CylinderFunctions.plot_3d_points(outer_radius_dict)
+    # CylinderFunctions.plot_3d_points(inner_radius_dict)
+
+    return inner_radius_dict, outer_radius_dict

@@ -17,6 +17,7 @@ import predict_functions as pf
 import ShapeAnalysisVerification as sav
 import numpy as np
 import matplotlib.pyplot as plt
+import CylinderFunctions
 
 
 
@@ -24,7 +25,7 @@ import matplotlib.pyplot as plt
 window_width = 0.3
 num_pts = 9
 spline_ordered = 0
-startingPointColHeader = 'inner_x'
+startingPointColHeader = 'inner_y'
 secondPartStart = 'outer_x'
 numCompPCA = 2
 stringList = ['inner_x', 'outer_x']
@@ -125,7 +126,7 @@ this was done by commenting out the line "pc_points_bottom = bts.generate_2d_bot
 and line "apex = find_apex(obj_coords_list[1])" To revert back to old model simply change headers and then uncomment the lines metioned 
 above. Also uncomment the second for loop starting at "coord = 'Bx'"
 """
-def generate_int_csvs(file_params,object_list,log_name,feb_name,first_int_file_flag,csv_filename):
+def generate_int_csvs(file_params, object_list, log_name, feb_name, first_int_file_flag, csv_filename, inner_radius, outer_radius, current_run_dict, plot_points_on_spline):
     obj_coords_list = []
 
     csv_row = []
@@ -133,15 +134,11 @@ def generate_int_csvs(file_params,object_list,log_name,feb_name,first_int_file_f
 
     # Get the pure file name that just has the material parameters
 
-
-    # Get the changed material properties
-    paren_pattern = re.compile(r'(?<=\().*?(?=\))')  # find digits in parentheses
-    prop_result = paren_pattern.findall(file_params)
     prop_final = []
-    for prop in prop_result:
-        prop = float(prop)
-        if prop != 1.0:
-            prop_final.append(prop)
+    # Get the changed material properties
+    for key, value in current_run_dict.items():
+        prop = float(value)
+        prop_final.append(prop)
 
     # Get the coordinates for each object in list
     for obj in object_list:
@@ -159,14 +156,27 @@ def generate_int_csvs(file_params,object_list,log_name,feb_name,first_int_file_f
         temparray.append(ele[1][1])
         temparray.append(ele[1][2])
         object_coords_list.append(temparray)
-    obj_coords_list[0] = object_coords_list
 
-    #THIS USES THE FUNCTION THAT WE CREATED TO GENERATE THE OUTER AND INNER POINTS THEN PASSING THEM
-    #IN TO FIND THE 2D_COORDS FOR THE PCA POINTS
-    outer_points = sav.generate_outer_cylinder_bottom(num_pts, obj_coords_list[0], window_width)
-    inner_points = sav.generate_inner_cylinder_bottom(num_pts, obj_coords_list[0], window_width)
-    outer_pc_points = sav.generate_2d_coords_for_cylinder_pca(outer_points)
-    inner_pc_points = sav.generate_2d_coords_for_cylinder_pca(inner_points) #REPLACE WITH CYLINDER POINTS
+    # THIS USES THE FUNCTION THAT WE CREATED TO GENERATE THE OUTER AND INNER POINTS THEN PASSING THEM
+    # IN TO FIND THE 2D_COORDS FOR THE PCA POINTS
+    outer_points = sav.generate_outer_cylinder_bottom(num_pts, object_coords_list, window_width)
+
+    inner_points = sav.generate_inner_cylinder_bottom(num_pts, object_coords_list, window_width)
+
+    inner_radius = sav.get_2d_coords_from_dictionary(inner_radius)
+    outer_radius = sav.get_2d_coords_from_dictionary(outer_radius)
+
+    inner_radius_pc_points = sav.generate_2d_coords_for_cylinder_pca(inner_radius, num_pts)
+    outer_radius_pc_points = sav.generate_2d_coords_for_cylinder_pca(outer_radius, num_pts)
+
+    if plot_points_on_spline:
+        inner_radius_pc_points_plot = CylinderFunctions.pair_points(inner_radius_pc_points)
+        outer_radius_pc_points_plot = CylinderFunctions.pair_points(outer_radius_pc_points)
+        CylinderFunctions.plot_pc_points(inner_radius_pc_points_plot)
+        CylinderFunctions.plot_pc_points(outer_radius_pc_points_plot)
+
+    outer_pc_points = sav.generate_2d_coords_for_cylinder_pca(outer_points, num_pts)
+    inner_pc_points = sav.generate_2d_coords_for_cylinder_pca(inner_points, num_pts) #REPLACE WITH CYLINDER POINTS
 
 
 
@@ -183,28 +193,34 @@ def generate_int_csvs(file_params,object_list,log_name,feb_name,first_int_file_f
     #csv_row.append(apex)
     csv_row.extend(inner_pc_points)
     csv_row.extend(outer_pc_points)
+    csv_row.extend(inner_radius_pc_points)
+    csv_row.extend(outer_radius_pc_points)
     #csv_row.extend(pc_points_bottom)  # the 30 pc coordinates
 
     if first_int_file_flag:
         #TODO: Have the headers loop through the file params... Done?
         csv_header.append('File Name')
-        csv_header.append('E5')
-        csv_header.append('Pressure')
-        csv_header.append('Inner_Radius')
-        csv_header.append('Outer_Radius')
-
-
+        for key, value in current_run_dict.items():
+            csv_header.append(key)
 
         #coord = 'inner_x'
         coord = startingPointColHeader
         # TODO: This is purely for the coordinate headers (ADJUST 15 FOR THE MAX NUMBER OF COORDINATE HEADERS)
-        for i in range(4):
+        for i in range(8):
             if i == 1:
-                coord = 'inner_y'
+                coord = 'inner_z'
             elif i == 2:
-                coord = 'outer_x'
-            elif i == 3:
                 coord = 'outer_y'
+            elif i == 3:
+                coord = 'outer_z'
+            elif i == 4:
+                coord = 'inner_radius_x'
+            elif i == 5:
+                coord = 'inner_radius_y'
+            elif i == 6:
+                coord = 'outer_radius_x'
+            elif i == 7:
+                coord = 'outer_radius_y'
             for j in range(num_pts):
                 csv_header.append(coord + str(j + 1))
         #TODO: commented this out because we do not have a points for 'bottom'
