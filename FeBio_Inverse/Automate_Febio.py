@@ -4,6 +4,7 @@ a run is completed for each row, then is post processed
 """
 import csv
 import datetime
+import math
 import os.path
 import sys
 import subprocess
@@ -129,40 +130,45 @@ def updateProperties(origFile, fileTemp):
     # Extract points from .feb file and return in array of tuples
     extract_points = CylinderFunctions.get_initial_points_from_parts(root, part_list)
 
+    # Find cylinder height
     global cylinder_height
     cylinder_height = CylinderFunctions.findLargestZ(extract_points)
 
-    # Extract only the coordinates for RBF
-    initial_coordinates = np.array([coords for coords in extract_points.values()])
+    if not math.isclose(float(current_run_dict["Inner_Radius"]), float(default_dict["Inner_Radius"]),
+                        abs_tol=0.001) and not math.isclose(float(current_run_dict["Outer_Radius"]),
+                                                            float(default_dict["Outer_Radius"]), abs_tol=0.001):
 
-    # Assign initial_control_points extract_points
-    initial_inner_radius, initial_outer_radius = CylinderFunctions.determineRadiiFromFEB(root, cylinder_parts)
-    initial_control_points = CylinderFunctions.generate_annular_cylinder_points(initial_inner_radius,
-                                                                                        initial_outer_radius,
-                                                                                        cylinder_height,
-                                                                                        num_cylinder_points)
+        # Extract only the coordinates for RBF
+        initial_coordinates = np.array([coords for coords in extract_points.values()])
+
+        # Assign initial_control_points extract_points
+        initial_inner_radius, initial_outer_radius = CylinderFunctions.determineRadiiFromFEB(root, cylinder_parts)
+        initial_control_points = CylinderFunctions.generate_annular_cylinder_points(initial_inner_radius,
+                                                                                            initial_outer_radius,
+                                                                                            cylinder_height,
+                                                                                            num_cylinder_points)
 
 
-    final_control_points = CylinderFunctions.generate_annular_cylinder_points(final_inner_radius, final_outer_radius,
-                                                                                      cylinder_height,
-                                                                                      num_cylinder_points)
+        final_control_points = CylinderFunctions.generate_annular_cylinder_points(final_inner_radius, final_outer_radius,
+                                                                                          cylinder_height,
+                                                                                          num_cylinder_points)
 
-    # Enter the name of surface you would like to get id's from, and it will parse the id's and append the
-    # coords from those nodes to initial and final cp for rbf
-    zero_displacement = np.array(CylinderFunctions.extractCoordinatesFromSurfaceName(root, ZeroDisplacement))
+        # Enter the name of surface you would like to get id's from, and it will parse the id's and append the
+        # coords from those nodes to initial and final cp for rbf
+        zero_displacement = np.array(CylinderFunctions.extractCoordinatesFromSurfaceName(root, ZeroDisplacement))
 
-    initial_control_points = np.concatenate((initial_control_points, zero_displacement))
-    final_control_points = np.concatenate((final_control_points, zero_displacement))
+        initial_control_points = np.concatenate((initial_control_points, zero_displacement))
+        final_control_points = np.concatenate((final_control_points, zero_displacement))
 
-    # Call the new morph_points function
-    deformed_points = CylinderFunctions.morph_points(initial_control_points, final_control_points,
-                                                             initial_coordinates,
-                                                             extract_points)
-    #changes deformed points to be a dictionary
-    deformed_points = {item[0]: item[1] for item in deformed_points}
+        # Call the new morph_points function
+        deformed_points = CylinderFunctions.morph_points(initial_control_points, final_control_points,
+                                                                 initial_coordinates,
+                                                                 extract_points)
+        #changes deformed points to be a dictionary
+        deformed_points = {item[0]: item[1] for item in deformed_points}
 
-    # Replace coordinates in the original file with the deformed points
-    CylinderFunctions.replaceCoordinatesGivenNodeId(root, deformed_points)
+        # Replace coordinates in the original file with the deformed points
+        CylinderFunctions.replaceCoordinatesGivenNodeId(root, deformed_points)
 
     # Write the updated tree to the new FEB file
     tree.write(new_input_file, xml_declaration=True, encoding='ISO-8859-1')

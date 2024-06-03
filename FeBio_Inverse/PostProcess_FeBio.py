@@ -21,14 +21,15 @@ import CylinderFunctions
 
 
 
-#TODO: Change the following to preffered numbers
+#TODO: Change the following to preferred numbers
 window_width = 0.3
 num_pts = 9
 spline_ordered = 0
 startingPointColHeader = 'inner_y'
 secondPartStart = 'outer_x'
 numCompPCA = 2
-stringList = ['inner_x', 'outer_x']
+#stringList = ['inner_x', 'outer_x']
+stringList = ['inner_y', 'outer_y', 'inner_radius_x', 'outer_radius_x']
 
 """
     Generate modified training CSV files with principal component scores from the original file.
@@ -87,7 +88,7 @@ def process_features(csv_file, Results_Folder, date_prefix, numCompPCA):
             columns={f'outer_x{i + 1}': f'Principal Component {i + 1} Outer Radius' for i in range(numCompPCA)})
 
         # Concatenate the DataFrames to create the final DataFrame
-        final_df = pd.concat([int_df.loc[:, ["File Name", "E5", "Pressure", "Inner_Radius", "Outer_Radius"]],
+        final_df = pd.concat([int_df.loc[:, ["File Name", "Part3_E", "Pressure", "Inner_Radius", "Outer_Radius"]],
                               PC_scores, PC_scores_bottom], axis=1)
 
         # Create the directory if it doesn't exist
@@ -225,7 +226,6 @@ def generate_int_csvs(file_params, object_list, log_name, feb_name, first_int_fi
                 csv_header.append(coord + str(j + 1))
         #TODO: commented this out because we do not have a points for 'bottom'
         """
-        
         coord = 'Bx'
         for i in range(2):
             if i == 1:

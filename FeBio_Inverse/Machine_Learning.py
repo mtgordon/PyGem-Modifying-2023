@@ -13,16 +13,16 @@ old_data = 'combo_features (1).csv'
 train_data = 'combo_features (1).csv'
 test_data = 'updated_order_features_5_30.csv'
 # model_path = 'Models\\real_y2el_50009_c36_x1x2'
-epochs = 10000
+epochs = 200
 epochs_start = 10
 layers = 3
 capacity = 36
-patience = 10000 # originally 50
-numCompPCA = 2
+patience = 10 # originally 50
+numCompPCA = 3
 squared = True
 random.seed(33)
 #data = "D:\\Gordon\\Automate FEB Runs\\2024_4_29 auto\\target_folder\\2024_5_6_intermediate.csv" #TODO: Change to the PC csv
-data = "D:\\Gordon\\Automate FEB Runs\\2024_4_29 auto\\2024_5_6_intermediate.csv"
+data = "D:\\Gordon\\Automate FEB Runs\\2024_5_9_NewModel\\TEST_WEEKEND_FOLDER_5.30\\2024_5_30_intermediate.csv"
 
 def machine_learning_all(epochs, epochs_start, layers, capacity, patience, squared, data=None):
     # TODO: Step 1 - generate the csv file (all)
@@ -63,7 +63,7 @@ def machine_learning_all(epochs, epochs_start, layers, capacity, patience, squar
     print("output train data: ", train_data_path)
     print("output test data: ", test_data_path)
     # print("Modified train data: ", mod_train_path)
-    print("Modified test data: ", mod_test_path)
+    # print("Modified test data: ", mod_test_path)
     # print("Saved PCs data: ", pc_csv_path)
     # print("noise_0 test data: ", noise_test_path)
     # print("Saved best model name: ", model_path)
