@@ -27,20 +27,22 @@ import CylinderFunctions
 dictionary_file = 'feb_variables.csv' #DONE
 FeBioLocation = 'C:\\Program Files\\FEBioStudio2\\bin\\febio4.exe'
 originalFebFilePath = 'D:\\Gordon\\Automate FEB Runs\\2024_5_9_NewModel\\Base_File\\3 Tissue Model v2.feb'
-Results_Folder = 'D:\\Gordon\\Automate FEB Runs\\2024_5_9_NewModel\\TEST_WEEKEND_FOLDER_5.30'
+Results_Folder = 'D:\\Gordon\\Automate FEB Runs\\2024_5_9_NewModel\\TEST_FOLDER_6.4'
 # This is for output
 object_list = ['Levator Ani Side 2'] #TODO: Get new names for flat, curve, GI Filler --> DONE
 # Currently being used to access base object, may need to be changed when looking to generate multiple objects at once
 part_list = ['Part1', 'Part3', 'Part7', 'Part10', 'Part11']
 cylinder_parts = ['Part3']
 ZeroDisplacement = "ZeroDisplacement1"
+numCompPCA = 3
 
 # FLAGS
 Create_New_Feb_Flag = True
 Run_FeBio_File_Flag = True
-first_int_file_flag = True
+first_int_file_flag = False
 GENERATE_INTERMEDIATE_FLAG = True
-Post_Processing_Flag = False
+Post_Processing_Flag = True
+
 
 # PLOTTING
 plot_points_on_spline = False
@@ -247,9 +249,13 @@ for row in DOE_dict:
             if first_int_file_flag:
 
                 edge_elements_dictionary = sav.getCylinderEdgePoints(workingInputFileName, cylinder_parts)
+
                 # CylinderFunctions.plot_3d_points(edge_elements_dictionary)
 
-                inner_radius, outer_radius = sav.getRadiiFromEdges(edge_elements_dictionary, cylinder_height)
+                inner_radius, outer_radius = sav.getRadiiFromEdges(edge_elements_dictionary, cylinder_height, logFile, workingInputFileName, object_list[0])
+                print(inner_radius)
+                print(outer_radius)
+
 
                 proc.generate_int_csvs(fileTemplate, object_list, logFile, workingInputFileName, first_int_file_flag,
                                        csv_filename, inner_radius, outer_radius, current_run_dict, plot_points_on_spline)
@@ -260,7 +266,7 @@ for row in DOE_dict:
 
                 edge_elements_dictionary = sav.getCylinderEdgePoints(workingInputFileName, cylinder_parts)
 
-                inner_radius, outer_radius = sav.getRadiiFromEdges(edge_elements_dictionary, cylinder_height)
+                inner_radius, outer_radius = sav.getRadiiFromEdges(edge_elements_dictionary, cylinder_height, logFile, workingInputFileName, object_list[0])
 
                 proc.generate_int_csvs(fileTemplate, object_list, logFile, workingInputFileName, first_int_file_flag,
                                        csv_filename, inner_radius, outer_radius, current_run_dict, plot_points_on_spline)
@@ -273,4 +279,4 @@ for row in DOE_dict:
         os.rename(workingInputFileName, os.path.splitext(workingInputFileName)[0] + '_error.feb')
 
 if Post_Processing_Flag: # previously called final_csv_flag
-    proc.process_features(csv_filename, Results_Folder, date_prefix)
+    proc.process_features(csv_filename, Results_Folder, date_prefix, numCompPCA)

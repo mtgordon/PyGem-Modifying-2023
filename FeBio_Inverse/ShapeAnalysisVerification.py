@@ -336,7 +336,30 @@ def getCylinderEdgePoints(feb_file, part_list):
     return edge_elements_dictionary
 
 
-def getRadiiFromEdges(edge_elements_dictionary, cylinder_height):
+# def getRadiiFromEdges(edge_elements_dictionary, cylinder_height):
+#     # Get dictionary containing nodes of top inner & outer radii
+#     topedges_dictionary = {}
+#     for edge, value in edge_elements_dictionary.items():
+#         if math.isclose(value[2], cylinder_height, abs_tol=5e-6):
+#             topedges_dictionary[edge] = value
+#
+#
+#     #CylinderFunctions.plot_3d_points(topedges_dictionary)
+#     max_value = -float('inf')
+#     for key, value in topedges_dictionary.items():
+#         if value[1] > max_value:
+#             max_key = key
+#             max_value = value[1]
+#
+#     startpoint = max_key
+#     #TODO: dictionary starting point value messes up, dictionaries are perfect except one point
+#     outer_radius_dict, inner_radius_dict = IO.find_closest_points(topedges_dictionary, startpoint, 0.3)
+#     # CylinderFunctions.plot_3d_points(outer_radius_dict)
+#     # CylinderFunctions.plot_3d_points(inner_radius_dict)
+#
+#     return inner_radius_dict, outer_radius_dict
+
+def getRadiiFromEdges(edge_elements_dictionary, cylinder_height, logFile, workingInputFile, obj):
     # Get dictionary containing nodes of top inner & outer radii
     topedges_dictionary = {}
     for edge, value in edge_elements_dictionary.items():
@@ -351,10 +374,13 @@ def getRadiiFromEdges(edge_elements_dictionary, cylinder_height):
             max_key = key
             max_value = value[1]
 
+    # Reassign dictionary coordinates to reflect those from the last step of log file
+    final_step_coords = gic.extract_coordinates_from_final_step(logFile, workingInputFile, obj)
+    for array in final_step_coords:
+        if int(array[0]) in topedges_dictionary:
+            topedges_dictionary[int(array[0])] = array[1]
     startpoint = max_key
     #TODO: dictionary starting point value messes up, dictionaries are perfect except one point
-    outer_radius_dict, inner_radius_dict = IO.find_closest_points(topedges_dictionary, startpoint, 0.3)
-    # CylinderFunctions.plot_3d_points(outer_radius_dict)
-    # CylinderFunctions.plot_3d_points(inner_radius_dict)
+    outer_radius_dict, inner_radius_dict = IO.find_closest_points(topedges_dictionary, startpoint, 0.4)
 
     return inner_radius_dict, outer_radius_dict
