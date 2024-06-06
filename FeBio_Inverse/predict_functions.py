@@ -1097,6 +1097,7 @@ def fit_model_save_best_and_curve(data, epochs, layers, capacity, patience, epoc
 
     if print_path:
         print("Successfully trained and saved model! \nModel_path: ", model_path)
+        input()
 
     # mean, std = cal_result(results)
     # # summarize performance

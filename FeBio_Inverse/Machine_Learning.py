@@ -17,12 +17,12 @@ epochs = 200
 epochs_start = 10
 layers = 3
 capacity = 36
-patience = 10 # originally 50
+patience = 50 # originally 50
 numCompPCA = 3
 squared = True
 random.seed(33)
 #data = "D:\\Gordon\\Automate FEB Runs\\2024_4_29 auto\\target_folder\\2024_5_6_intermediate.csv" #TODO: Change to the PC csv
-data = "D:\\Gordon\\Automate FEB Runs\\2024_5_9_NewModel\\TEST_WEEKEND_FOLDER_5.30\\2024_5_30_intermediate.csv"
+data = "D:\\Gordon\\Automate FEB Runs\\2024_5_9_NewModel\\TEST_FOLDER_6.4\\2024_6_4_intermediate.csv"
 
 def machine_learning_all(epochs, epochs_start, layers, capacity, patience, squared, data=None):
     # TODO: Step 1 - generate the csv file (all)
@@ -34,14 +34,16 @@ def machine_learning_all(epochs, epochs_start, layers, capacity, patience, squar
 
     # TODO: STEP 3 - Generate new PCs based on the train file
     Results_Folder = "NewMLSystem"
-    mod_train_path, pca1, pcaB = pp.process_features(train_data_path, Results_Folder, date_prefix, numCompPCA)
+    mod_train_path, pca1, pcaB, pcaR = pp.process_features(train_data_path, Results_Folder, date_prefix, numCompPCA)
 
     # Save PCs and save the PCA Model
     # pc_csv_path = pf.generate_PC_csv_file_from(mod_train_path, [5, 6, 7, 8])
 
     # add noise to test file
-    mod_test_path, pca1, pcaB = pp.process_features(test_data_path, Results_Folder, date_prefix, numCompPCA)
-    # noise_test_path = pd.add_noise_to_csv(test_data_path, Results_Folder, pca1, pcaB, noise_scale=0)
+    mod_test_path, pca1, pcaB, pcaR = pp.process_features(test_data_path, Results_Folder, date_prefix, numCompPCA)
+    #todo:Does not work
+    #noise_test_path = pd.add_noise_to_csv(test_data_path, Results_Folder, pca1, pcaB, noise_scale=0)
+    #todo:Does not work
 
 
 

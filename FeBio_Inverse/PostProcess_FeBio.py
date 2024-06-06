@@ -29,7 +29,7 @@ startingPointColHeader = 'inner_y'
 secondPartStart = 'outer_x'
 numCompPCA = 2
 #stringList = ['inner_x', 'outer_x']
-stringList = ['inner_y', 'outer_y', 'inner_radius_x', 'outer_radius_x']
+stringList = ['inner_y', 'outer_y', 'innerShape_x', 'outerShape_x']
 
 """
     Generate modified training CSV files with principal component scores from the original file.
@@ -61,35 +61,50 @@ def process_features(csv_file, Results_Folder, date_prefix, numCompPCA):
         # If not the last header, get the next header
         if i < len(stringList) - 1:
             next_header = stringList[i + 1]
+            final_header = stringList[i + 2]
 
         # Get the start and end indices of the current header's columns
         currentStartIndex = int_df.columns[int_df.columns.str.contains(header)].tolist()
         currentIndex = int_df.columns.get_loc(currentStartIndex[0])
 
+
         nextStartIndex = int_df.columns[int_df.columns.str.contains(next_header)].tolist()
         nextIndex = int_df.columns.get_loc(nextStartIndex[0])
 
+
+        final_Start_Index = int_df.columns[int_df.columns.str.contains(final_header)].tolist()
+        final_Index = int_df.columns.get_loc(final_Start_Index[0])
+
         # Slice the DataFrame to get the columns for the current header
         pc1_df = int_df.iloc[:, currentIndex:nextIndex]  # TODO: HARD CODED _ CHANGE LATER
-        pcbottom_df = int_df.iloc[:, nextIndex:len(int_df.columns)]
+        pc_outer_bottom = int_df.iloc[:, nextIndex:final_Index]
+        pc_radius_df = int_df.iloc[:, final_Index:len(int_df.columns)]
 
         # Perform PCA on the sliced DataFrames
+
         total_result_PC1, pca1 = PCA_data.PCA_(pc1_df, numCompPCA)
-        total_result_PCB, pcaB = PCA_data.PCA_([pcbottom_df], numCompPCA)
+        total_result_PCB, pcaB = PCA_data.PCA_([pc_outer_bottom], numCompPCA)
+        total_result_PCR, pcaR = PCA_data.PCA_([pc_radius_df], numCompPCA)
 
         # Get the principal component scores
         PC_scores = total_result_PC1.iloc[:, :numCompPCA]
         PC_scores_bottom = total_result_PCB.iloc[:, :numCompPCA]
+        PC_scores_radius = total_result_PCR.iloc[:, :numCompPCA]
 
         # Rename the column headers to "Principal Component i Inner/Outer Radius"
         PC_scores = PC_scores.rename(
             columns={f'inner_x{i + 1}': f'Principal Component {i + 1} Inner Radius' for i in range(numCompPCA)})
+
         PC_scores_bottom = PC_scores_bottom.rename(
             columns={f'outer_x{i + 1}': f'Principal Component {i + 1} Outer Radius' for i in range(numCompPCA)})
 
+        PC_scores_radius = PC_scores_radius.rename(
+            columns={f'radius{i + 1}' : f'Principal Component {i + 1} Cylinder' for i in range(numCompPCA)})
+
         # Concatenate the DataFrames to create the final DataFrame
         final_df = pd.concat([int_df.loc[:, ["File Name", "Part3_E", "Pressure", "Inner_Radius", "Outer_Radius"]],
-                              PC_scores, PC_scores_bottom], axis=1)
+                              PC_scores, PC_scores_bottom, PC_scores_radius], axis=1)
+
 
         # Create the directory if it doesn't exist
         if not os.path.exists(Results_Folder):
@@ -104,8 +119,10 @@ def process_features(csv_file, Results_Folder, date_prefix, numCompPCA):
         # Save the final DataFrame to a CSV file
         final_df.to_csv(file_path, index=False)
 
+
+
         # Return the file path and PCA models
-        return file_path, pca1, pcaB
+        return file_path, pca1, pcaB, pcaR
 
 def find_apex(coordList):
     min_y = coordList[0][1][1]
@@ -168,6 +185,7 @@ def generate_int_csvs(file_params, object_list, log_name, feb_name, first_int_fi
     outer_radius = sav.get_2d_coords_from_dictionary(outer_radius)
 
     inner_radius_pc_points = sav.generate_2d_coords_for_cylinder_pca(inner_radius, num_pts)
+
     outer_radius_pc_points = sav.generate_2d_coords_for_cylinder_pca(outer_radius, num_pts)
 
     if plot_points_on_spline:
@@ -215,13 +233,13 @@ def generate_int_csvs(file_params, object_list, log_name, feb_name, first_int_fi
             elif i == 3:
                 coord = 'outer_z'
             elif i == 4:
-                coord = 'inner_radius_x'
+                coord = 'innerShape_x'
             elif i == 5:
-                coord = 'inner_radius_y'
+                coord = 'innerShape_y'
             elif i == 6:
-                coord = 'outer_radius_x'
+                coord = 'outerShape_x'
             elif i == 7:
-                coord = 'outer_radius_y'
+                coord = 'outerShape_y'
             for j in range(num_pts):
                 csv_header.append(coord + str(j + 1))
         #TODO: commented this out because we do not have a points for 'bottom'
