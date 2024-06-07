@@ -26,8 +26,8 @@ import CylinderFunctions
 #TODO: ENTER IN VAR FILE --> SET PART NAMES FOR ALL MATERIALS --> DONE
 dictionary_file = 'feb_variables.csv' #DONE
 FeBioLocation = 'C:\\Program Files\\FEBioStudio2\\bin\\febio4.exe'
-originalFebFilePath = 'D:\\Gordon\\Automate FEB Runs\\2024_5_9_NewModel\\Base_File\\3 Tissue Model v2.feb'
-Results_Folder = 'D:\\Gordon\\Automate FEB Runs\\2024_5_9_NewModel\\TEST_FOLDER_6.4'
+originalFebFilePath = 'D:\\Gordon\\Automate FEB Runs\\2024_5_9_NewModel\\Base_File\\3 Tissue Model v2 w Muscle.feb'
+Results_Folder = 'D:\\Gordon\\Automate FEB Runs\\2024_5_9_NewModel\\MuscleModel_Runs'
 # This is for output
 object_list = ['Levator Ani Side 2'] #TODO: Get new names for flat, curve, GI Filler --> DONE
 # Currently being used to access base object, may need to be changed when looking to generate multiple objects at once
@@ -55,22 +55,32 @@ num_cylinder_points = 200
 default_dict = {
     'Part1_E': 1,
     'Part3_E': 1,
-    'Part7_E': 1,
-    'Part10_E': 1,
-    'Part11_E': 1,
     'Pressure': 0,
     'Inner_Radius': 1.25,
-    'Outer_Radius': 1.75
+    'Outer_Radius': 1.75,
+    'Part7_g1': 0,
+    'Part7_g2': 0,
+    'Part7_g3': 0,
+    'Part7_p1': 0,
+    'Part7_p2': 0,
+    'Part7_Lofl': 0,
+    'Part7_smax': 0,
+    'Part7_activation': 0
 }
 default_code_dict = {
     'Part1_E': 'P1_E',
     'Part3_E': 'P3_E',
-    'Part7_E': 'P7_E',
-    'Part10_E': 'P10_E',
-    'Part11_E': 'P11_E',
     'Pressure': 'Pre',
     'Inner_Radius': 'IR',
-    'Outer_Radius': 'OR'
+    'Outer_Radius': 'OR',
+    'Part7_g1': 'P7_g1',
+    'Part7_g2': 'P7_g2',
+    'Part7_g3': 'P7_g3',
+    'Part7_p1': 'P7_p1',
+    'Part7_p2': 'P7_p2',
+    'Part7_Lofl': 'P7_Lofl',
+    'Part7_smax': 'P7_smax',
+    'Part7_activation': 'P7_activation'
 }
 
 '''
@@ -104,6 +114,7 @@ def updateProperties(origFile, fileTemp):
     # Update material property values
     for part_prop in current_run_dict.keys():
         # if it is not above names then it is a part
+        print('CURRENT PROP: ', part_prop)
         if "Part" in part_prop:
             part_name = part_prop.split('_')[0]
             prop_name = part_prop.split('_')[1]
