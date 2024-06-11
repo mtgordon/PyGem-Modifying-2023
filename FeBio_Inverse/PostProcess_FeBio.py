@@ -3,7 +3,8 @@ This file is designed to use the IO functions relating to FeBio, which can entai
 and log files that are txt output files. The goal is to replicate the same process as the post-processing currently
 implemented for the INP files with Abaqus.
 """
-
+import PCA_data
+from sklearn.decomposition import PCA
 import test_yutian.functions.IOfunctions_Feb as IO
 import generate_pca_points_AVW as gic
 import re
@@ -18,18 +19,28 @@ import ShapeAnalysisVerification as sav
 import numpy as np
 import matplotlib.pyplot as plt
 import CylinderFunctions
+import PCA_data
 
-
+current_run_dict = {
+    'Part1_E': 1,
+    'Part3_E': 1,
+    'Part7_E': 1,
+    'Part10_E': 1,
+    'Part11_E': 1,
+    'Pressure': 0.015,
+    'Inner_Radius': 1.25,
+    'Outer_Radius': 1.75
+}
 
 #TODO: Change the following to preferred numbers
 window_width = 0.3
 num_pts = 9
 spline_ordered = 0
-startingPointColHeader = 'inner_y'
-secondPartStart = 'outer_x'
 numCompPCA = 2
-#stringList = ['inner_x', 'outer_x']
-stringList = ['inner_y', 'outer_y', 'innerShape_x', 'outerShape_x']
+
+# TODO: Replace Headers when changing what intermediate displays
+intermediate_Headers = ['inner_y', 'inner_z', 'outer_y', 'outer_z', 'innerShape_x', 'innerShape_y', 'outerShape_x', 'outerShape_y']
+PCA_Headers = ['inner_y', 'outer_y', 'innerShape_x', 'outerShape_x']
 
 """
     Generate modified training CSV files with principal component scores from the original file.
@@ -52,77 +63,97 @@ stringList = ['inner_y', 'outer_y', 'innerShape_x', 'outerShape_x']
         >>> numCompPCA = 3
         >>> file_path, pca1, pcaB = process_features(csv_file, Results_Folder, date_prefix, numCompPCA)
     """
-def process_features(csv_file, Results_Folder, date_prefix, numCompPCA):
+def process_features(csv_file, Results_Folder, date_prefix, numCompPCA, current_run_dict):
     # Read the input CSV file into a pandas DataFrame
     int_df = pd.read_csv(csv_file)
 
-    # Iterate through the headers
-    for i, header in enumerate(stringList):
-        # If not the last header, get the next header
-        if i < len(stringList) - 1:
-            next_header = stringList[i + 1]
-            final_header = stringList[i + 2]
+    # Determine the number of entries for each intermediate header
+    header_counts = {header: len([col for col in int_df.columns if header in col]) for header in intermediate_Headers}
 
-        # Get the start and end indices of the current header's columns
-        currentStartIndex = int_df.columns[int_df.columns.str.contains(header)].tolist()
-        currentIndex = int_df.columns.get_loc(currentStartIndex[0])
+    # Extract columns based on headers
+    def get_columns(df, header):
+        return [col for col in df.columns if header in col]
 
+    # Ensure directory exists
+    if not os.path.exists(Results_Folder):
+        os.makedirs(Results_Folder)
 
-        nextStartIndex = int_df.columns[int_df.columns.str.contains(next_header)].tolist()
-        nextIndex = int_df.columns.get_loc(nextStartIndex[0])
+    pca1, pcaB, pcaR = None, None, None
+    final_df_list = []
 
+    for header in PCA_Headers:
+        if header not in header_counts:
+            print(f"Header {header} not found in header_counts.")
+            continue
 
-        final_Start_Index = int_df.columns[int_df.columns.str.contains(final_header)].tolist()
-        final_Index = int_df.columns.get_loc(final_Start_Index[0])
-
-        # Slice the DataFrame to get the columns for the current header
-        pc1_df = int_df.iloc[:, currentIndex:nextIndex]  # TODO: HARD CODED _ CHANGE LATER
-        pc_outer_bottom = int_df.iloc[:, nextIndex:final_Index]
-        pc_radius_df = int_df.iloc[:, final_Index:len(int_df.columns)]
+        current_columns = get_columns(int_df, header)
+        pc1_df = int_df[current_columns]
 
         # Perform PCA on the sliced DataFrames
-
         total_result_PC1, pca1 = PCA_data.PCA_(pc1_df, numCompPCA)
-        total_result_PCB, pcaB = PCA_data.PCA_([pc_outer_bottom], numCompPCA)
-        total_result_PCR, pcaR = PCA_data.PCA_([pc_radius_df], numCompPCA)
+
+        # If the next header exists, process it
+        next_index = PCA_Headers.index(header) + 1
+        pc_outer_bottom = pd.DataFrame()
+        pc_radius_df = pd.DataFrame()
+
+        if next_index < len(PCA_Headers):
+            next_header = PCA_Headers[next_index]
+            next_columns = get_columns(int_df, next_header)
+            pc_outer_bottom = int_df[next_columns]
+
+        if next_index + 1 < len(PCA_Headers):
+            final_header = PCA_Headers[next_index + 1]
+            final_columns = get_columns(int_df, final_header)
+            pc_radius_df = int_df[final_columns]
+
+        if not pc_outer_bottom.empty:
+            total_result_PCB, pcaB = PCA_data.PCA_([pc_outer_bottom], numCompPCA)
+        else:
+            total_result_PCB = pd.DataFrame()
+
+        if not pc_radius_df.empty:
+            total_result_PCR, pcaR = PCA_data.PCA_([pc_radius_df], numCompPCA)
+        else:
+            total_result_PCR = pd.DataFrame()
 
         # Get the principal component scores
-        PC_scores = total_result_PC1.iloc[:, :numCompPCA]
-        PC_scores_bottom = total_result_PCB.iloc[:, :numCompPCA]
-        PC_scores_radius = total_result_PCR.iloc[:, :numCompPCA]
-
-        # Rename the column headers to "Principal Component i Inner/Outer Radius"
-        PC_scores = PC_scores.rename(
+        PC_scores = total_result_PC1.iloc[:, :numCompPCA].rename(
             columns={f'inner_x{i + 1}': f'Principal Component {i + 1} Inner Radius' for i in range(numCompPCA)})
 
-        PC_scores_bottom = PC_scores_bottom.rename(
-            columns={f'outer_x{i + 1}': f'Principal Component {i + 1} Outer Radius' for i in range(numCompPCA)})
+        if not total_result_PCB.empty:
+            PC_scores_bottom = total_result_PCB.iloc[:, :numCompPCA].rename(
+                columns={f'outer_x{i + 1}': f'Principal Component {i + 1} Outer Radius' for i in range(numCompPCA)})
+        else:
+            PC_scores_bottom = pd.DataFrame()
 
-        PC_scores_radius = PC_scores_radius.rename(
-            columns={f'radius{i + 1}' : f'Principal Component {i + 1} Cylinder' for i in range(numCompPCA)})
+        if not total_result_PCR.empty:
+            PC_scores_radius = total_result_PCR.iloc[:, :numCompPCA].rename(
+                columns={f'radius{i + 1}': f'Principal Component {i + 1} Cylinder' for i in range(numCompPCA)})
+        else:
+            PC_scores_radius = pd.DataFrame()
 
         # Concatenate the DataFrames to create the final DataFrame
-        final_df = pd.concat([int_df.loc[:, ["File Name", "Part3_E", "Pressure", "Inner_Radius", "Outer_Radius"]],
-                              PC_scores, PC_scores_bottom, PC_scores_radius], axis=1)
+        final_df = pd.concat([int_df.loc[:, ["File Name"]]] + [int_df[header] for header in current_run_dict.keys() if
+                                                               header != "File Name"] + [PC_scores, PC_scores_bottom,
+                                                                                         PC_scores_radius], axis=1)
+        final_df_list.append(final_df)
 
+    # Concatenate all the results
+    final_result_df = pd.concat(final_df_list, axis=0)
 
-        # Create the directory if it doesn't exist
-        if not os.path.exists(Results_Folder):
-            os.makedirs(Results_Folder)
+    # Get the base file name
+    file_name = os.path.splitext(os.path.basename(csv_file))[0]
 
-        # Get the base file name
-        file_name = pf.get_file_name(csv_file)
+    # Construct the file path for the modified CSV
+    file_path = os.path.join(Results_Folder, f'{file_name}_{date_prefix}_modified_train.csv')
 
-        # Construct the file path for the modified CSV
-        file_path = os.path.join(Results_Folder, f'{file_name}_{date_prefix}_modified_train.csv')
+    # Save the final DataFrame to a CSV file
+    final_result_df.to_csv(file_path, index=False)
 
-        # Save the final DataFrame to a CSV file
-        final_df.to_csv(file_path, index=False)
+    # Return the file path and PCA models
+    return file_path, pca1, pcaB, pcaR
 
-
-
-        # Return the file path and PCA models
-        return file_path, pca1, pcaB, pcaR
 
 def find_apex(coordList):
     min_y = coordList[0][1][1]
@@ -225,21 +256,8 @@ def generate_int_csvs(file_params, object_list, log_name, feb_name, first_int_fi
         #coord = 'inner_x'
         coord = startingPointColHeader
         # TODO: This is purely for the coordinate headers (ADJUST 15 FOR THE MAX NUMBER OF COORDINATE HEADERS)
-        for i in range(8):
-            if i == 1:
-                coord = 'inner_z'
-            elif i == 2:
-                coord = 'outer_y'
-            elif i == 3:
-                coord = 'outer_z'
-            elif i == 4:
-                coord = 'innerShape_x'
-            elif i == 5:
-                coord = 'innerShape_y'
-            elif i == 6:
-                coord = 'outerShape_x'
-            elif i == 7:
-                coord = 'outerShape_y'
+        for header in intermediate_Headers:
+            coord = header
             for j in range(num_pts):
                 csv_header.append(coord + str(j + 1))
         #TODO: commented this out because we do not have a points for 'bottom'

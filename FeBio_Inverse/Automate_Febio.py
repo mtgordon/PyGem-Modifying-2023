@@ -27,7 +27,7 @@ import CylinderFunctions
 dictionary_file = 'feb_variables.csv' #DONE
 FeBioLocation = 'C:\\Program Files\\FEBioStudio2\\bin\\febio4.exe'
 originalFebFilePath = 'D:\\Gordon\\Automate FEB Runs\\2024_5_9_NewModel\\Base_File\\3 Tissue Model v2.feb'
-Results_Folder = 'D:\\Gordon\\Automate FEB Runs\\2024_5_9_NewModel\\TEST_FOLDER_6.4'
+Results_Folder = "D:\\Gordon\\Automate FEB Runs\\2024_5_9_NewModel\\TEST_WEEKEND_FOLDER_5.30"
 # This is for output
 object_list = ['Levator Ani Side 2'] #TODO: Get new names for flat, curve, GI Filler --> DONE
 # Currently being used to access base object, may need to be changed when looking to generate multiple objects at once
@@ -37,10 +37,10 @@ ZeroDisplacement = "ZeroDisplacement1"
 numCompPCA = 3
 
 # FLAGS
-Create_New_Feb_Flag = True
-Run_FeBio_File_Flag = True
+Create_New_Feb_Flag = False
+Run_FeBio_File_Flag = False
 first_int_file_flag = False
-GENERATE_INTERMEDIATE_FLAG = True
+GENERATE_INTERMEDIATE_FLAG = False
 Post_Processing_Flag = True
 
 
@@ -58,7 +58,7 @@ default_dict = {
     'Part7_E': 1,
     'Part10_E': 1,
     'Part11_E': 1,
-    'Pressure': 0,
+    'Pressure': 0.015,
     'Inner_Radius': 1.25,
     'Outer_Radius': 1.75
 }
@@ -114,7 +114,7 @@ def updateProperties(origFile, fileTemp):
                 if domain.attrib['name'] == part_name:
                     for mat in tree.find('Material'):
                         if mat.attrib['name'] == domain.attrib['mat']:
-                            new_value = float(mat.find(prop_name).text) * float(current_run_dict[part_prop])
+                            new_value = current_run_dict[part_prop]
                             mat.find(prop_name).text = str(new_value)
 
     # Update Pressure Value
@@ -242,41 +242,46 @@ for row in DOE_dict:
     if Run_FeBio_File_Flag:
         RunFEBinFeBio(workingInputFileName, FeBioLocation, logFile)
 
-    # Check for success of the feb run
-    if new_check_normal_run(logFile):
-        # Post process
-        if GENERATE_INTERMEDIATE_FLAG:
-            if first_int_file_flag:
+        # Check for success of the feb run
+        if new_check_normal_run(logFile):
+            # Post process
+            if GENERATE_INTERMEDIATE_FLAG:
+                if first_int_file_flag:
 
-                edge_elements_dictionary = sav.getCylinderEdgePoints(workingInputFileName, cylinder_parts)
+                    edge_elements_dictionary = sav.getCylinderEdgePoints(workingInputFileName, cylinder_parts)
 
-                # CylinderFunctions.plot_3d_points(edge_elements_dictionary)
+                    # CylinderFunctions.plot_3d_points(edge_elements_dictionary)
 
-                inner_radius, outer_radius = sav.getRadiiFromEdges(edge_elements_dictionary, cylinder_height, logFile, workingInputFileName, object_list[0])
-                print(inner_radius)
-                print(outer_radius)
+                    inner_radius, outer_radius = sav.getRadiiFromEdges(edge_elements_dictionary, cylinder_height,
+                                                                       logFile, workingInputFileName, object_list[0])
+                    print(inner_radius)
+                    print(outer_radius)
 
+                    proc.generate_int_csvs(fileTemplate, object_list, logFile, workingInputFileName,
+                                           first_int_file_flag,
+                                           csv_filename, inner_radius, outer_radius, current_run_dict,
+                                           plot_points_on_spline)
 
-                proc.generate_int_csvs(fileTemplate, object_list, logFile, workingInputFileName, first_int_file_flag,
-                                       csv_filename, inner_radius, outer_radius, current_run_dict, plot_points_on_spline)
+                    first_int_file_flag = False
 
-                first_int_file_flag = False
+                else:
 
-            else:
+                    edge_elements_dictionary = sav.getCylinderEdgePoints(workingInputFileName, cylinder_parts)
 
-                edge_elements_dictionary = sav.getCylinderEdgePoints(workingInputFileName, cylinder_parts)
+                    inner_radius, outer_radius = sav.getRadiiFromEdges(edge_elements_dictionary, cylinder_height,
+                                                                       logFile, workingInputFileName, object_list[0])
 
-                inner_radius, outer_radius = sav.getRadiiFromEdges(edge_elements_dictionary, cylinder_height, logFile, workingInputFileName, object_list[0])
+                    proc.generate_int_csvs(fileTemplate, object_list, logFile, workingInputFileName,
+                                           first_int_file_flag,
+                                           csv_filename, inner_radius, outer_radius, current_run_dict,
+                                           plot_points_on_spline)
 
-                proc.generate_int_csvs(fileTemplate, object_list, logFile, workingInputFileName, first_int_file_flag,
-                                       csv_filename, inner_radius, outer_radius, current_run_dict, plot_points_on_spline)
+            file_num += 1
+            print('Completed Iteration ' + str(file_num) + ": " + fileTemplate)
+            obj_coords_list = []
 
-        file_num += 1
-        print('Completed Iteration ' + str(file_num) + ": " + fileTemplate)
-        obj_coords_list = []
+        else:
+            os.rename(workingInputFileName, os.path.splitext(workingInputFileName)[0] + '_error.feb')
 
-    else:
-        os.rename(workingInputFileName, os.path.splitext(workingInputFileName)[0] + '_error.feb')
-
-if Post_Processing_Flag: # previously called final_csv_flag
-    proc.process_features(csv_filename, Results_Folder, date_prefix, numCompPCA)
+if Post_Processing_Flag:  # previously called final_csv_flag
+    proc.process_features(csv_filename, Results_Folder, date_prefix, numCompPCA, current_run_dict)

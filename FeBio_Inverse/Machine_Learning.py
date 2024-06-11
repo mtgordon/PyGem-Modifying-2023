@@ -4,8 +4,6 @@ import PCA_data as pd
 import datetime
 import random
 
-
-
 current_date = datetime.datetime.now()
 date_prefix = str(current_date.year) + '_' + str(current_date.month)  + '_' + str(current_date.day)
 
