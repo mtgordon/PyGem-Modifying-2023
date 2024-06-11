@@ -28,8 +28,10 @@ spline_ordered = 0
 startingPointColHeader = 'inner_y'
 secondPartStart = 'outer_x'
 numCompPCA = 2
-#stringList = ['inner_x', 'outer_x']
-stringList = ['inner_y', 'outer_y', 'innerShape_x', 'outerShape_x']
+
+# TODO: Replace Headers when changing what intermediate displays
+intermediate_Headers = ['inner_z', 'outer_y', 'outer_z', 'innerShape_x', 'innerShape_y', 'outerShape_x', 'outerShape_y']
+PCA_Headers = ['inner_y', 'outer_y', 'innerShape_x', 'outerShape_x']
 
 """
     Generate modified training CSV files with principal component scores from the original file.
@@ -57,11 +59,11 @@ def process_features(csv_file, Results_Folder, date_prefix, numCompPCA):
     int_df = pd.read_csv(csv_file)
 
     # Iterate through the headers
-    for i, header in enumerate(stringList):
+    for i, header in enumerate(PCA_Headers):
         # If not the last header, get the next header
-        if i < len(stringList) - 1:
-            next_header = stringList[i + 1]
-            final_header = stringList[i + 2]
+        if i < len(PCA_Headers) - 1:
+            next_header = PCA_Headers[i + 1]
+            final_header = PCA_Headers[i + 2]
 
         # Get the start and end indices of the current header's columns
         currentStartIndex = int_df.columns[int_df.columns.str.contains(header)].tolist()
@@ -225,21 +227,8 @@ def generate_int_csvs(file_params, object_list, log_name, feb_name, first_int_fi
         #coord = 'inner_x'
         coord = startingPointColHeader
         # TODO: This is purely for the coordinate headers (ADJUST 15 FOR THE MAX NUMBER OF COORDINATE HEADERS)
-        for i in range(8):
-            if i == 1:
-                coord = 'inner_z'
-            elif i == 2:
-                coord = 'outer_y'
-            elif i == 3:
-                coord = 'outer_z'
-            elif i == 4:
-                coord = 'innerShape_x'
-            elif i == 5:
-                coord = 'innerShape_y'
-            elif i == 6:
-                coord = 'outerShape_x'
-            elif i == 7:
-                coord = 'outerShape_y'
+        for header in intermediate_Headers:
+            coord = header
             for j in range(num_pts):
                 csv_header.append(coord + str(j + 1))
         #TODO: commented this out because we do not have a points for 'bottom'
