@@ -1,5 +1,4 @@
 import datetime
-
 import dateutil.utils
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
@@ -42,7 +41,6 @@ date_prefix = str(current_date.year) + '_' + str(current_date.month)  + '_' + st
 
 object_list = ['Levator Ani Side 2']  # MAKE SURE THIS MATCHES THE OBJECTS IN THE CURRENTLY USED MODEL
 part_list = ['Part1', 'Part3', 'Part7', 'Part10', 'Part11']
-obj_coords_list = []
 file_num = 0
 numCompPCA = 3
 
