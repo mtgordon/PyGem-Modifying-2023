@@ -151,6 +151,7 @@ def get_dataset(path):
     X, y = df.values[:, 4:], df.values[:, 1:4]
     # X, y = np.concatenate([df.values[:, 3:4], df.values[:, 5:6]], axis=1), df.values[:, 1:3]
     #
+
     print("Xshape", X.shape, "yshape", y.shape)
     print(X.shape[1], y.shape[1])
     X = X.astype('float32')
@@ -456,7 +457,7 @@ def plot_learning_curves(history, results, layers, capacity, patience, save_path
     # Plot training and validation loss
     plt.plot(epochs, training_loss, 'bo--', label='Training Loss', markersize=0.5, linewidth=0.5, alpha=0.4)
     plt.plot(epochs, validation_loss, 'go--', label='Validation Loss', markersize=0.5, linewidth=0.5, alpha=0.4)
-
+    print("epochs: ", epochs, "Training loss: ", training_loss)
     # Add fit lines
     train_fit = np.polyfit(epochs, training_loss, 10)
     val_fit = np.polyfit(epochs, validation_loss, 10)
@@ -551,7 +552,6 @@ def write_predicted_y_to_csv(output_csv_path, predicted_y):
         current_dir = os.getcwd()
 
         # Construct the absolute file path based on the current working directory
-        output_csv_path = 'PredictedData\\M_2024_5_6_intermediate_train_22_2024_5_7_modified_train_1el100003pat10000_c36_D_2024_5_6_intermediate_test_22_2024_5_7_modified_train_1\\Pre1.csv'
         abs_output_csv_path = os.path.join(current_dir, output_csv_path)
         print()
         print(abs_output_csv_path)
@@ -1052,7 +1052,8 @@ def plot_3_outputs(data_1, data_2, data_3, threshold_fraction, data_dif_1, data_
         os.makedirs(directory)
 
     save_path_d1 = os.path.join(directory, generate_scatter_png_path(file_path, "y1", type_dif, threshold_fraction))
-    print(save_path_d1)
+    print("data_1: ", data_1, "data_dif_1: ", data_dif_1)
+
     plot_scatter(save_path_d1, data_1, data_dif_1, "y1", type_dif, threshold_fraction, show)
 
     save_path_p1 = os.path.join(directory, generate_scatter_png_path(file_path, "y1", type_percent, threshold_fraction))
@@ -1083,6 +1084,7 @@ def plot_3_outputs(data_1, data_2, data_3, threshold_fraction, data_dif_1, data_
 def fit_model_save_best_and_curve(data, epochs, layers, capacity, patience, epochs_start, squared=False,
                                   print_path=False):
     # load dataset
+    print(data)
     x, y = get_dataset(data)
     if print_path:
         print("Training input x: \n", x, "\nTraining output y: \n", y)
@@ -1097,7 +1099,7 @@ def fit_model_save_best_and_curve(data, epochs, layers, capacity, patience, epoc
 
     if print_path:
         print("Successfully trained and saved model! \nModel_path: ", model_path)
-        input()
+
 
     # mean, std = cal_result(results)
     # # summarize performance
@@ -1112,7 +1114,7 @@ def fit_model_save_best_and_curve(data, epochs, layers, capacity, patience, epoc
 
 def load_model_to_predict_analysis_plot(model_path, data, old_data='', type_dif="dif", type_percent="percent",
                                         threshold_start=0,
-                                        threshold_step=0.05, threshold_range=5, print_results=True, show=False):
+                                        threshold_step=0.05, threshold_range=5, print_results=False, show=False):
     loaded_model = load_model(model_path)
 
     new_x, new_y = get_dataset(data)
@@ -1159,7 +1161,7 @@ def machine_learning_save_predict(train_data, test_data, epochs=5000, layers=9, 
                                   epochs_start=1000):
     model_path, learning_curve_path = fit_model_save_best_and_curve(train_data, epochs, layers, capacity, patience,
                                                                     epochs_start)
-    directory, predicted_path, analysis_path = load_model_to_predict_analysis_plot(model_path, test_data, print_results=True)
+    directory, predicted_path, analysis_path = load_model_to_predict_analysis_plot(model_path, test_data)
     print("Model Path: ", model_path, "\nPredicted Data: ", directory)
 
     return model_path, learning_curve_path, directory, predicted_path, analysis_path

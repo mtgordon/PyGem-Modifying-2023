@@ -23,11 +23,11 @@ import numpy as np
 import CylinderFunctions
 
 # FeBio Variables
-#TODO: ENTER IN VAR FILE --> SET PART NAMES FOR ALL MATERIALS --> DONE
+# TODO: ENTER IN VAR FILE --> SET PART NAMES FOR ALL MATERIALS --> DONE
 dictionary_file = 'feb_variables.csv' #DONE
 FeBioLocation = 'C:\\Program Files\\FEBioStudio2\\bin\\febio4.exe'
 originalFebFilePath = 'D:\\Gordon\\Automate FEB Runs\\2024_5_9_NewModel\\Base_File\\3 Tissue Model v2.feb'
-Results_Folder = "D:\\Gordon\\Automate FEB Runs\\2024_5_9_NewModel\\TEST_WEEKEND_FOLDER_5.30"
+Results_Folder = "D:\\Gordon\\Automate FEB Runs\\2024_5_9_NewModel\\TEST_FOLDER_6_11"
 # This is for output
 object_list = ['Levator Ani Side 2'] #TODO: Get new names for flat, curve, GI Filler --> DONE
 # Currently being used to access base object, may need to be changed when looking to generate multiple objects at once
@@ -37,11 +37,11 @@ ZeroDisplacement = "ZeroDisplacement1"
 numCompPCA = 3
 
 # FLAGS
-Create_New_Feb_Flag = False
-Run_FeBio_File_Flag = False
-first_int_file_flag = False
-GENERATE_INTERMEDIATE_FLAG = False
-Post_Processing_Flag = True
+Create_New_Feb_Flag = True
+Run_FeBio_File_Flag = True
+first_int_file_flag = True
+GENERATE_INTERMEDIATE_FLAG = True
+Post_Processing_Flag = False
 
 
 # PLOTTING

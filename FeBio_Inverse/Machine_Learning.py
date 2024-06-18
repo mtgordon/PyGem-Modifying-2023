@@ -4,6 +4,7 @@ import PCA_data as pd
 import datetime
 import random
 
+
 current_date = datetime.datetime.now()
 date_prefix = str(current_date.year) + '_' + str(current_date.month)  + '_' + str(current_date.day)
 
@@ -11,16 +12,16 @@ old_data = 'combo_features (1).csv'
 train_data = 'combo_features (1).csv'
 test_data = 'updated_order_features_5_30.csv'
 # model_path = 'Models\\real_y2el_50009_c36_x1x2'
-epochs = 200
+epochs = 60
 epochs_start = 10
 layers = 3
 capacity = 36
-patience = 50 # originally 50
+patience = 15 # originally 50
 numCompPCA = 3
-squared = True
+squared = False
 random.seed(33)
 #data = "D:\\Gordon\\Automate FEB Runs\\2024_4_29 auto\\target_folder\\2024_5_6_intermediate.csv" #TODO: Change to the PC csv
-data = "D:\\Gordon\\Automate FEB Runs\\2024_5_9_NewModel\\TEST_FOLDER_6.4\\2024_6_4_intermediate.csv"
+data = "D:\\Gordon\\Automate FEB Runs\\2024_5_9_NewModel\\TEST_FOLDER_6_11\\2024_6_13_intermediate.csv"
 
 def machine_learning_all(epochs, epochs_start, layers, capacity, patience, squared, data=None):
     # TODO: Step 1 - generate the csv file (all)
@@ -48,15 +49,15 @@ def machine_learning_all(epochs, epochs_start, layers, capacity, patience, squar
     # TEST USE!!!
     # test = pf.generate_train_test_csvs_files_from(mod_test_path)[1]
 
-    # TODO: Step 5
+    # TODO: Step
 
-    model_path, learning_curve_path, predict_directory, predicted_path, analysis_path = pf.machine_learning_save_predict(mod_train_path, mod_test_path, epochs, layers, capacity, patience, epochs_start)
+    model_path, learning_curve_path, predict_directory, predicted_path, is_path = pf.machine_learning_save_predict(mod_train_path, mod_test_path, epochs, layers, capacity, patience, epochs_start)
 
-    # TODO: Step 6 - analysis and plot
+    # TODO: Step 6 - analysis and
 
     # pf.write_predicted_y_to_csv(output_predicted, predicted_y)
-    # pf.write_predicted_y_analysed_to_csv(output_analysis, predicted_y, new_y)
-    #
+    # pf.write_predicted_y_analysed_to_csv(output_analysis, predicted_y, )
+
     # print("output predicted name: ", output_predicted.title())
     # print("output analysis name: ", output_analysis.title())
     # print("output learning curve: ", output_image.title())
