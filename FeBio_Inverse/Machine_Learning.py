@@ -4,14 +4,10 @@ import PCA_data as pd
 import datetime
 import random
 
-
 current_date = datetime.datetime.now()
 date_prefix = str(current_date.year) + '_' + str(current_date.month)  + '_' + str(current_date.day)
 
-old_data = 'combo_features (1).csv'
-train_data = 'combo_features (1).csv'
-test_data = 'updated_order_features_5_30.csv'
-# model_path = 'Models\\real_y2el_50009_c36_x1x2'
+# TODO: Adjust parameters for desired outcome
 epochs = 60
 epochs_start = 10
 layers = 3
@@ -20,7 +16,7 @@ patience = 15 # originally 50
 numCompPCA = 3
 squared = False
 random.seed(33)
-#data = "D:\\Gordon\\Automate FEB Runs\\2024_4_29 auto\\target_folder\\2024_5_6_intermediate.csv" #TODO: Change to the PC csv
+# This is the intermediate file which will be used to run process_features and used for machine learning
 data = "D:\\Gordon\\Automate FEB Runs\\2024_5_9_NewModel\\TEST_FOLDER_6_11\\2024_6_13_intermediate.csv"
 
 def machine_learning_all(epochs, epochs_start, layers, capacity, patience, squared, data=None):

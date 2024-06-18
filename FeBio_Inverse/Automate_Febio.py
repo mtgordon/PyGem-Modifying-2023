@@ -29,11 +29,12 @@ FeBioLocation = 'C:\\Program Files\\FEBioStudio2\\bin\\febio4.exe'
 originalFebFilePath = 'D:\\Gordon\\Automate FEB Runs\\2024_5_9_NewModel\\Base_File\\3 Tissue Model v2.feb'
 Results_Folder = "D:\\Gordon\\Automate FEB Runs\\2024_5_9_NewModel\\TEST_FOLDER_6_11"
 # This is for output
-object_list = ['Levator Ani Side 2'] #TODO: Get new names for flat, curve, GI Filler --> DONE
+object_list = ['Levator Ani Side 2']
 # Currently being used to access base object, may need to be changed when looking to generate multiple objects at once
 part_list = ['Part1', 'Part3', 'Part7', 'Part10', 'Part11']
 cylinder_parts = ['Part3']
 ZeroDisplacement = "ZeroDisplacement1"
+# Only necessary if running Post_Processing_Flag
 numCompPCA = 3
 
 # FLAGS
@@ -43,15 +44,14 @@ first_int_file_flag = True
 GENERATE_INTERMEDIATE_FLAG = True
 Post_Processing_Flag = False
 
-
 # PLOTTING
 plot_points_on_spline = False
 
-#TODO: Input Parameters for Cylinder Creation
+# TODO: Input Parameters for Cylinder Creation
 num_cylinder_points = 200
 
 #Have the default material variables be 1 (100%) so they do not change if no variable is given
-#TODO: Update Everytime you want to change your base file
+# TODO: Update Everytime you want to change your base file
 default_dict = {
     'Part1_E': 1,
     'Part3_E': 1,

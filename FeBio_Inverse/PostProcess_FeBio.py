@@ -21,17 +21,18 @@ import matplotlib.pyplot as plt
 import CylinderFunctions
 import PCA_data
 
-#TODO: Change the following to preferred numbers
+# TODO: Change the following to preferred numbers
 window_width = 0.3
 num_pts = 9
 spline_ordered = 0
 startingPointColHeader = 'inner_y'
 secondPartStart = 'outer_x'
-numCompPCA = 2
+numCompPCA = 3
 
 # TODO: Replace Headers when changing what intermediate displays
 intermediate_Headers = ['inner_z', 'outer_y', 'outer_z', 'innerShape_x', 'innerShape_y', 'outerShape_x', 'outerShape_y']
 PCA_Headers = ['inner_y', 'outer_y', 'innerShape_x', 'outerShape_x']
+Modified_Train_Headers = ["File Name", "Part1_E", "Part3_E", "Part11_E", "Pressure", "Inner_Radius", "Outer_Radius"]
 
 
 """
@@ -105,7 +106,7 @@ def process_features(csv_file, Results_Folder, date_prefix, numCompPCA):
             columns={f'radius{i + 1}' : f'Principal Component {i + 1} Cylinder' for i in range(numCompPCA)})
 
         # Concatenate the DataFrames to create the final DataFrame
-        final_df = pd.concat([int_df.loc[:, ["File Name", "Part1_E", "Part3_E", "Part11_E", "Pressure", "Inner_Radius", "Outer_Radius"]],
+        final_df = pd.concat([int_df.loc[:, Modified_Train_Headers],
                               PC_scores, PC_scores_bottom, PC_scores_radius], axis=1)
 
 

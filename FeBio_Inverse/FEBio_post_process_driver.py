@@ -32,23 +32,20 @@ import CylinderFunctions
 import lib.IOfunctions as IO
 import CylinderFunctions as cf
 
-
-
 """
 The Purpose of this file is to allow us to manually test the generation of final modified train csv files from the given 
 intermediate csv and determine if we are are acquiring our PCA Points Correctly
 """
 
-# TODO: FOR TESTING PURPOSE HERE IS CURRENT RUN TEMPLATE:
-
-
+# TODO: Change these parameters
 current_date = datetime.datetime.now()
 date_prefix = str(current_date.year) + '_' + str(current_date.month)  + '_' + str(current_date.day)
 Results_Folder = "D:\\Gordon\\Automate FEB Runs\\2024_5_9_NewModel\\TEST_FOLDER_6_11"  # INTERMEDIATE CSV ENDS UP HERE
 Target_Folder = "D:\\Gordon\\Automate FEB Runs\\2024_5_9_NewModel\\TEST_FOLDER_6_11\\*.feb"  # LOOK HERE FOR THE FEB FILES
+
+# Enter CSV File name manually or have set to date prefix when generating new intermediate
 # csv_filename = Results_Folder + '\\' + date_prefix + '_intermediate.csv'
 csv_filename = 'D:\\Gordon\\Automate FEB Runs\\2024_5_9_NewModel\\TEST_FOLDER_6_11\\2024_6_11_intermediate.csv'
-date_prefix = str(current_date.year) + '_' + str(current_date.month)  + '_' + str(current_date.day)
 
 object_list = ['Levator Ani Side 2']  # MAKE SURE THIS MATCHES THE OBJECTS IN THE CURRENTLY USED MODEL
 part_list = ['Part1', 'Part3', 'Part7', 'Part10', 'Part11']
@@ -56,6 +53,7 @@ obj_coords_list = []
 file_num = 0
 numCompPCA = 9
 
+# TODO: Change Flags to adjust processing
 first_file_flag = False
 GENERATE_INTERMEDIATE_FLAG = False
 final_csv_flag = True
