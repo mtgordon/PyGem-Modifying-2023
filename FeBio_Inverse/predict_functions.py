@@ -20,7 +20,7 @@ from sklearn.model_selection import train_test_split
 import tensorflow as tf
 
 
-# https://machinelearningmastery.com/deep-learning-models-for-multi-output-regression/
+# `https://machinelearningmastery.com/deep-learning-models-for-multi-output-regression/`
 def get_available_gpus():
     """
     Get a list of available GPUs on the system.
@@ -1114,7 +1114,7 @@ def fit_model_save_best_and_curve(data, epochs, layers, capacity, patience, epoc
 
 def load_model_to_predict_analysis_plot(model_path, data, old_data='', type_dif="dif", type_percent="percent",
                                         threshold_start=0,
-                                        threshold_step=0.05, threshold_range=5, print_results=False, show=False):
+                                        threshold_step=0.05, threshold_range=5, print_results=True, show=True):
     loaded_model = load_model(model_path)
 
     new_x, new_y = get_dataset(data)
@@ -1160,7 +1160,7 @@ def load_model_to_predict_analysis_plot(model_path, data, old_data='', type_dif=
 def machine_learning_save_predict(train_data, test_data, epochs=5000, layers=9, capacity=32, patience=500,
                                   epochs_start=1000):
     model_path, learning_curve_path = fit_model_save_best_and_curve(train_data, epochs, layers, capacity, patience,
-                                                                    epochs_start)
+                                                                    epochs_start, print_path=True)
     directory, predicted_path, analysis_path = load_model_to_predict_analysis_plot(model_path, test_data)
     print("Model Path: ", model_path, "\nPredicted Data: ", directory)
 

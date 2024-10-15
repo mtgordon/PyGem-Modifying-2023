@@ -22,17 +22,21 @@ data = "D:\\Gordon\\Automate FEB Runs\\2024_5_9_NewModel\\TEST_FOLDER_6_11\\2024
 def machine_learning_all(epochs, epochs_start, layers, capacity, patience, squared, data=None):
     # TODO: Step 1 - generate the csv file (all)
     # csv_all = pp.generate_int_csvs(fileTemplate, object_list, logFile, workingInputFileName, first_int_file_flag, csv_filename)
-    csv_all = data
+
 
     # TODO: STEP 2 - load dataset
-    train_data_path, test_data_path = pf.generate_train_test_csvs_files_from(csv_all)
+    train_data_path, test_data_path = pf.generate_train_test_csvs_files_from(data)
+    print("train_data_path", train_data_path)
+    print("test_data_path", test_data_path)
 
     # TODO: STEP 3 - Generate new PCs based on the train file
     Results_Folder = "NewMLSystem"
     mod_train_path, pca1, pcaB, pcaR = pp.process_features(train_data_path, Results_Folder, date_prefix, numCompPCA)
+    print("mod_train_path", mod_train_path)
 
     # Save PCs and save the PCA Model
-    # pc_csv_path = pf.generate_PC_csv_file_from(mod_train_path, [5, 6, 7, 8])
+    pc_csv_path = pf.generate_PC_csv_file_from(mod_train_path, [5, 6, 7, 8])
+
 
     # add noise to test file
     mod_test_path, pca1, pcaB, pcaR = pp.process_features(test_data_path, Results_Folder, date_prefix, numCompPCA)
@@ -71,4 +75,4 @@ def machine_learning_all(epochs, epochs_start, layers, capacity, patience, squar
 
 
 machine_learning_all(epochs, epochs_start, layers, capacity, patience, squared, data)
-# pf.machine_learning_save_predict(train_data, test_data)
+# # pf.machine_learning_save_predict(train_data, test_data)
